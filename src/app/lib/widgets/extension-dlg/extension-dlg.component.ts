@@ -34,7 +34,7 @@ import {Subscription} from 'rxjs';
 import {
   ExtensionCardinalitySelectionDlgComponent
 } from '../extension-cardinality-selection-dlg/extension-cardinality-selection-dlg.component';
-import {ExtensionsService} from '../../../services/extensions.service';
+import {ExtensionEditorScope, ExtensionsService} from '../../../services/extensions.service';
 import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
 import {FhirService} from '../../../services/fhir.service';
 
@@ -83,6 +83,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   fhirService = inject(FhirService);
   public override ngbModalService = inject(NgbModal);
   duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
+  managedUrlError = signal<string | null>(null);
   checkingExtensionCardinality = signal(false);
   cardinalityWarning = signal<string | null>(null);
 
@@ -134,6 +135,12 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     return url.length > 0;
   }
 
+  /** Scope containing the general Extensions field that opened this dialog. */
+  private getExtensionEditorScope(): ExtensionEditorScope | undefined {
+    const scope = this.data.extensionEditorScope;
+    return scope === 'form' || scope === 'item' ? scope : undefined;
+  }
+
   /**
    * Count other extensions with the same URL at this exact scope.
    * The current row is ignored when editing an existing extension.
@@ -169,13 +176,23 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   protected override updateDisableSave(): void {
     const url = (this.changedValue?.url || '').trim();
     this.dismissObsoleteCardinalitySelection(url);
+    const isManagedUrl = this.extensionsService.isNotEditableInDlg(url);
     const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
     const localCardinality = getExtensionMaxCardinality(url);
 
+    this.managedUrlError.set(isManagedUrl
+      ? this.extensionsService.getManagedExtensionValidationMessage(url, this.getExtensionEditorScope())
+      : null);
     this.cardinalityWarning.set(null);
 
     this.cardinalityLookupSubscription?.unsubscribe();
     this.cardinalitySelectionWaitSubscription?.unsubscribe();
+    if (isManagedUrl) {
+      this.duplicateUrlError.set(null);
+      this.checkingExtensionCardinality.set(false);
+      super.updateDisableSave();
+      return;
+    }
     if (hasDuplicateUrl && localCardinality === 'unknown') {
       const selectionGeneration = this.extensionCardinalityService.getSelectionGeneration();
       const serverEndpoint = this.extensionCardinalityService.getCurrentServerEndpoint();
@@ -451,6 +468,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
    */
   protected override isSaveAllowed(): boolean {
     return this.isUrlValid()
+      && !this.managedUrlError()
       && !this.duplicateUrlError()
       && !this.checkingExtensionCardinality();
   }

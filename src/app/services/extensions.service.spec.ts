@@ -2,6 +2,71 @@ import { TestBed } from '@angular/core/testing';
 
 import { ExtensionsService } from './extensions.service';
 import { SchemaService } from './schema.service';
+import {
+  EXTENSION_URL_ANSWER_EXPRESSION,
+  EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+  EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_INITIAL_EXPRESSION,
+  EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  EXTENSION_URL_REGEX,
+  EXTENSION_URL_VARIABLE,
+  PREFERRED_TERMINOLOGY_SERVER_URI
+} from '../lib/constants/constants';
+import {
+  ObservationLinkPeriodComponent
+} from '../lib/widgets/observation-link-period/observation-link-period.component';
+import {
+  ObservationExtractComponent
+} from '../lib/widgets/observation-extract/observation-extract.component';
+
+const restrictionExtensionUrls = [
+  EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_REGEX,
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MIME_TYPE
+];
+
+const itemOnlyExtensionUrls = [
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_INITIAL_EXPRESSION,
+  EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_ANSWER_EXPRESSION,
+  EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+  EXTENSION_URL_ITEM_CONTROL,
+  ...restrictionExtensionUrls,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  ObservationLinkPeriodComponent.extUrl,
+  ObservationExtractComponent.extUrl
+];
+
+const expectedDedicatedExtensionUrls = [
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_VARIABLE,
+  EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+  EXTENSION_URL_INITIAL_EXPRESSION,
+  EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_ANSWER_EXPRESSION,
+  EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+  EXTENSION_URL_ITEM_CONTROL,
+  ...restrictionExtensionUrls,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  PREFERRED_TERMINOLOGY_SERVER_URI,
+  ObservationLinkPeriodComponent.extUrl,
+  ObservationExtractComponent.extUrl
+];
 
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
@@ -27,6 +92,79 @@ describe('ExtensionsService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('should identify the dedicated field in managed extension validation messages', () => {
+    expect(service.getManagedExtensionValidationMessage(
+      '  http://hl7.org/fhir/StructureDefinition/entryFormat  ',
+      'form'
+    )).toBe(
+      'This extension cannot be added here. Use the dedicated “Entry format” field on a questionnaire item instead.'
+    );
+    expect(service.getManagedExtensionValidationMessage(
+      'http://hl7.org/fhir/StructureDefinition/questionnaire-hidden'
+    )).toContain('“Hide this item from users?”');
+  });
+
+  it('should include the other scope when the dedicated field is not available here', () => {
+    expect(service.getManagedExtensionValidationMessage(EXTENSION_URL_ENTRY_FORMAT, 'form')).toBe(
+      'This extension cannot be added here. Use the dedicated “Entry format” field on a questionnaire item instead.'
+    );
+    expect(service.getManagedExtensionValidationMessage(EXTENSION_URL_ENTRY_FORMAT, 'item')).toBe(
+      'This extension cannot be added here. Use the dedicated “Entry format” field instead.'
+    );
+    expect(service.getManagedExtensionValidationMessage(ObservationExtractComponent.extUrl, 'form')).toBe(
+      'This extension cannot be added here. Use the dedicated “Use FHIR Observation extraction?” field under a questionnaire item’s Advanced fields instead.'
+    );
+    expect(service.getManagedExtensionValidationMessage(PREFERRED_TERMINOLOGY_SERVER_URI, 'item')).toBe(
+      'This extension cannot be added here. Use the dedicated “Terminology server” field instead.'
+    );
+  });
+
+  it('should direct every item-only managed extension from form attributes to a questionnaire item', () => {
+    for (const url of itemOnlyExtensionUrls) {
+      expect(service.getManagedExtensionValidationMessage(url, 'form')).withContext(url).toContain(
+        'questionnaire item'
+      );
+    }
+  });
+
+  it('should register both unit extensions as managed by the Units field', () => {
+    for (const url of [EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION]) {
+      expect(service.extensionsEditedInWidgets.has(url)).withContext(url).toBeTrue();
+      expect(service.getManagedExtensionValidationMessage(url)).withContext(url).toContain(
+        'Use the dedicated “Units” field instead.'
+      );
+    }
+  });
+
+  it('should register every extension managed by the Restrictions field', () => {
+    for (const url of restrictionExtensionUrls) {
+      expect(service.extensionsEditedInWidgets.has(url)).withContext(url).toBeTrue();
+      expect(service.getManagedExtensionValidationMessage(url)).withContext(url).toBe(
+        'This extension cannot be added here. Use the dedicated “Restrictions” field instead.'
+      );
+    }
+  });
+
+  it('should provide field-specific guidance for every registered dedicated extension', () => {
+    expect(service.extensionsEditedInWidgets.size).toBe(expectedDedicatedExtensionUrls.length);
+    for (const url of expectedDedicatedExtensionUrls) {
+      expect(service.extensionsEditedInWidgets.has(url)).withContext(url).toBeTrue();
+      expect(service.isNotEditableInDlg(url)).withContext(url).toBeTrue();
+      expect(service.getManagedExtensionValidationMessage(url)).withContext(url).toContain(
+        'Use the dedicated “'
+      );
+    }
+  });
+
+  it('should use generic guidance when a managed extension has no registered field label', () => {
+    const extensionUrl = 'http://example.org/managed-without-label';
+    service.extensionsEditedInWidgets.add(extensionUrl);
+
+    expect(service.getManagedExtensionValidationMessage(extensionUrl)).toBe(
+      'This extension is managed by a dedicated Form Builder field and cannot be added here.'
+    );
   });
 
   describe('updateExtension', () => {

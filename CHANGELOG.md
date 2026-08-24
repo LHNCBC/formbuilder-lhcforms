@@ -2,6 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.3.2] 2026-08-24
+### Fixed
+- Prevented extensions managed by dedicated fields, including Units and Restrictions,
+  from being added or reassigned through the general Extensions editor. Inline
+  validation now directs users to the appropriate field and identifies when it is
+  located on a questionnaire item.
+
 ## [12.3.1] 2026-08-20
 ### Fixed
 - Fixed preview failing to render for an item configured with both enableWhenExpression

@@ -13,11 +13,28 @@ import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  EXTENSION_URL_REGEX,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
 import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
 import {Util} from "../lib/util";
+
+export type ExtensionEditorScope = 'form' | 'item';
+
+interface DedicatedExtensionDefinition {
+  url: string;
+  fieldName: string;
+  fieldScope: ExtensionEditorScope | 'both';
+  fieldSection?: 'advanced';
+}
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -33,19 +50,59 @@ import {Util} from "../lib/util";
 export class ExtensionsService {
   static __ID = 0;
 
-  extensionsEditedInWidgets: Set<string> = new Set([
-    EXTENSION_URL_ENTRY_FORMAT,
-    EXTENSION_URL_VARIABLE,
-    EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
-    EXTENSION_URL_INITIAL_EXPRESSION,
-    EXTENSION_URL_CALCULATED_EXPRESSION,
-    EXTENSION_URL_ANSWER_EXPRESSION,
-    EXTENSION_URL_ENABLEWHEN_EXPRESSION,
-    EXTENSION_URL_ITEM_CONTROL,
-    PREFERRED_TERMINOLOGY_SERVER_URI,
-    ObservationLinkPeriodComponent.extUrl,
-    ObservationExtractComponent.extUrl
+  /** URLs, labels, and locations for extensions managed outside the general editor. */
+  private readonly dedicatedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
+    {url: EXTENSION_URL_ENTRY_FORMAT, fieldName: 'Entry format', fieldScope: 'item'},
+    {url: EXTENSION_URL_VARIABLE, fieldName: 'Variables', fieldScope: 'both'},
+    {url: EXTENSION_URL_CUSTOM_VARIABLE_TYPE, fieldName: 'Variables', fieldScope: 'both'},
+    {url: EXTENSION_URL_INITIAL_EXPRESSION, fieldName: 'Value method', fieldScope: 'item'},
+    {url: EXTENSION_URL_CALCULATED_EXPRESSION, fieldName: 'Value method', fieldScope: 'item'},
+    {url: EXTENSION_URL_ANSWER_EXPRESSION, fieldName: 'Answer list source', fieldScope: 'item'},
+    {
+      url: EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+      fieldName: 'Conditional method',
+      fieldScope: 'item',
+      fieldSection: 'advanced'
+    },
+    {url: EXTENSION_URL_ITEM_CONTROL, fieldName: 'Answer list layout or item control', fieldScope: 'item'},
+    {url: EXTENSION_URL_MIN_LENGTH, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_REGEX, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MIN_VALUE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MAX_VALUE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MAX_SIZE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MIME_TYPE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_QUESTIONNAIRE_UNIT, fieldName: 'Units', fieldScope: 'item'},
+    {url: EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, fieldName: 'Units', fieldScope: 'item'},
+    {url: PREFERRED_TERMINOLOGY_SERVER_URI, fieldName: 'Terminology server', fieldScope: 'both'},
+    {
+      url: ObservationLinkPeriodComponent.extUrl,
+      fieldName: 'Add link to pre-populate FHIR Observation?',
+      fieldScope: 'item',
+      fieldSection: 'advanced'
+    },
+    {
+      url: ObservationExtractComponent.extUrl,
+      fieldName: 'Use FHIR Observation extraction?',
+      fieldScope: 'item',
+      fieldSection: 'advanced'
+    }
+  ];
+
+  private readonly dedicatedExtensionFields: ReadonlyMap<string, DedicatedExtensionDefinition> = new Map([
+    ...this.dedicatedExtensionDefinitions.map((definition) => [definition.url, definition] as const),
+    // This field is supplied by the questionnaire-hidden feature. Keeping its
+    // metadata here makes the central validation message ready when its URL is
+    // registered in extensionsEditedInWidgets.
+    ['http://hl7.org/fhir/StructureDefinition/questionnaire-hidden', {
+      url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-hidden',
+      fieldName: 'Hide this item from users?',
+      fieldScope: 'item'
+    }]
   ]);
+
+  extensionsEditedInWidgets: Set<string> = new Set(
+    this.dedicatedExtensionDefinitions.map(({url}) => url)
+  );
 
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
@@ -411,10 +468,41 @@ export class ExtensionsService {
 
   /**
    * Check if the extension is editable in the extension dialog.
+   * Surrounding whitespace is ignored so the same comparison can be used while
+   * validating URLs entered in the general Extensions editor.
+   *
+   * @param url - Extension URL to check.
    * @returns - True if the extension is not editable in dialog.
    */
   isNotEditableInDlg(url: fhirPrimitives.url): boolean {
-    return this.extensionsEditedInWidgets.has(url);
+    return this.extensionsEditedInWidgets.has(url?.trim());
+  }
+
+  /**
+   * Build the validation message shown when a managed URL is entered in the
+   * general Extensions editor.
+   *
+   * @param url - Managed extension URL entered by the user.
+   * @param editorScope - Scope containing the general Extensions editor.
+   * @returns Guidance pointing to the dedicated field when its label is known.
+   */
+  getManagedExtensionValidationMessage(
+    url: fhirPrimitives.url,
+    editorScope?: ExtensionEditorScope
+  ): string {
+    const field = this.dedicatedExtensionFields.get(url?.trim());
+    let location = '';
+    if(editorScope === 'form' && field?.fieldScope === 'item') {
+      location = field.fieldSection === 'advanced'
+        ? ' under a questionnaire item’s Advanced fields'
+        : ' on a questionnaire item';
+    }
+    else if(editorScope === 'item' && field?.fieldScope === 'form') {
+      location = ' in the form attributes';
+    }
+    return field
+      ? `This extension cannot be added here. Use the dedicated “${field.fieldName}” field${location} instead.`
+      : 'This extension is managed by a dedicated Form Builder field and cannot be added here.';
   }
 
   updateExtension(newValue: fhir.Extension) {

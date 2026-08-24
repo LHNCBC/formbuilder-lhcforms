@@ -5,8 +5,12 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
+import {ComponentType} from '@angular/cdk/portal';
 import {ExtensionDlgComponent} from "../extension-dlg/extension-dlg.component";
-import {TableEditRowInDlgComponent} from "../table-edit-row-in-dlg/table-edit-row-in-dlg.component";
+import {
+  DialogData,
+  TableEditRowInDlgComponent
+} from "../table-edit-row-in-dlg/table-edit-row-in-dlg.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {BooleanControlledComponent} from "../boolean-controlled/boolean-controlled.component";
 import {LabelComponent} from "../label/label.component";
@@ -66,6 +70,18 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
     super();
     this.dialogComponentType = ExtensionDlgComponent;
 
+  }
+
+  /**
+   * Add the owning Questionnaire scope so managed-extension guidance can point
+   * to fields that only exist on the form or on an item.
+   */
+  override openDialog(contentData: DialogData, contentDlg: ComponentType<unknown>) {
+    const rootProperties = this.formProperty?.findRoot()?.schema?.properties || {};
+    const extensionEditorScope = Object.prototype.hasOwnProperty.call(rootProperties, 'linkId')
+      ? 'item'
+      : 'form';
+    return super.openDialog({...contentData, extensionEditorScope}, contentDlg);
   }
 
   ngOnInit(): void {
