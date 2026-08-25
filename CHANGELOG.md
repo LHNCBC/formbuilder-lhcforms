@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.4.0] 2026-08-25
+### Added
+- Added item-level support for the FHIR Questionnaire `questionnaire-hidden`
+  extension.
+
 ## [12.3.1] 2026-08-20
 ### Fixed
 - Fixed preview failing to render for an item configured with both enableWhenExpression
