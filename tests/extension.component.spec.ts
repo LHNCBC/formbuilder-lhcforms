@@ -3,6 +3,8 @@ import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 import {
   EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_MAX_SIZE,
   EXTENSION_URL_MAX_VALUE,
   EXTENSION_URL_MIME_TYPE,
@@ -10,7 +12,8 @@ import {
   EXTENSION_URL_MIN_VALUE,
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_ENTRY_FORMAT,
-  EXTENSION_URL_REGEX
+  EXTENSION_URL_REGEX,
+  EXTENSION_URL_RENDERING_STYLE
 } from '../src/app/lib/constants/constants';
 
 const EXTENSION_URL_REPLACES = 'http://hl7.org/fhir/StructureDefinition/replaces';
@@ -21,6 +24,11 @@ const RESTRICTION_EXTENSION_URLS = [
   EXTENSION_URL_MAX_VALUE,
   EXTENSION_URL_MAX_SIZE,
   EXTENSION_URL_MIME_TYPE
+];
+const CHOICE_LAYOUT_EXTENSION_FIELDS = [
+  {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation'},
+  {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count'},
+  {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count'}
 ];
 
 
@@ -85,14 +93,14 @@ test.describe('extension.component', async () => {
 
   test('Form level page - should reject a second extension when the maximum cardinality is one', async ({page}) => {
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
-    await addPrimitiveExtension(page, EXTENSION_URL_CHOICE_ORIENTATION, 'valueString', 'First format');
+    await addPrimitiveExtension(page, EXTENSION_URL_RENDERING_STYLE, 'valueString', 'First style');
 
     await page.getByRole('button', {name: 'Add new extension'}).first().click();
     const dialog = page.locator('lfb-extension-dlg').last();
     const formLoc = dialog.locator('lfb-extension-obj sf-form');
     const urlInput = formLoc.getByLabel('Url', {exact: true});
-    await urlInput.fill(EXTENSION_URL_CHOICE_ORIENTATION);
-    await formLoc.locator('input[id^="valueString"]').fill('Second format');
+    await urlInput.fill(EXTENSION_URL_RENDERING_STYLE);
+    await formLoc.locator('input[id^="valueString"]').fill('Second style');
 
     const urlWidget = urlInput.locator('xpath=ancestor::lfb-extension-url');
     await expect(urlInput).toHaveClass(/\binvalid\b/);
@@ -105,8 +113,8 @@ test.describe('extension.component', async () => {
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.extension).toEqual([{
-      url: EXTENSION_URL_CHOICE_ORIENTATION,
-      valueString: 'First format'
+      url: EXTENSION_URL_RENDERING_STYLE,
+      valueString: 'First style'
     }]);
   });
 
@@ -350,6 +358,20 @@ test.describe('extension.component', async () => {
       await dialog.getByLabel('Url', {exact: true}).fill(url);
 
       await expect(dialog).toContainText('Use the dedicated “Restrictions” field instead.');
+      await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    });
+  }
+
+  for (const {url, fieldName} of CHOICE_LAYOUT_EXTENSION_FIELDS) {
+    const extensionName = url.substring(url.lastIndexOf('/') + 1);
+    test(`Item level page - should reject the ${extensionName} extension managed by ${fieldName}`, async ({page}) => {
+      await page.getByRole('button', {name: 'Create questions'}).first().click();
+      await PWUtils.expandAdvancedFields(page);
+      await page.getByRole('button', {name: 'Add new extension'}).first().click();
+      const dialog = page.locator('lfb-extension-dlg').last();
+      await dialog.getByLabel('Url', {exact: true}).fill(url);
+
+      await expect(dialog).toContainText(`Use the dedicated “${fieldName}” field instead.`);
       await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
     });
   }

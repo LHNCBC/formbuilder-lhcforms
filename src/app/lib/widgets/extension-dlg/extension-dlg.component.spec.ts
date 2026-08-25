@@ -12,10 +12,10 @@ import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LfbArrayComponent} from "../lfb-array/lfb-array.component";
 import {
-  EXTENSION_URL_CHOICE_ORIENTATION,
-  EXTENSION_URL_COLUMN_COUNT,
   EXTENSION_URL_ENTRY_FORMAT,
-  EXTENSION_URL_MIME_TYPE
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_RENDERING_STYLE,
+  EXTENSION_URL_RENDERING_XHTML
 } from '../../constants/constants';
 import {
   ExtensionCardinalityCandidate,
@@ -675,10 +675,10 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should display a duplicate error with an icon and invalid styling under the URL field', async () => {
-    await createDialog([{url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'first'}], -1);
+    await createDialog([{url: EXTENSION_URL_RENDERING_STYLE, valueString: 'first'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
-    urlInput.value = EXTENSION_URL_CHOICE_ORIENTATION;
+    urlInput.value = EXTENSION_URL_RENDERING_STYLE;
     urlInput.dispatchEvent(new InputEvent('input'));
     urlInput.dispatchEvent(new Event('blur'));
     await fixture.whenStable();
@@ -705,8 +705,8 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should retain the duplicate error when changing directly between duplicate URLs', async () => {
-    const duplicateUrlA = EXTENSION_URL_CHOICE_ORIENTATION;
-    const duplicateUrlB = EXTENSION_URL_COLUMN_COUNT;
+    const duplicateUrlA = EXTENSION_URL_RENDERING_STYLE;
+    const duplicateUrlB = EXTENSION_URL_RENDERING_XHTML;
     await createDialog([
       {url: duplicateUrlA, valueString: 'first value'},
       {url: duplicateUrlB, valueString: 'second value'}
@@ -741,8 +741,8 @@ describe('ExtensionDlgComponent', () => {
 
   it('should display a duplicate error when only the value of an imported duplicate is edited', async () => {
     await createDialog([
-      {url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'first value'},
-      {url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'second value'}
+      {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'first value'},
+      {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'second value'}
     ], 1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
     const valueInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="valueString"]');
@@ -790,16 +790,16 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should reject duplicates for a known single-occurrence extension', async () => {
-    await createDialog([{url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'MM/DD/YYYY'}], -1);
+    await createDialog([{url: EXTENSION_URL_RENDERING_STYLE, valueString: 'bold'}], -1);
 
-    component.onChange({url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'YYYY-MM-DD'});
+    component.onChange({url: EXTENSION_URL_RENDERING_STYLE, valueString: 'italic'});
 
     expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();
   });
 
   it('should not treat the current extension as a duplicate when editing', async () => {
-    const extension = {url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'format'};
+    const extension = {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'bold'};
     await createDialog([extension], 0);
 
     component.onChange({...extension, valueString: 'changed value'});
@@ -808,9 +808,9 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should reject changing an extension URL to another single-occurrence URL in the same scope', async () => {
-    await createDialog([...inputExt, {url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'other value'}], 0);
+    await createDialog([...inputExt, {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'other value'}], 0);
 
-    component.onChange({url: EXTENSION_URL_CHOICE_ORIENTATION, valueString: 'changed value'});
+    component.onChange({url: EXTENSION_URL_RENDERING_STYLE, valueString: 'changed value'});
 
     expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();

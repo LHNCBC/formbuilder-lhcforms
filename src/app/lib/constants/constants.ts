@@ -55,6 +55,7 @@ export const EXTENSION_URL_ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/Struc
 export const EXTENSION_URL_ENABLEWHEN_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
 export const EXTENSION_URL_CHOICE_ORIENTATION = 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation';
 export const EXTENSION_URL_COLUMN_COUNT = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount';
+export const EXTENSION_URL_COLUMN_COUNT_LEGACY = 'http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount';
 
 // Unit
 // formerly questionUnitExtUrl

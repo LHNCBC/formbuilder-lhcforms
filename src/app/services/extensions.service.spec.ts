@@ -5,6 +5,9 @@ import { SchemaService } from './schema.service';
 import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ENTRY_FORMAT,
@@ -37,6 +40,12 @@ const restrictionExtensionUrls = [
   EXTENSION_URL_MIME_TYPE
 ];
 
+const choiceLayoutExtensionFields = [
+  {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation'},
+  {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count'},
+  {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count'}
+];
+
 const itemOnlyExtensionUrls = [
   EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_INITIAL_EXPRESSION,
@@ -44,6 +53,7 @@ const itemOnlyExtensionUrls = [
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  ...choiceLayoutExtensionFields.map(({url}) => url),
   ...restrictionExtensionUrls,
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
@@ -60,6 +70,7 @@ const expectedDedicatedExtensionUrls = [
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  ...choiceLayoutExtensionFields.map(({url}) => url),
   ...restrictionExtensionUrls,
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
@@ -143,6 +154,15 @@ describe('ExtensionsService', () => {
       expect(service.extensionsEditedInWidgets.has(url)).withContext(url).toBeTrue();
       expect(service.getManagedExtensionValidationMessage(url)).withContext(url).toBe(
         'This extension cannot be added here. Use the dedicated “Restrictions” field instead.'
+      );
+    }
+  });
+
+  it('should register the canonical and legacy choice layout extensions with their dedicated fields', () => {
+    for (const {url, fieldName} of choiceLayoutExtensionFields) {
+      expect(service.extensionsEditedInWidgets.has(url)).withContext(url).toBeTrue();
+      expect(service.getManagedExtensionValidationMessage(url)).withContext(url).toBe(
+        `This extension cannot be added here. Use the dedicated “${fieldName}” field instead.`
       );
     }
   });
