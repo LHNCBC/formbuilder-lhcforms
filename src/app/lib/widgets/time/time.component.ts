@@ -5,6 +5,9 @@ import { NgClass } from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import { AsyncPipe } from '@angular/common';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { filterSpuriousTimePatternErrors } from './time-util';
 
 /**
  * TimeComponent is a component for handling time input in the format HH:MM:SS.mmm.
@@ -19,8 +22,10 @@ import { AsyncPipe } from '@angular/common';
     LfbDisableControlDirective,
     FormsModule,
     ReactiveFormsModule,
-    AsyncPipe
+    AsyncPipe,
+    EnableWhenAnswerOptionsDirective
   ],
+  providers: [EnableWhenAnswerOptionsService],
   templateUrl: './time.component.html',
   styles: [`
     .form-control-like {
@@ -29,6 +34,23 @@ import { AsyncPipe } from '@angular/common';
   `]
 })
 export class TimeComponent extends StringComponent {
+
+  /**
+   * Initializes the time widget and suppresses PATTERN noise for enableWhen answerTime fields.
+   */
+  override ngOnInit(): void {
+    super.ngOnInit();
+
+    const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
+    if (!/^enableWhen\.(\d+)\.answerTime/.test(canonicalPath)) {
+      return;
+    }
+
+    const sub = this.formProperty.errorsChanges.subscribe(() => {
+      this.errors = filterSpuriousTimePatternErrors(this.errors, this.formProperty.value);
+    });
+    this.subscriptions.push(sub);
+  }
 
   /**
    * Set the value of the time input to the current time in HH:MM:SS.mmm format.

@@ -7,73 +7,94 @@ import {
   Component,
   ElementRef,
   inject,
+  OnDestroy,
   OnInit,
   ViewChild
 } from '@angular/core';
-import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
+import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import { Observable, of } from 'rxjs';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import { suppressInvalidInputValue } from '../../validation-utils';
 
 @Component({
   selector: 'lfb-string',
-  imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent],
-  templateUrl: './string.component.html',
-  styles: [`
-    input:disabled {
-      background-color: #f8f9fa !important;
-      border: 2px solid #dee2e6 !important;
-      cursor: not-allowed !important;
-      opacity: 1 !important;
-      color: #6c757d !important;
-    }
-  `]
+  imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
+  templateUrl: './string.component.html'
 })
-export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewChecked {
-
+export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('inputEl') inputElRef!: ElementRef;
-  showTooltip = true;
+  showTooltip = false;
+  enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService, { optional: true });
+  hasAnswerOptions$: Observable<boolean> = of(false);
 
   Array = Array; // To use in templates.
-
   cdr = inject(ChangeDetectorRef);
+
   constructor() {
     super();
   }
 
+  /**
+   * Initializes the string widget and any enableWhen answer-option behavior.
+   *
+   */
   ngOnInit() {
     super.ngOnInit();
+    this.subscribeToErrors();
+    this.initEnableWhenAnswerOptions();
     this.controlClasses = this.controlClasses || '';
   }
 
-  ngAfterViewChecked() {
+  /**
+   * Check whether the rendered input text exceeds its visible width.
+   */
+  hasOverflow(): boolean {
     const el = this.inputElRef?.nativeElement;
     const width = el?.clientWidth;
     if(!width) {
-      return;
+      return false;
     }
+    return el.scrollWidth > width;
+  }
 
-    const nextShowTooltip = el.scrollWidth > width;
-    if(nextShowTooltip !== this.showTooltip) {
-      this.showTooltip = nextShowTooltip;
-      this.cdr.markForCheck();
+  /**
+   * Refresh tooltip visibility immediately before hover or focus display.
+   */
+  updateTooltipVisibility(): void {
+    this.showTooltip = this.hasOverflow();
+  }
+
+  /**
+   * Initializes answer-option autocomplete support when this string field is an enableWhen answer field.
+   *
+   */
+  initEnableWhenAnswerOptions(): void {
+    const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
+    if (canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/) && this.enableWhenAnswerOptionsService) {
+      this.enableWhenAnswerOptionsService.init(this.formProperty, this.control);
+      this.hasAnswerOptions$ = this.enableWhenAnswerOptionsService.hasAnswerOptions$;
     }
   }
 
   /**
    * Get the value shown in the tooltip, formatting JSON fields when requested.
    */
-  getTooltipValue(): string | null {
+  getTooltipValue(): string {
     if(!this.showTooltip) {
-      return null;
+      return '';
     }
     const value = this.formProperty.value;
     if(this.shouldFormatTooltipAsJson()) {
       return this.formatJsonTooltip(value);
     }
-    return value == null ? null : String(value);
+    return value == null ? '' : String(value);
   }
 
   /**
@@ -90,9 +111,9 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
   /**
    * Pretty-print a JSON string for tooltip display, falling back to the original value.
    */
-  private formatJsonTooltip(value: unknown): string | null {
+  private formatJsonTooltip(value: unknown): string {
     if(typeof value !== 'string') {
-      return value == null ? null : String(value);
+      return value == null ? '' : String(value);
     }
     try {
       return JSON.stringify(JSON.parse(value), null, 2);
@@ -100,6 +121,42 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
     catch {
       return value;
     }
+  }
+
+  /**
+   * Gives the answer-options service a chance to attach autocomplete and updates tooltip overflow state.
+   *
+   */
+  ngAfterViewChecked(): void {
+    const el = this.inputElRef?.nativeElement;
+    const width = el?.clientWidth;
+    if(!width) {
+      return;
+    }
+
+    const nextShowTooltip = el.scrollWidth > width;
+    if(nextShowTooltip !== this.showTooltip) {
+      this.showTooltip = nextShowTooltip;
+      this.cdr.markForCheck();
+    }
+  }
+
+  /**
+   * Clears invalid date/time-like values from string-derived widgets.
+   *
+   * @param event - Blur event from the input element.
+   */
+  suppressInvalidValue(event: Event): void {
+    suppressInvalidInputValue(event, (value) => this.formProperty.setValue(value, false), '');
+  }
+
+  /**
+   * Cleans up the answer-options autocomplete service and base widget resources.
+   *
+   */
+  ngOnDestroy() {
+    this.enableWhenAnswerOptionsService?.destroy();
+    super.ngOnDestroy();
   }
 
 }

@@ -3,6 +3,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import { BasePageComponent } from './base-page.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import {FormService} from '../services/form.service';
+import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
 
 describe('BasePageComponent', () => {
   let component: BasePageComponent;
@@ -30,6 +31,43 @@ describe('BasePageComponent', () => {
         .toContain('How do you want to create your form?');
       done();
     });
+  });
+
+  it('should show a compatibility error instead of starting an invalid file export', async () => {
+    const formService = TestBed.inject(FormService);
+    const compatibilityError = new Error(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+    component.formValue = {
+      resourceType: 'Questionnaire',
+      status: 'draft'
+    };
+    spyOn(component, 'resolveSubjectTypeExportQuestionnaire')
+      .and.resolveTo(component.formValue);
+    spyOn(formService, 'convertFromR5').and.throwError(compatibilityError);
+    spyOn(component, 'showError');
+
+    await component.saveToFile('R4');
+
+    expect(component.showError).toHaveBeenCalledOnceWith(compatibilityError);
+  });
+
+  it('should clear extension cardinality selections when loading a Questionnaire', async () => {
+    const cardinalityService = TestBed.inject(ExtensionCardinalityService);
+    const clearSelectionsSpy = spyOn(cardinalityService, 'clearSelections');
+
+    await component.setQuestionnaire({resourceType: 'Questionnaire', status: 'draft'});
+
+    expect(clearSelectionsSpy).toHaveBeenCalledOnceWith();
+  });
+
+  it('should preserve extension cardinality selections when applying server-assigned fields', () => {
+    const cardinalityService = TestBed.inject(ExtensionCardinalityService);
+    const clearSelectionsSpy = spyOn(cardinalityService, 'clearSelections');
+    component.questionnaire = {resourceType: 'Questionnaire', status: 'draft'};
+
+    component.setFieldsAndInvokeChangeDetection({id: 'server-assigned-id'});
+
+    expect(clearSelectionsSpy).not.toHaveBeenCalled();
+    expect(component.questionnaire.id).toBe('server-assigned-id');
   });
 
   describe('parseOpenerUrl()', () => {

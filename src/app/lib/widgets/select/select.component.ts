@@ -176,6 +176,19 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
       this.resetArrayAutocomplete();
     }
   }
+
+  /**
+   * Show the red invalid outline unless the widget opts out for untouched empty values.
+   *
+   * @returns True when the invalid style should be displayed.
+   */
+  shouldShowInvalidStyle(): boolean {
+    if(!this.errors?.length) {
+      return false;
+    }
+    return !(this.schema?.widget?.suppressEmptyInvalidStyle && this.control?.pristine && Util.isEmpty(this.formProperty?.value));
+  }
+
   /**
    * Clean up autocomplete resources.
    */

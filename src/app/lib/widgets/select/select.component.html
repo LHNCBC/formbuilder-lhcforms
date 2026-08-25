@@ -14,8 +14,8 @@
           [formControl]="control"
           name="{{name}}"
           [attr.id]="id+_id"
-          [ngClass]="{invalid: errors}"
-          [attr.aria-invalid]="errors"
+          [ngClass]="{invalid: shouldShowInvalidStyle()}"
+          [attr.aria-invalid]="shouldShowInvalidStyle()"
           (focus)="announceErrors()"
           [attr.disabled]="schema.readOnly ? '' : null"
           class="form-select form-select-sm">
@@ -40,7 +40,7 @@
               type="text"
               class="form-control form-control-sm"
               [attr.id]="id+_id+'_ac'"
-              [attr.aria-invalid]="errors"
+              [attr.aria-invalid]="shouldShowInvalidStyle()"
               [attr.disabled]="schema.readOnly ? '' : null"
               [attr.placeholder]="schema.widget.autocompletePlaceholder || 'Search and select options'"
               (focus)="announceErrors()"
@@ -82,8 +82,8 @@
             [formControl]="control"
             name="{{name}}"
             [attr.id]="id+_id"
-            [ngClass]="{invalid: errors}"
-            [attr.aria-invalid]="errors"
+            [ngClass]="{invalid: shouldShowInvalidStyle()}"
+            [attr.aria-invalid]="shouldShowInvalidStyle()"
             (focus)="announceErrors()"
             [attr.disabled]="schema.readOnly ? '' : null">
             @for (option of filteredArrayOptions; track option.enum[0]) {
@@ -95,12 +95,14 @@
         }
       }
 
-      @for (error of errors; track error.code) {
-        <fa-icon [attr.id]="error.code" [icon]="errorIcon" style="color: red"></fa-icon>
-        @if (formProperty.value && error) {
-          <small
-            class="text-danger form-text" role="alert"
-          >{{error.modifiedMessage || error.originalMessage}}</small>
+      @if (shouldShowInvalidStyle()) {
+        @for (error of errors; track error.code) {
+          <fa-icon [attr.id]="error.code" [icon]="errorIcon" style="color: red"></fa-icon>
+          @if (formProperty.value && error) {
+            <small
+              class="text-danger form-text" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
+          }
         }
       }
 

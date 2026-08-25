@@ -1,4 +1,4 @@
-import {ElementRef, ChangeDetectorRef, Directive, inject, signal} from '@angular/core';
+import {AfterViewInit, ElementRef, ChangeDetectorRef, Directive, inject, OnInit, signal} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
@@ -14,7 +14,7 @@ type FormPropertyNode = FormProperty & {
  * Shared behavior for dialogs that edit one row from a table-backed array field.
  */
 @Directive()
-export abstract class TableRowDialogBase<T> {
+export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
   inputModel: T;
   changedValue: T;
   path: string = '';
@@ -22,7 +22,6 @@ export abstract class TableRowDialogBase<T> {
   dlgContainer: ElementRef;
   disableSave = signal(true);
 
-  dirtyObserver: MutationObserver;
   rowIndex = 0;
   previous_origin: {left: number, top: number};
 
@@ -79,6 +78,16 @@ export abstract class TableRowDialogBase<T> {
   }
 
   /**
+   * Return the stored value used to initialize an existing row.
+   *
+   * Concrete dialogs can override this when the schema-form row value omits
+   * data that is preserved separately.
+   */
+  protected getExistingRowValue(rowProperty: FormProperty): T {
+    return rowProperty.value as T;
+  }
+
+  /**
    * Return the value to use when checking whether the dialog has unsaved changes.
    *
    * @returns Current value used for dirty checking.
@@ -92,7 +101,7 @@ export abstract class TableRowDialogBase<T> {
    */
   ngOnInit() {
     const rawInputModel = this.data.rowIndex >= 0
-      ? this.data.arrayProperty.properties[this.data.rowIndex].value
+      ? this.getExistingRowValue(this.data.arrayProperty.properties[this.data.rowIndex] as FormProperty)
       : this.createNewModel();
     this.inputModel = this.prepareInputModel(rawInputModel);
     this.changedValue = this.inputModel;
@@ -114,24 +123,8 @@ export abstract class TableRowDialogBase<T> {
    * Ng AfterViewInit lifecycle hook.
    */
   ngAfterViewInit() {
-    this.dirtyObserver = new MutationObserver((mutationsList) => {
-      for(const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && (mutation.target as HTMLElement).classList?.contains('ng-dirty')) {
-          this.updateDisableSave();
-          this.cdr.markForCheck();
-          return;
-        }
-      }
-    });
-
-    const formElement = this.dlgContent?.nativeElement.querySelector('form');
-    if (formElement) {
-      this.dirtyObserver.observe(
-        formElement,
-        {attributes: true, attributeFilter: ['class'], subtree: true}
-      );
-    }
-
+    // Dirty state is derived from value changes emitted through onChange(), so no
+    // DOM MutationObserver is needed to detect edits.
     this.disableSave.set(true);
     this.cdr.detectChanges();
   }
@@ -195,13 +188,6 @@ export abstract class TableRowDialogBase<T> {
   }
 
   /**
-   * Clean up observers when the dialog is destroyed.
-   */
-  ngOnDestroy() {
-    this.dirtyObserver?.disconnect();
-  }
-
-  /**
    * Update the disableSave signal based on dirty state, model changes, and validation.
    */
   protected updateDisableSave() {
@@ -235,7 +221,7 @@ export abstract class TableRowDialogBase<T> {
         : {};
       Object.keys(childProperties).forEach((key) => {
         const child = childProperties[key];
-        if (child?.visible === false) {
+        if (child?.visible === false || key.startsWith('__$')) {
           delete value[key];
           return;
         }
@@ -292,8 +278,8 @@ export abstract class TableRowDialogBase<T> {
    *
    * @returns True when the current model differs from the initial model.
    */
-  private hasModelChanged(): boolean {
-    return this.stringifyForChange(this.getCurrentValueForChangeDetection()) !== this.initialValueJson;
+  protected hasModelChanged(currentValue: unknown = this.getCurrentValueForChangeDetection()): boolean {
+    return this.stringifyForChange(currentValue) !== this.initialValueJson;
   }
 
   /**
