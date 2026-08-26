@@ -149,7 +149,7 @@ describe('Util', () => {
     });
   });
 
-  it('should remove choice-layout extensions from incompatible R4/STU3 item types without changing the source', () => {
+  it('should apply R4/STU3 choice-layout compatibility without changing the source', () => {
     const choiceOrientation = {
       url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation',
       valueCode: 'horizontal'
@@ -184,11 +184,15 @@ describe('Util', () => {
       ]
     };
 
-    const cleaned = Util.removeInvalidChoiceLayoutExtensions(questionnaire);
+    const cleanedR4 = Util.removeInvalidChoiceLayoutExtensions(questionnaire, 'R4');
+    const cleanedStu3 = Util.removeInvalidChoiceLayoutExtensions(questionnaire, 'STU3');
 
-    expect(cleaned.item[0].extension).toEqual([choiceOrientation, columnCount]);
-    expect(cleaned.item[1].extension).toBeUndefined();
-    expect(cleaned.item[1].item[0].extension).toBeUndefined();
+    expect(cleanedR4.item[0].extension).toEqual([choiceOrientation, columnCount]);
+    expect(cleanedR4.item[1].extension).toEqual([columnCount, legacyColumnCount]);
+    expect(cleanedR4.item[1].item[0].extension).toBeUndefined();
+    expect(cleanedStu3.item[0].extension).toEqual([choiceOrientation, columnCount]);
+    expect(cleanedStu3.item[1].extension).toBeUndefined();
+    expect(cleanedStu3.item[1].item[0].extension).toBeUndefined();
     expect(questionnaire.item[1].extension).toEqual([choiceOrientation, columnCount, legacyColumnCount]);
     expect(questionnaire.item[1].item[0].extension).toEqual([choiceOrientation]);
   });

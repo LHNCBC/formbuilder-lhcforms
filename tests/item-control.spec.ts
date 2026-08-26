@@ -361,7 +361,7 @@ test.describe('Item control', () => {
         ]);
       });
 
-      test('should omit incompatible choice-layout extensions from R4 and STU3 exports', async ({ page }) => {
+      test('should apply R4 and STU3 choice-layout export compatibility', async ({ page }) => {
         await prepareAnswerListItem(page);
 
         await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
@@ -381,7 +381,9 @@ test.describe('Item control', () => {
 
           json = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
           expect(json.item[0].type).toBe('string');
-          expect(json.item[0].extension).toEqual([itemControlExtensions['radio-button']]);
+          expect(json.item[0].extension).toEqual(version === 'R4'
+            ? [itemControlExtensions['radio-button'], columnCountExtension(3)]
+            : [itemControlExtensions['radio-button']]);
 
           await PWUtils.selectDataType(page, 'coding');
         }
