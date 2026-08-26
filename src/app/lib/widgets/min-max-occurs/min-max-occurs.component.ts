@@ -7,12 +7,12 @@ import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {EXTENSION_URL_MIN_OCCURS, EXTENSION_URL_MAX_OCCURS} from '../../constants/constants';
-import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../../../fhir';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {LabelComponent} from '../label/label.component';
 import {IntegerDirective} from '../../directives/integer.directive';
+import {mergeIntegerExtension} from './min-max-occurs.utils';
 
 @Component({
   selector: 'lfb-min-max-occurs',
@@ -23,12 +23,15 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   private extensionsService = inject(ExtensionsService);
 
   static seqNum = 0;
+  readonly fhirIntegerMax = 2147483647;
   elementId: string;
   minOccurs: number | null = null;
   maxOccurs: number | null = null;
   minOccursAllowed = false;
   validationError: string | null = null;
   private syncingExtensions = false;
+  private minOccursDirty = false;
+  private maxOccursDirty = false;
 
   constructor() {
     super();
@@ -58,6 +61,8 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
         this.minOccurs = 0;
         this.maxOccurs = null;
         this.validationError = null;
+        this.minOccursDirty = false;
+        this.maxOccursDirty = false;
         this.removeOccursExtensions();
       } else {
         this.initFromExtensions();
@@ -72,7 +77,9 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
         this.validate();
       } else {
         this.minOccurs = 0;
-        this.syncExtensions();
+        this.minOccursDirty = false;
+        this.removeMinOccursExtension();
+        this.validate();
       }
     });
     this.subscriptions.push(sub);
@@ -87,6 +94,8 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
     this.minOccursAllowed = this.formProperty.findRoot().getProperty('required').value === true;
     this.minOccurs = this.minOccursAllowed ? minExt?.valueInteger ?? 1 : 0;
     this.maxOccurs = maxExt?.valueInteger ?? null;
+    this.minOccursDirty = false;
+    this.maxOccursDirty = false;
     if (minExt && (!this.minOccursAllowed || minExt.valueInteger === 1)) {
       this.removeMinOccursExtension();
     }
@@ -104,7 +113,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
       return;
     }
     this.minOccurs = this.parseInteger(value) ?? 1;
-    this.validate();
+    this.minOccursDirty = true;
     this.syncExtensions();
   }
 
@@ -114,7 +123,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
    */
   onMaxChange(value: string) {
     this.maxOccurs = this.parseInteger(value);
-    this.validate();
+    this.maxOccursDirty = true;
     this.syncExtensions();
   }
 
@@ -134,12 +143,16 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   }
 
   /**
-   * Validate min <= max constraint.
+   * Validate occurrence values against the FHIR integer range and min/max constraints.
    *
    * @return - Return true if valid, false if invalid. Sets validationError message if invalid.
    */
   validate(): boolean {
-    if (this.minOccursAllowed && this.minOccurs != null && this.minOccurs < 1) {
+    if (this.minOccurs != null && !this.isFhirInteger(this.minOccurs)) {
+      this.validationError = 'Min occurs must be a signed 32-bit integer.';
+    } else if (this.maxOccurs != null && !this.isFhirInteger(this.maxOccurs)) {
+      this.validationError = 'Max occurs must be a signed 32-bit integer.';
+    } else if (this.minOccursAllowed && this.minOccurs != null && this.minOccurs < 1) {
       this.validationError = 'Min occurs must be greater than or equal to 1.';
     } else if (this.maxOccurs != null && this.maxOccurs <= 1) {
       this.validationError = 'Max occurs must be greater than 1.';
@@ -153,12 +166,21 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   }
 
   /**
-   * Persist min/max extensions only when the current UI values are valid.
-   * Invalid edited values remain visible in the UI but remove both extensions from output.
+   * Check whether a value is within the range of the FHIR integer primitive.
+   *
+   * @param value - Integer value to check.
+   * @return - True when the value is a signed 32-bit integer.
+   */
+  private isFhirInteger(value: number): boolean {
+    return Number.isInteger(value) && value >= -2147483648 && value <= this.fhirIntegerMax;
+  }
+
+  /**
+   * Persist edited min/max extensions only when the current UI values are valid.
+   * Invalid edited values remain visible while the last valid extensions are retained.
    */
   syncExtensions() {
     if (!this.validate()) {
-      this.removeOccursExtensions();
       return;
     }
 
@@ -167,8 +189,14 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
       const minExtensionValue = this.minOccursAllowed && this.minOccurs != null && this.minOccurs > 1
         ? this.minOccurs
         : null;
-      this.updateExtension(EXTENSION_URL_MIN_OCCURS, minExtensionValue);
-      this.updateExtension(EXTENSION_URL_MAX_OCCURS, this.maxOccurs);
+      if (this.minOccursDirty) {
+        this.updateExtension(EXTENSION_URL_MIN_OCCURS, minExtensionValue);
+      }
+      if (this.maxOccursDirty) {
+        this.updateExtension(EXTENSION_URL_MAX_OCCURS, this.maxOccurs);
+      }
+      this.minOccursDirty = false;
+      this.maxOccursDirty = false;
     } finally {
       this.syncingExtensions = false;
     }
@@ -201,17 +229,15 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   }
 
   /**
-   * Update or remove a single extension by URL.
+   * Update or remove a single extension by URL while retaining its metadata.
    *
    * @param extUrl - URI of the extension to update, either min occurs or max occurs.
    * @param value - Integer value to set for the extension. If null, the extension will be removed.
    */
   updateExtension(extUrl: fhirPrimitives.url, value: number | null) {
     if (value != null) {
-      const ext: fhir.Extension = {
-        url: extUrl,
-        valueInteger: value
-      };
+      const currentExtension = this.extensionsService.getFirstExtensionByUrl(extUrl);
+      const ext = mergeIntegerExtension(currentExtension, extUrl, value);
       this.extensionsService.resetExtension(extUrl, this.extensionsService.updateExtension(ext), 'valueInteger', false);
     } else {
       this.extensionsService.removeExtensionsByUrl(extUrl);

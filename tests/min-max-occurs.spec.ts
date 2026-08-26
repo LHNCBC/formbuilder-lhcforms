@@ -256,7 +256,7 @@ test.describe('Min/Max Occurs', () => {
       await expect(getValidationAlert(page)).toContainText('Min occurs must be less than or equal to Max occurs');
     });
 
-    test('should keep invalid UI values visible but remove min/max extensions from JSON', async ({ page }) => {
+    test('should keep invalid UI values visible while retaining the last valid extensions', async ({ page }) => {
       const minInput = getMinInput(page);
       const maxInput = getMaxInput(page);
 
@@ -275,8 +275,14 @@ test.describe('Min/Max Occurs', () => {
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
       const extensions = qJson.item[0].extension || [];
 
-      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
-      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({
+        url: MIN_OCCURS_EXT_URL,
+        valueInteger: 2
+      });
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 4
+      });
     });
 
     test('should clear warning when min <= max', async ({ page }) => {
@@ -321,6 +327,33 @@ test.describe('Min/Max Occurs', () => {
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
       const extensions = qJson.item[0].extension || [];
       expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
+    });
+
+    test('should reject values above the FHIR signed 32-bit integer range', async ({ page }) => {
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+
+      await minInput.fill('2');
+      await minInput.dispatchEvent('change');
+      await maxInput.fill('4');
+      await maxInput.dispatchEvent('change');
+
+      await maxInput.fill('2147483648');
+      await maxInput.dispatchEvent('change');
+
+      await expect(maxInput).toHaveValue('2147483648');
+      await expect(getValidationAlert(page)).toContainText('Max occurs must be a signed 32-bit integer');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({
+        url: MIN_OCCURS_EXT_URL,
+        valueInteger: 2
+      });
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 4
+      });
     });
   });
 
@@ -408,7 +441,7 @@ test.describe('Min/Max Occurs', () => {
       await expect(getMaxInput(page)).toHaveValue('');
     });
 
-    test('should preserve imported invalid min/max extensions until the user edits them', async ({ page }) => {
+    test('should preserve imported invalid min/max extensions after another invalid edit', async ({ page }) => {
       await PWUtils.clickTreeNode(page, 'Repeating invalid occurs');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
 
@@ -431,8 +464,43 @@ test.describe('Min/Max Occurs', () => {
       await expect(maxInput).toHaveValue('3');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
       extensions = qJson.item[5].extension || [];
-      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
-      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 6 });
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({ url: MAX_OCCURS_EXT_URL, valueInteger: 3 });
+    });
+
+    test('should preserve extension metadata when editing occurrence values', async ({ page }) => {
+      await PWUtils.clickTreeNode(page, 'Repeating with occurrence metadata');
+      await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
+
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+      await minInput.fill('3');
+      await minInput.dispatchEvent('change');
+
+      let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      let extensions = qJson.item[7].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({
+        id: 'min-occurs-extension',
+        url: MIN_OCCURS_EXT_URL,
+        valueInteger: 3
+      });
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        id: 'max-occurs-extension',
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 5
+      });
+
+      await maxInput.fill('6');
+      await maxInput.dispatchEvent('change');
+
+      qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      extensions = qJson.item[7].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)?.id).toBe('min-occurs-extension');
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        id: 'max-occurs-extension',
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 6
+      });
     });
   });
 
@@ -553,6 +621,25 @@ test.describe('Min/Max Occurs', () => {
       const q1Exts = qJson.item[0].extension || [];
       expect(q1Exts.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 2 });
       expect(q1Exts.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({ url: MAX_OCCURS_EXT_URL, valueInteger: 5 });
+    });
+
+    test('should restore persisted values after navigating away from an invalid edit', async ({ page }) => {
+      await PWUtils.clickTreeNode(page, 'Repeating with both');
+      const minInput = getMinInput(page);
+      await minInput.fill('6');
+      await minInput.dispatchEvent('change');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be less than or equal to Max occurs');
+
+      await PWUtils.clickTreeNode(page, 'Repeating min only');
+      await PWUtils.clickTreeNode(page, 'Repeating with both');
+      await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
+
+      await expect(getMinInput(page)).toHaveValue('2');
+      await expect(getMaxInput(page)).toHaveValue('5');
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 2 });
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({ url: MAX_OCCURS_EXT_URL, valueInteger: 5 });
     });
   });
 });

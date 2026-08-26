@@ -90,7 +90,25 @@
           "valueInteger": 8
         }
       ]
+    },
+    {
+      "linkId": "q8",
+      "text": "Repeating with occurrence metadata",
+      "type": "string",
+      "required": true,
+      "repeats": true,
+      "extension": [
+        {
+          "id": "min-occurs-extension",
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 2
+        },
+        {
+          "id": "max-occurs-extension",
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 5
+        }
+      ]
     }
   ]
 }
-

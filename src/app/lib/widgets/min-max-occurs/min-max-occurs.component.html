@@ -22,6 +22,7 @@
           [attr.aria-labelledby]="'minOccursLabel_'+elementId"
           [disabled]="!minOccursAllowed"
           [min]="minOccursAllowed ? 1 : 0"
+          [max]="fhirIntegerMax"
           [placeholder]="minOccursAllowed ? '1' : '0'" />
       </div>
 
@@ -36,6 +37,7 @@
           (change)="onMaxChange($any($event.target).value)"
           [attr.aria-labelledby]="'maxOccursLabel_'+elementId"
           [min]="2"
+          [max]="fhirIntegerMax"
           placeholder="*" />
       </div>
     </div>
