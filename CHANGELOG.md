@@ -2,10 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.4.0] 2026-08-18
+## [12.4.0] 2026-08-26
 ### Added
 - Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
   via a combined Min/Max Occurs widget that is shown when an item allows repeats.
+
+## [12.3.1] 2026-08-20
+### Fixed
+- Fixed preview failing to render for an item configured with both enableWhenExpression
+  and enableWhen condition and behavior.
 
 ## [12.3.0] 2026-08-10
 ### Added
