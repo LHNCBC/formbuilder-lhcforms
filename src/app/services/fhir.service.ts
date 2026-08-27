@@ -1,7 +1,7 @@
 import {Injectable, inject} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
 import * as fhirClient from 'fhirclient';
-import {defer, from, mergeMap, Observable, of, timeout, TimeoutError} from 'rxjs';
+import {defer, from, mergeMap, Observable, of, Subject, timeout, TimeoutError} from 'rxjs';
 import fhir from 'fhir/r4';
 import mimeDb from 'mime-db';
 import {fhirPrimitives} from '../fhir';
@@ -80,6 +80,9 @@ export class FhirService {
     }
   ];
 
+  private readonly defaultFhirServer = this.fhirServerList[0];
+  private readonly fhirServerChanges = new Subject<FHIRServer>();
+  readonly fhirServerChanges$ = this.fhirServerChanges.asObservable();
   currentServer: FHIRServer;
   smartClient: Client;
 
@@ -88,7 +91,7 @@ export class FhirService {
   httpClient: HttpClient = inject<HttpClient>(HttpClient);
   constructor() {
     // this.smartClient = FHIR.client(window.location.href+'fhir-api');
-    this.setFhirServer(this.fhirServerList[0]);
+    this.setFhirServer(this.defaultFhirServer);
   }
 
     /**
@@ -99,14 +102,18 @@ export class FhirService {
      * @returns - An http promise
      */
     create(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
-      // There is no equivalent field to identify the author/publisher in lforms.
-      // This field could be handy to retrieve user's resources from fhir server.
-      // For now combine name and email to make it unique and searchable by name.
-      let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
-      this.assignPublisher(res, userProfile);
+      return defer(() => {
+        // There is no equivalent field to identify the author/publisher in lforms.
+        // This field could be handy to retrieve user's resources from fhir server.
+        // For now combine name and email to make it unique and searchable by name.
+        let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+        this.assignPublisher(res, userProfile);
 
-      res = this.formService.convertFromR5(res, this.getFhirServer().version);
-      return this.promiseToObservable(this.smartClient.create(res));
+        res = this.formService.convertFromR5(res, this.getFhirServer().version);
+        return this.promiseToObservable(
+          this.smartClient.create(res) as unknown as Promise<fhir.Resource>
+        );
+      });
     };
 
 
@@ -118,10 +125,14 @@ export class FhirService {
      * @returns - An http promise
      */
     update(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
-      let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
-      this.assignPublisher(res, userProfile);
-      res = this.formService.convertFromR5(res, this.getFhirServer().version);
-      return this.promiseToObservable(this.smartClient.update(res));
+      return defer(() => {
+        let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+        this.assignPublisher(res, userProfile);
+        res = this.formService.convertFromR5(res, this.getFhirServer().version);
+        return this.promiseToObservable(
+          this.smartClient.update(res) as unknown as Promise<fhir.Resource>
+        );
+      });
     };
 
 
@@ -181,10 +192,14 @@ export class FhirService {
     /**
      * Get FHIR results using a url. The paginated results are obtained using a url in the result bundle
      * @param url - The URL referring to the resource bundle on the FHIR server.
+     * @param client - FHIR client that should perform the request.
      * @returns - FHIR resource bundle
      */
-    getBundleByUrl(url: fhirPrimitives.url): Observable<fhir.Bundle> {
-      return this.promiseToObservable(this.smartClient.request(url));
+    getBundleByUrl(
+      url: fhirPrimitives.url,
+      client: Client = this.smartClient
+    ): Observable<fhir.Bundle> {
+      return this.promiseToObservable(client.request(url));
     };
 
     /**
@@ -216,10 +231,19 @@ export class FhirService {
     setFhirServer(fhirServer: FHIRServer): void {
       this.currentServer = fhirServer;
       this.smartClient = fhirClient.client(this.currentServer.endpoint);
+      this.fhirServerChanges.next(fhirServer);
     };
 
     getFhirServer(): FHIRServer {
       return this.currentServer;
+    }
+
+    /**
+     * Get the built-in FHIR server used when no user-selected server should
+     * influence an application-level lookup.
+     */
+    getDefaultFhirServer(): FHIRServer {
+      return this.defaultFhirServer;
     }
 
     /**

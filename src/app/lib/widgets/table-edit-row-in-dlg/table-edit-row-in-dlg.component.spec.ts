@@ -71,4 +71,18 @@ describe('TableEditRowInDlgComponent', () => {
     expect(savedValue.valueContactDetail.name).toBe('Support');
     expect(JSON.stringify(savedValue.valueContactDetail.telecom ?? null)).not.toContain('555-0100');
   });
+
+  it('should remove a synthetic empty row without deferred work', () => {
+    const placeholder = {value: null};
+    const removeItem = jasmine.createSpy('removeItem');
+    component.formProperty = {
+      properties: [placeholder],
+      removeItem
+    } as unknown as ArrayProperty;
+    component.addDefaultItemIfEmpty = false;
+
+    (component as unknown as {removeSyntheticEmptyRow: () => void}).removeSyntheticEmptyRow();
+
+    expect(removeItem).toHaveBeenCalledOnceWith(placeholder);
+  });
 });

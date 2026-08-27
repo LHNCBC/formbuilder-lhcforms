@@ -49,13 +49,20 @@ export type Layout = {
   formLayout: any,
   widgets: any,
   widgetsMap: any,
-  overridePropertyLabels: any
+  overridePropertyLabels: any,
+  widgetPresetMap?: {[widgetName: string]: string}
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class FormService {
+  // Safety cap for total Identifier levels rendered by schema expansion.
+  // Level count includes the top-level Identifier row itself.
+  private static readonly IDENTIFIER_RECURSION_LEVELS = 10;
+  static readonly R5_QUANTITY_COMPARATOR_ERROR =
+    'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
+
   private _document = inject<Document>(DOCUMENT);
   private modalService = inject(NgbModal);
   private http = inject(HttpClient);
@@ -67,6 +74,7 @@ export class FormService {
   _validationStatusChanged$: Subject<void> = new Subject<void>();
 
   private _loading = false;
+  private windowOpenerNotificationError = '';
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
@@ -83,6 +91,7 @@ export class FormService {
   flSchema: any = {properties: {}};
   valueSetSchema: any = {properties: {}};
   extensionSchema: any = {properties: {}};
+  usageContextSchema: any = {properties: {}};
   binarySchema: any = {properties: {}};
   identifierSchema: any = {properties: {}};
 
@@ -157,6 +166,7 @@ export class FormService {
         ngxVSSchema: ISchema,
         vsLayout: Layout,
         extLayout: Layout,
+        usageContextLayout: Layout,
         identifierLayout: Layout;
 
       const assetPaths = [
@@ -168,7 +178,9 @@ export class FormService {
         'assets/ngx-vs.schema.json5',
         'assets/value-set-fields-layout.json5',
         'assets/extension-fields-layout.json5',
+        'assets/usage-context-fields-layout.json5',
         'assets/identifier-fields-layout.json5',
+        'assets/shared-widget-presets.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];
@@ -179,7 +191,17 @@ export class FormService {
       ngxVSSchema = results[assetPaths[5]];
       vsLayout = results[assetPaths[6]];
       extLayout = results[assetPaths[7]];
-      identifierLayout = results[assetPaths[8]];
+      usageContextLayout = results[assetPaths[8]];
+      identifierLayout = results[assetPaths[9]];
+      const sharedWidgetPresets = results[assetPaths[10]]?.presets || {};
+      [
+        flLayout,
+        itemLayout,
+        vsLayout,
+        extLayout,
+        usageContextLayout,
+        identifierLayout
+      ].forEach((layout) => this.applyWidgetPresets(layout, sharedWidgetPresets));
       const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
       const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
@@ -198,6 +220,7 @@ export class FormService {
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
       });
+      this.addIdentifierToValueSetReferences(ngxVSSchema);
       extSchema.widget = {id: 'row-layout', keyField: '/__$valueType'};
       this.schemaService.addDefaultWidgets(extSchema, extLayout);
       this.addValueXFieldsToExtensionLayout(extSchema);
@@ -216,6 +239,18 @@ export class FormService {
       this.identifierSchema.formLayout = identifierLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
       this.overrideFieldLabelsFromLayout(this.identifierSchema, identifierLayout);
+
+      this.addIdentifierToUsageContextReference(this.flSchema?.properties?.useContext?.items, identifierLayout, false);
+      this.usageContextSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.useContext?.items || {type: 'object', properties: {}}));
+      delete this.usageContextSchema.properties?.__$valueSummary;
+      this.usageContextSchema.definitions = JSON.parse(JSON.stringify(this.flSchema.definitions || {}));
+      this.removeUsageContextRangeComparators(this.usageContextSchema);
+      this.addValueTypeToUsageContextSchema(this.usageContextSchema);
+      this.addIdentifierToUsageContextReference(this.usageContextSchema, identifierLayout, true);
+      this.usageContextSchema.widget = {id: 'row-layout'};
+      this.usageContextSchema.formLayout = usageContextLayout?.formLayout;
+      this.overrideSchemaWidgetFromLayout(this.usageContextSchema, usageContextLayout);
+      this.overrideFieldLabelsFromLayout(this.usageContextSchema, usageContextLayout);
       
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
@@ -354,6 +389,31 @@ export class FormService {
   }
 
   /**
+   * Resolve the shared widget presets explicitly requested by a feature layout.
+   *
+   * Feature-local widget definitions take precedence, allowing an intentional
+   * specialization without changing other preset consumers.
+   *
+   * @param layout - Feature layout containing an optional local-to-preset map.
+   * @param presets - Shared, deliberately named widget definitions.
+   */
+  applyWidgetPresets(layout: Layout, presets: {[presetName: string]: any}): void {
+    if(!layout?.widgetPresetMap) {
+      return;
+    }
+
+    const resolvedWidgets: {[widgetName: string]: any} = {};
+    Object.entries(layout.widgetPresetMap).forEach(([widgetName, presetName]) => {
+      const preset = presets[presetName];
+      if(!preset) {
+        throw new Error(`Unknown widget preset "${presetName}" requested for "${widgetName}".`);
+      }
+      resolvedWidgets[widgetName] = JSON.parse(JSON.stringify(preset));
+    });
+    layout.widgets = {...resolvedWidgets, ...(layout.widgets || {})};
+  }
+
+  /**
    * Override field labels with custom labels. By default, title attribute of the field is used as label. To override default label,
    * custom labels are defined in layout file.
    * @param schema - Schema object.
@@ -392,10 +452,57 @@ export class FormService {
   }
 
   /**
+   * Clone UsageContext dialog schema.
+   */
+  cloneUsageContextSchema() {
+    return JSON.parse(JSON.stringify(this.usageContextSchema));
+  }
+
+  /**
    * Clone identifier dialog schema.
    */
-  cloneIdentifierSchema() {
-    return JSON.parse(JSON.stringify(this.identifierSchema));
+  cloneIdentifierSchema(maxVisibleAssignerDepth = FormService.IDENTIFIER_RECURSION_LEVELS - 1) {
+    const schema = JSON.parse(JSON.stringify(this.identifierSchema));
+    this.trimIdentifierAssignerRecursion(schema, maxVisibleAssignerDepth);
+    return schema;
+  }
+
+  /**
+   * Add a UI-only value type selector to UsageContext and show only the selected value[x].
+   *
+   * @param schema - UsageContext schema used by the edit dialog.
+   */
+  private addValueTypeToUsageContextSchema(schema: any) {
+    if(!schema?.properties) {
+      return;
+    }
+    const valueTypes = ['valueCodeableConcept', 'valueQuantity', 'valueRange', 'valueReference'];
+    schema.properties.__$valueType = {
+      type: 'string',
+      title: 'Value',
+      enum: valueTypes,
+      widget: {id: 'select'}
+    };
+    valueTypes.forEach((valueType) => {
+      if(schema.properties[valueType]) {
+        schema.properties[valueType].visibleIf = {
+          '__$valueType': [valueType]
+        };
+      }
+    });
+  }
+
+  /**
+   * Remove Quantity.comparator from UsageContext Range endpoints.
+   *
+   * The generated JSON schema reuses Quantity for Range.low/high, but FHIR
+   * prohibits comparators on Range boundaries.
+   *
+   * @param schema - UsageContext dialog schema to constrain.
+   */
+  private removeUsageContextRangeComparators(schema: any): void {
+    delete schema?.properties?.valueRange?.properties?.low?.properties?.comparator;
+    delete schema?.properties?.valueRange?.properties?.high?.properties?.comparator;
   }
 
   /**
@@ -458,6 +565,105 @@ export class FormService {
         ]
       }))
     };
+  }
+
+  /**
+   * Trim visible Identifier.assigner.identifier recursion while preserving hidden data.
+   *
+   * @param schema - Identifier schema node to trim.
+   * @param depth - Number of visible assigner.identifier table levels to keep.
+   */
+  private trimIdentifierAssignerRecursion(schema: any, depth: number): void {
+    const assignerProps = schema?.properties?.assigner?.properties;
+    if(!assignerProps) {
+      return;
+    }
+
+    if(depth <= 0) {
+      delete assignerProps.identifier;
+      schema.properties.assigner.additionalProperties = true;
+      return;
+    }
+
+    const nestedIdentifier = assignerProps.identifier?.items || assignerProps.identifier;
+    if(nestedIdentifier) {
+      this.trimIdentifierAssignerRecursion(nestedIdentifier, depth - 1);
+    }
+  }
+
+  /**
+   * Restore Reference.identifier in UsageContext.valueReference.
+   *
+   * The generated schema omits Reference.identifier to avoid circular Reference -> Identifier
+   * recursion. UsageContext needs that field, so the dialog schema wraps it as a max-one
+   * identifier table while the form-level schema keeps the FHIR object shape.
+   *
+   * @param schema - UsageContext schema node to patch.
+   * @param layout - Identifier layout settings for the nested table widget.
+   * @param tableWrapper - True to wrap Reference.identifier as a one-row array table.
+   */
+  private addIdentifierToUsageContextReference(schema: any, layout: Layout, tableWrapper: boolean): void {
+    const referenceProps = schema?.properties?.valueReference?.properties;
+    if(!referenceProps) {
+      return;
+    }
+
+    if(!tableWrapper) {
+      referenceProps.identifier = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || this.identifierSchema));
+      referenceProps.identifier.title = 'Identifier';
+      referenceProps.identifier.description = 'An identifier for the target resource.';
+      return;
+    }
+
+    const identifierTableSchema = JSON.parse(JSON.stringify(this.identifierSchema));
+    delete identifierTableSchema.definitions;
+    this.trimIdentifierAssignerRecursion(identifierTableSchema, 1);
+    referenceProps.identifier = {
+      type: 'array',
+      items: identifierTableSchema,
+      minItems: 0,
+      maxItems: 1,
+      title: 'Identifier',
+      description: 'An identifier for the target resource.',
+      widget: JSON.parse(JSON.stringify(layout?.widgets?.identifierTable || {
+        id: 'identifier',
+        labelPosition: 'left',
+        labelClasses: 'col-sm-2 ps-0 pe-1',
+        controlClasses: 'col-sm-10',
+        addButtonLabel: 'Add new identifier',
+        addDefaultItemIfEmpty: false,
+        showFields: [
+          {field: 'value', col: 4, nolabel: true},
+          {field: 'system', col: 4, nolabel: true},
+          {field: 'use', col: 3, nolabel: true}
+        ]
+      }))
+    };
+  }
+
+  /**
+   * Restore Reference.identifier in the contained ValueSet schema without
+   * recreating the Reference -> Identifier -> assigner -> Reference cycle.
+   *
+   * The scoped Identifier uses an inline, non-recursive assigner Reference.
+   * Deeper imported assigner identifiers remain additional properties so they
+   * survive unrelated ValueSet edits even though this editor does not render
+   * them.
+   *
+   * @param schema - ValueSet resource schema to patch.
+   */
+  private addIdentifierToValueSetReferences(schema: any): void {
+    const referenceSchema = schema?.definitions?.Reference;
+    const identifierSchema = schema?.definitions?.Identifier;
+    if(!referenceSchema?.properties || !identifierSchema?.properties) {
+      return;
+    }
+
+    const scopedIdentifier = JSON.parse(JSON.stringify(identifierSchema));
+    const shallowAssignerReference = JSON.parse(JSON.stringify(referenceSchema));
+    shallowAssignerReference.additionalProperties = true;
+    scopedIdentifier.properties.assigner = shallowAssignerReference;
+    referenceSchema.properties.identifier = scopedIdentifier;
   }
 
   get windowOpenerUrl(): string {
@@ -1288,12 +1494,38 @@ export class FormService {
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
     } else if (version !== 'R5') {
+      const compatibilityError = this.getQuantityComparatorCompatibilityError(fhirQ, version);
+      if(compatibilityError) {
+        throw new Error(compatibilityError);
+      }
       ret = Util.convertQuestionnaire(fhirQ, version);
       AttachmentUtil.normalizeQuestionnaireAttachments(ret, version);
       // Apply FHIR canonical field ordering after version conversion
       ret = Util.orderQuestionnaireFields(ret);
     }
     return ret;
+  }
+
+  /**
+   * Check whether a target FHIR version can represent the Questionnaire's or
+   * its contained resources' UsageContext Quantity comparators without
+   * changing their meaning.
+   *
+   * @param fhirQ - Questionnaire in the internal R5 representation.
+   * @param version - Requested output version.
+   * @returns An explanatory error for an incompatible conversion, otherwise an empty string.
+   */
+  getQuantityComparatorCompatibilityError(fhirQ: fhir.Questionnaire, version: string): string {
+    if(version !== 'R4' && version !== 'STU3') {
+      return '';
+    }
+    const resources = [fhirQ, ...(fhirQ?.contained || [])];
+    const hasR5Comparator = resources.some(
+      (resource) => (resource as fhir.Questionnaire)?.useContext?.some(
+        (usageContext) => (usageContext.valueQuantity?.comparator as string | undefined) === 'ad'
+      )
+    );
+    return hasR5Comparator ? FormService.R5_QUANTITY_COMPARATOR_ERROR : '';
   }
 
   /**
@@ -1321,17 +1553,35 @@ export class FormService {
    *
    * @param data - Data to post.
    */
-  notifyWindowOpener(data: any) {
+  notifyWindowOpener(data: any): boolean {
     if(this._windowOpenerUrl) {
       // Return the data in the requested format
       if(data.questionnaire) {
-        data.questionnaire = this.convertFromR5(
-          data.questionnaire,
-          this._windowOpenerFhirVersion
-        );
+        try {
+          data.questionnaire = this.convertFromR5(
+            data.questionnaire,
+            this._windowOpenerFhirVersion
+          );
+        }
+        catch(error) {
+          console.error('Unable to send the questionnaire to the opener window.', error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if(this.windowOpenerNotificationError !== errorMessage) {
+            this.windowOpenerNotificationError = errorMessage;
+            this.showMessage(
+              'Questionnaire update not sent',
+              `${errorMessage} The opener application has not received the latest Questionnaire.`,
+              MessageType.DANGER
+            );
+          }
+          return false;
+        }
+        this.windowOpenerNotificationError = '';
       }
       window.opener.postMessage(data, this._windowOpenerUrl);
+      return true;
     }
+    return false;
   }
 
 

@@ -38,7 +38,7 @@ export class IdentifierObjComponent implements AfterViewInit {
   @Output() changed = new EventEmitter<fhir.Identifier>();
   @Input() model!: fhir.Identifier;
 
-  identifierSchema = this.formService.cloneIdentifierSchema();
+  identifierSchema = this.formService.cloneIdentifierSchema(1);
   sfFormRootProperty: PropertyGroup;
 
   /**

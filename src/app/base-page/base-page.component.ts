@@ -29,6 +29,7 @@ import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 import {SharedObjectService} from '../services/shared-object.service';
 import {SUBJECT_TYPE_COMPATIBILITY_DIALOG, SubjectTypeService} from '../services/subject-type.service';
+import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
 
 type ExportType = 'CREATE' | 'UPDATE';
 type SubjectTypeExportChoice = 'cancel' | 'export' | 'drop';
@@ -79,6 +80,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
   private appJsonPipe = inject(AppJsonPipe);
   private matDlg = inject(MatDialog);
   private subjectTypeService = inject(SubjectTypeService);
+  private extensionCardinalityService = inject(ExtensionCardinalityService);
 
   constructor() {
     this.acResult = null;
@@ -301,15 +303,23 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * Make
    * @param questionnaire - Input FHIR questionnaire
    * @param confirmSubjectTypeImport - Whether to ask how to handle imported subjectType values invalid in internal R5.
+   * @param clearCardinalitySelections - Whether to clear choices associated with the previous Questionnaire.
    * @return True when the questionnaire was loaded; false when the import was canceled.
    */
-  async setQuestionnaire(questionnaire: fhir.Questionnaire, confirmSubjectTypeImport = false): Promise<boolean> {
+  async setQuestionnaire(
+    questionnaire: fhir.Questionnaire,
+    confirmSubjectTypeImport = false,
+    clearCardinalitySelections = true
+  ): Promise<boolean> {
     let q = this.formService.convertToR5(questionnaire);
     if(confirmSubjectTypeImport) {
       q = await this.resolveSubjectTypeImportQuestionnaire(q, 'R5');
       if(!q) {
         return false;
       }
+    }
+    if(clearCardinalitySelections) {
+      this.extensionCardinalityService.clearSelections();
     }
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
@@ -346,7 +356,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     Object.keys(fieldsObj).forEach((f) => {
       q[f] = fieldsObj[f];
     });
-    this.setQuestionnaire(q);
+    this.setQuestionnaire(q, false, false);
   }
 
   /**
@@ -513,7 +523,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(!exportQuestionnaire) {
       return;
     }
-    const questionnaire = this.formService.convertFromR5(exportQuestionnaire, exportVersion);
+    let questionnaire: fhir.Questionnaire;
+    try {
+      questionnaire = this.formService.convertFromR5(exportQuestionnaire, exportVersion);
+    }
+    catch(error) {
+      this.showError(error);
+      return;
+    }
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;

@@ -56,6 +56,7 @@ export class InitialComponent extends TableEditRowInDlgComponent implements OnIn
     this.attachmentType = this.formProperty.findRoot().getProperty('type')?.value === 'attachment';
     this.addDefaultItemIfEmpty = !this.attachmentType;
     super.ngOnInit();
+    this.addDefaultItemIfEmpty = !this.attachmentType;
     if(!this.attachmentType && this.formProperty.properties.length === 0) {
       this.addItem();
     }

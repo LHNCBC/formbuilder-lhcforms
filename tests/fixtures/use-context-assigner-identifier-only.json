@@ -1,0 +1,28 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Use Context Assigner Identifier Only",
+  "status": "draft",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://terminology.hl7.org/CodeSystem/usage-context-type",
+        "code": "task",
+        "display": "Workflow Task"
+      },
+      "valueReference": {
+        "identifier": {
+          "system": "http://example.org/plans",
+          "value": "plan-identifier-only",
+          "use": "official",
+          "assigner": {
+            "identifier": {
+              "system": "http://example.org/assigners",
+              "value": "assigner-id-only",
+              "use": "secondary"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

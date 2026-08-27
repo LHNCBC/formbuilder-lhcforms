@@ -1,4 +1,4 @@
-<div #dlgContainer class="extension-dlg-container">
+<div #dlgContainer class="lfb-row-dialog extension-dlg-container">
 <h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">Extension
   <button mat-icon-button class="close-button mt-2" (click)="cancel()">
     <mat-icon class="close-icon" matTooltip="Discard changes">close</mat-icon>
@@ -11,8 +11,15 @@
   <div class="container">
     <lfb-extension-obj
                        [model]="inputModel"
+                       [duplicateUrlError]="duplicateUrlError()"
                        (changed)="onChange($event)"
     ></lfb-extension-obj>
+    @if (checkingExtensionCardinality()) {
+      <p class="text-secondary mt-2" role="status">Checking extension cardinality…</p>
+    }
+    @if (cardinalityWarning()) {
+      <p class="alert alert-warning mt-2" role="status">{{cardinalityWarning()}}</p>
+    }
   </div>
 </mat-dialog-content>
 <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
@@ -20,4 +27,3 @@
   <button class="btn btn-primary ms-2" [disabled]="disableSave()" (click)="save()">Save and close</button>
 </mat-dialog-actions>
 </div>
-

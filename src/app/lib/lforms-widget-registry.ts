@@ -68,11 +68,14 @@ import { CodingDisplayComponent } from './widgets/coding-display/coding-display.
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
 import {UnsignedIntegerComponent} from './widgets/unsigned-integer/unsigned-integer.component';
 import { MetaProfileComponent } from './widgets/meta-profile/meta-profile.component';
+import { UsageContextComponent } from './widgets/usage-context/usage-context.component';
+import {UsageContextCodeComponent} from './widgets/usage-context-code/usage-context-code.component';
 import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
 import {InitialComponent} from "./widgets/initial/initial.component";
+import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -90,6 +93,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('instant', InstantComponent);
     this.register('time', TimeComponent);
     this.register('url', StringComponent);
+    this.register('extension-url', ExtensionUrlComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
@@ -144,6 +148,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('enable-when-method', EnableWhenMethodComponent);
     this.register('enable-when-expression', EnableWhenExpressionComponent);
     this.register('meta-profile', MetaProfileComponent);
+    this.register('usage-context', UsageContextComponent);
+    this.register('usage-context-code', UsageContextCodeComponent);
     this.setDefaultWidget(StringComponent);
   }
 }

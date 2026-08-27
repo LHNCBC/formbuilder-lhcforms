@@ -1,23 +1,30 @@
 /**
  * Customize the layout of an integer component from ngx-schema-form.
  */
-import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import {FormProperty, ValidatorRegistry} from '@lhncbc/ngx-schema-form';
-import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {IntegerDirective} from "../../directives/integer.directive";
+import { Observable, of } from 'rxjs';
+import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
 
 @Component({
   selector: 'lfb-integer-widget',
-  imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective],
+  imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
   templateUrl: './integer.component.html',
   styles: []
 })
-export class IntegerComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewInit {
+export class IntegerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private validatorRegistry = inject(ValidatorRegistry);
+  enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService);
+  hasAnswerOptions$: Observable<boolean> = of(false);
+
   protected defaultMinimum: number | null = null;
   protected minimumFloor: number | null = null;
   protected defaultPlaceholder: string | null = null;
@@ -99,6 +106,8 @@ export class IntegerComponent extends LfbOptionControlWidgetComponent implements
    */
   override ngOnInit(): void {
     super.ngOnInit();
+    this.subscribeToErrors();
+    this.initEnableWhenAnswerOptions();
     this.validatorRegistry.register(this.formProperty.path, ((value, formProperty) => {
       return this.getRangeErrors(value, formProperty);
     }) as any);
@@ -111,5 +120,26 @@ export class IntegerComponent extends LfbOptionControlWidgetComponent implements
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.control.setValue(this.formProperty.value);
+  }
+
+  /**
+   * Cleans up the answer-options autocomplete service and base widget resources.
+   *
+   */
+  ngOnDestroy(): void {
+    this.enableWhenAnswerOptionsService.destroy();
+    super.ngOnDestroy();
+  }
+
+  /**
+   * Initializes answer-option autocomplete support when this integer field is an enableWhen answer field.
+   *
+   */
+  private initEnableWhenAnswerOptions(): void {
+    const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
+    if (canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/)) {
+      this.enableWhenAnswerOptionsService.init(this.formProperty, this.control);
+      this.hasAnswerOptions$ = this.enableWhenAnswerOptionsService.hasAnswerOptions$;
+    }
   }
 }

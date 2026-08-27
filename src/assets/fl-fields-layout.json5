@@ -22,6 +22,7 @@
           { field:  "name", col:  12},
           { field:  "identifier", col:  12},
           { field:  "meta", col:  12},
+          { field:  "useContext", col:  12},
           { field:  "subjectType", "col": 12},
           { field:  "date", col:  12},
           { field:  "publisher", col:  12},
@@ -46,6 +47,8 @@
     '$.properties.meta.properties.tag': 'Tags',
     '$.properties.identifier': 'Identifiers',
     '$.properties.meta': 'Meta',
+    '$.properties.useContext': 'Usage Context',
+    '$.properties.useContext.items.properties.__$valueSummary': 'Value',
     '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
     '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
     '$.definitions.Meta.properties.source': 'Source',
@@ -57,19 +60,15 @@
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
   // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgetPresetMap: {
+    inputBox: 'formStringField',
+    textArea: 'formTextareaField',
+    instant: 'formInstantField',
+    'positive-integer': 'formPositiveIntegerField',
+    'unsigned-integer': 'formUnsignedIntegerField'
+  },
+
   widgets: {
-    inputBox: {
-      id: "string",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    textArea: {
-      id: "textarea",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
     inputDate: {
       id: "date",
       labelPosition: "left",
@@ -99,25 +98,6 @@
         {"field": "start", "col": 6},
         {"field": "end", "col": 6}
       ]
-    },
-    instant: {
-      id: "instant",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-3",
-      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
-    },
-    "positive-integer": {
-      id: "positive-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    "unsigned-integer": {
-      id: "unsigned-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
     },
     __$terminologyServer: {
       "id": "terminology-server",
@@ -188,6 +168,20 @@
         {"field": "profile", "col": 12},
         {"field": "security", "col": 12},
         {"field": "tag", "col": 12}
+      ]
+    },
+    usageContext: {
+      "id": "usage-context",
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "noTableLabel": false,
+      "addButtonLabel": "Add Usage Context",
+      "showFields": [
+        {"field": "code.display", "title": "Display", "col": 4, "nolabel": true},
+        {"field": "code.code", "title": "Code", "col": 3, "nolabel": true},
+        {"field": "__$valueSummary", "title": "Value", "col": 4, "nolabel": true}
       ]
     },
     contained: {
@@ -327,6 +321,9 @@
     ],
     metaGroup: [
       '$.properties.meta',
+    ],
+    usageContext: [
+      '$.properties.useContext'
     ],
     extension: [
       '$.properties.extension'

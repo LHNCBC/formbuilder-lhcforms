@@ -4,6 +4,7 @@ import {
   inject,
   ElementRef,
   OnInit,
+  signal,
   AfterViewInit,
   ChangeDetectionStrategy,
   OnDestroy
@@ -17,11 +18,25 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
+import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import fhir from 'fhir/r4';
 import { FormService } from 'src/app/services/form.service';
-import {ExtensionsService} from "../../../services/extensions.service";
-import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
-import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base";
+import {
+  DuplicateUrlErrorState,
+  ExtensionObjComponent
+} from '../extension-obj/extension-obj.component';
+import {ExtensionMaxCardinality, getExtensionMaxCardinality} from '../../extension-defs';
+import {
+  ExtensionCardinalityCandidate,
+  ExtensionCardinalityService
+} from '../../../services/extension-cardinality.service';
+import {Subscription} from 'rxjs';
+import {
+  ExtensionCardinalitySelectionDlgComponent
+} from '../extension-cardinality-selection-dlg/extension-cardinality-selection-dlg.component';
+import {ExtensionsService} from '../../../services/extensions.service';
+import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
+import {FhirService} from '../../../services/fhir.service';
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -64,9 +79,47 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
 
   formService: FormService = inject(FormService);
   extensionsService = inject(ExtensionsService);
+  extensionCardinalityService = inject(ExtensionCardinalityService);
+  fhirService = inject(FhirService);
+  public override ngbModalService = inject(NgbModal);
+  duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
+  checkingExtensionCardinality = signal(false);
+  cardinalityWarning = signal<string | null>(null);
+
+  cardinalityLookupSubscription: Subscription;
+  cardinalitySelectionWaitSubscription: Subscription;
+  cardinalityGenerationSubscription: Subscription;
+  fhirServerSubscription: Subscription;
+  cardinalitySelectionModalRef?: NgbModalRef;
+  activeCardinalitySelection?: {
+    url: string;
+    selectionGeneration: number;
+    serverEndpoint: string;
+  };
+
+  /**
+   * Initialize the row and close this editor if another Questionnaire replaces its data.
+   */
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.cardinalityGenerationSubscription = this.extensionCardinalityService
+      .selectionGenerationChanges$.subscribe(() => {
+        this.activeCardinalitySelection = undefined;
+        const modalRef = this.cardinalitySelectionModalRef;
+        this.cardinalitySelectionModalRef = undefined;
+        modalRef?.dismiss();
+        this.matDialogRef.close(false);
+      });
+    this.fhirServerSubscription = this.fhirService.fhirServerChanges$.subscribe(() => {
+      this.updateDisableSave();
+      this.cdr.markForCheck();
+    });
+  }
 
   /**
    * Create a new Extension row model.
+   *
+   * @returns Empty Extension model.
    */
   protected createNewModel(): fhir.Extension {
     return {url: ''};
@@ -74,6 +127,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
 
   /**
    * Check if the URL field has a valid URI (non-empty).
+   * @returns True when the current URL contains a non-whitespace value.
    */
   private isUrlValid(): boolean {
     const url = (this.changedValue?.url || '').trim();
@@ -81,14 +135,341 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   }
 
   /**
-   * Require a valid URL before saving an Extension row.
+   * Count other extensions with the same URL at this exact scope.
+   * The current row is ignored when editing an existing extension.
+   *
+   * @param url - Extension URL to compare against sibling rows.
+   * @returns Number of matching sibling extensions.
+   */
+  private countMatchingSiblingExtensions(url = (this.changedValue?.url || '').trim()): number {
+    if (!url) {
+      return 0;
+    }
+
+    return (this.data.arrayProperty?.value || []).filter((extension: fhir.Extension, index: number) =>
+      index !== this.data.rowIndex && extension?.url?.trim() === url
+    ).length;
+  }
+
+  /**
+   * Check whether adding the current extension would exceed a finite maximum.
+   *
+   * @param maxCardinality - Resolved maximum cardinality.
+   * @param url - Extension URL whose sibling occurrences should be counted.
+   * @returns True when the proposed occurrence exceeds a known finite maximum.
+   */
+  private wouldExceedMaximum(maxCardinality: ExtensionMaxCardinality, url: string): boolean {
+    return maxCardinality !== '*' && maxCardinality !== 'unknown'
+      && this.countMatchingSiblingExtensions(url) >= Number(maxCardinality);
+  }
+
+  /**
+   * Update Save availability using row changes, URL validity, and resolved cardinality.
+   */
+  protected override updateDisableSave(): void {
+    const url = (this.changedValue?.url || '').trim();
+    this.dismissObsoleteCardinalitySelection(url);
+    const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
+    const localCardinality = getExtensionMaxCardinality(url);
+
+    this.cardinalityWarning.set(null);
+
+    this.cardinalityLookupSubscription?.unsubscribe();
+    this.cardinalitySelectionWaitSubscription?.unsubscribe();
+    if (hasDuplicateUrl && localCardinality === 'unknown') {
+      const selectionGeneration = this.extensionCardinalityService.getSelectionGeneration();
+      const serverEndpoint = this.extensionCardinalityService.getCurrentServerEndpoint();
+      this.checkingExtensionCardinality.set(true);
+      this.applyDuplicateValidation(false, true);
+      this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveCardinality(url)
+        .subscribe((resolution) => {
+          if (this.extensionCardinalityService.getSelectionGeneration() !== selectionGeneration) {
+            this.matDialogRef.close(false);
+            return;
+          }
+          if (this.extensionCardinalityService.getCurrentServerEndpoint() !== serverEndpoint) {
+            this.updateDisableSave();
+            this.cdr.markForCheck();
+            return;
+          }
+          if ((this.changedValue?.url || '').trim() !== url
+            || this.countMatchingSiblingExtensions(url) === 0) {
+            return;
+          }
+
+          if (resolution.status === 'ambiguous') {
+            this.coordinateCardinalitySelection(
+              url,
+              resolution.candidates,
+              selectionGeneration,
+              serverEndpoint
+            );
+            return;
+          }
+
+          if (resolution.status === 'unverified') {
+            this.finishCardinalitySelection(url, 'unknown', true);
+            return;
+          }
+
+          const cardinality = resolution.status === 'resolved'
+            ? resolution.maxCardinality
+            : 'unknown';
+          this.checkingExtensionCardinality.set(false);
+          this.applyDuplicateValidation(this.wouldExceedMaximum(cardinality, url), false, cardinality);
+          this.cdr.markForCheck();
+        });
+      return;
+    }
+
+    this.checkingExtensionCardinality.set(false);
+    this.cardinalityWarning.set(null);
+    this.applyDuplicateValidation(
+      this.wouldExceedMaximum(localCardinality, url),
+      false,
+      localCardinality
+    );
+  }
+
+  /**
+   * Dismiss a selector that no longer belongs to the current URL or resolution context.
+   * @param url - Current normalized extension URL.
+   */
+  private dismissObsoleteCardinalitySelection(url: string): void {
+    const activeSelection = this.activeCardinalitySelection;
+    if (!activeSelection) {
+      return;
+    }
+    const isCurrentSelection = activeSelection.url === url
+      && activeSelection.selectionGeneration
+        === this.extensionCardinalityService.getSelectionGeneration()
+      && activeSelection.serverEndpoint
+        === this.extensionCardinalityService.getCurrentServerEndpoint();
+    if (isCurrentSelection) {
+      return;
+    }
+
+    const modalRef = this.cardinalitySelectionModalRef;
+    this.cardinalitySelectionModalRef = undefined;
+    this.activeCardinalitySelection = undefined;
+    this.extensionCardinalityService.endSelection(
+      activeSelection.url,
+      activeSelection.selectionGeneration,
+      activeSelection.serverEndpoint
+    );
+    modalRef?.dismiss();
+  }
+
+  /**
+   * Open one shared selection dialog or wait for another editor resolving the same definition.
+   * @param url - Canonical extension URL being resolved.
+   * @param candidates - Conflicting StructureDefinition candidates to display.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   */
+  private coordinateCardinalitySelection(
+    url: string,
+    candidates: ExtensionCardinalityCandidate[],
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): void {
+    if (this.cardinalitySelectionModalRef) {
+      return;
+    }
+    if (this.extensionCardinalityService.tryBeginSelection(
+      url,
+      selectionGeneration,
+      serverEndpoint
+    )) {
+      this.openCardinalitySelection(url, candidates, selectionGeneration, serverEndpoint);
+      return;
+    }
+
+    this.waitForCardinalitySelection(url, selectionGeneration, serverEndpoint);
+  }
+
+  /**
+   * Revalidate after the editor coordinating this definition selection releases ownership.
+   * @param url - Canonical extension URL awaiting a user selection.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   */
+  private waitForCardinalitySelection(
+    url: string,
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): void {
+    this.cardinalitySelectionWaitSubscription = this.extensionCardinalityService.waitForSelection(
+      url,
+      selectionGeneration,
+      serverEndpoint
+    ).subscribe(() => {
+      if (this.extensionCardinalityService.getSelectionGeneration() === selectionGeneration) {
+        this.updateDisableSave();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  /**
+   * Apply duplicate validation state and ask the base dialog to recalculate Save availability.
+   *
+   * @param hasDisallowedDuplicateUrl - Whether the proposed occurrence exceeds its maximum.
+   * @param isPending - Whether remote cardinality resolution is still pending.
+   * @param maxCardinality - Cardinality used to construct the validation message.
+   */
+  private applyDuplicateValidation(
+    hasDisallowedDuplicateUrl: boolean,
+    isPending = false,
+    maxCardinality: ExtensionMaxCardinality = 'unknown'
+  ): void {
+    this.duplicateUrlError.set(hasDisallowedDuplicateUrl
+      ? {
+        url: this.changedValue.url.trim(),
+        message: maxCardinality === '1'
+          ? 'An extension with this URL already exists here and does not allow multiple occurrences.'
+          : `This extension allows at most ${maxCardinality} occurrences here.`
+      }
+      : null);
+    this.checkingExtensionCardinality.set(isPending);
+    super.updateDisableSave();
+  }
+
+  /**
+   * Open a dialog for choosing among StructureDefinitions with conflicting maxima.
+   *
+   * @param url - Canonical extension URL being resolved.
+   * @param candidates - Conflicting StructureDefinition candidates to display.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   */
+  private openCardinalitySelection(
+    url: string,
+    candidates: ExtensionCardinalityCandidate[],
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): void {
+    if (this.cardinalitySelectionModalRef) {
+      return;
+    }
+
+    const modalRef = this.ngbModalService.open(ExtensionCardinalitySelectionDlgComponent, {
+      backdrop: 'static',
+      keyboard: false,
+      scrollable: true,
+      size: 'xl'
+    });
+    this.cardinalitySelectionModalRef = modalRef;
+    this.activeCardinalitySelection = {url, selectionGeneration, serverEndpoint};
+    modalRef.componentInstance.candidates = candidates;
+
+    modalRef.closed.subscribe((candidate: ExtensionCardinalityCandidate | null) => {
+      if (this.cardinalitySelectionModalRef !== modalRef) {
+        return;
+      }
+      this.cardinalitySelectionModalRef = undefined;
+      this.activeCardinalitySelection = undefined;
+      if (this.extensionCardinalityService.getSelectionGeneration() !== selectionGeneration) {
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.matDialogRef.close(false);
+        return;
+      }
+      if (this.extensionCardinalityService.getCurrentServerEndpoint() !== serverEndpoint) {
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.updateDisableSave();
+        this.cdr.markForCheck();
+        return;
+      }
+      if ((this.changedValue?.url || '').trim() !== url
+        || this.countMatchingSiblingExtensions(url) === 0) {
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.updateDisableSave();
+        this.cdr.markForCheck();
+        return;
+      }
+      if (candidate) {
+        this.extensionCardinalityService.rememberSelection(
+          url,
+          candidate,
+          selectionGeneration,
+          serverEndpoint
+        );
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.finishCardinalitySelection(
+          url,
+          candidate.maxCardinality,
+          candidate.maxCardinality === 'unknown'
+        );
+      } else {
+        this.extensionCardinalityService.rememberUnverified(url, selectionGeneration, serverEndpoint);
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.finishCardinalitySelection(url, 'unknown', true);
+      }
+    });
+    modalRef.dismissed.subscribe(() => {
+      if (this.cardinalitySelectionModalRef !== modalRef) {
+        return;
+      }
+      this.cardinalitySelectionModalRef = undefined;
+      this.activeCardinalitySelection = undefined;
+      this.waitForCardinalitySelection(url, selectionGeneration, serverEndpoint);
+      this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+      this.applyDuplicateValidation(false, true);
+      this.cdr.markForCheck();
+    });
+  }
+
+  /**
+   * Apply the selected or unverified cardinality result to the extension editor.
+   *
+   * @param url - Canonical URL associated with the completed selection.
+   * @param cardinality - Selected maximum or "unknown".
+   * @param wasUnverified - Whether the selected result has no verified cardinality.
+   */
+  private finishCardinalitySelection(
+    url: string,
+    cardinality: ExtensionMaxCardinality,
+    wasUnverified = false
+  ): void {
+    if ((this.changedValue?.url || '').trim() !== url
+      || this.countMatchingSiblingExtensions(url) === 0) {
+      return;
+    }
+
+    this.checkingExtensionCardinality.set(false);
+    this.cardinalityWarning.set(wasUnverified
+      ? 'Cardinality was not verified. Additional occurrences will be allowed.'
+      : null);
+    this.applyDuplicateValidation(this.wouldExceedMaximum(cardinality, url), false, cardinality);
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Require a valid URL and a completed cardinality check before saving an Extension row.
+   *
+   * @returns True when URL and cardinality validation allow the row to be saved.
    */
   protected override isSaveAllowed(): boolean {
-    return this.isUrlValid();
+    return this.isUrlValid()
+      && !this.duplicateUrlError()
+      && !this.checkingExtensionCardinality();
+  }
+
+  /**
+   * Revalidate cardinality immediately before saving the Extension row.
+   */
+  override save(): void {
+    this.updateDisableSave();
+    if (!this.disableSave()) {
+      super.save();
+    }
   }
 
   /**
    * Refresh Extension helper fields after structural edits such as nested row deletion.
+   *
+   * @param value - Current Extension row value.
+   * @returns Extension value with helper fields refreshed.
    */
   protected override beforeSave(value: fhir.Extension): fhir.Extension {
     const currentValue = this.extensionObj?.sfFormRootProperty
@@ -98,7 +479,30 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   }
 
   /**
+   * Stop observers, subscriptions, and any open cardinality selection dialog.
+   */
+  ngOnDestroy(): void {
+    this.cardinalityLookupSubscription?.unsubscribe();
+    this.cardinalitySelectionWaitSubscription?.unsubscribe();
+    this.cardinalityGenerationSubscription?.unsubscribe();
+    this.fhirServerSubscription?.unsubscribe();
+    if (this.activeCardinalitySelection) {
+      this.extensionCardinalityService.endSelection(
+        this.activeCardinalitySelection.url,
+        this.activeCardinalitySelection.selectionGeneration,
+        this.activeCardinalitySelection.serverEndpoint
+      );
+      this.activeCardinalitySelection = undefined;
+    }
+    const modalRef = this.cardinalitySelectionModalRef;
+    this.cardinalitySelectionModalRef = undefined;
+    modalRef?.dismiss();
+  }
+
+  /**
    * Use the live form-property tree so structural table edits are included in dirty checks.
+   *
+   * @returns Current Extension value represented by the form-property tree.
    */
   protected override getCurrentValueForChangeDetection(): unknown {
     return this.extensionObj?.sfFormRootProperty

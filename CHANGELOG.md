@@ -2,12 +2,31 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.3.0] 2026-08-13
+## [12.4.0] 2026-08-26
 ### Added
 - Added support for the `attachment` item data type. This includes the "Maximum size"
   restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the
   "Mime type" restriction, as well as an initial Attachment value (URL, file upload and
   base64Binary).
+
+## [12.3.1] 2026-08-20
+### Fixed
+- Fixed preview failing to render for an item configured with both enableWhenExpression
+  and enableWhen condition and behavior.
+
+## [12.3.0] 2026-08-10
+### Added
+- Added cardinality validation for general extensions. Duplicate single-occurrence
+  extension URLs are rejected at the same scope with an inline validation message,
+  while known repeatable extensions can be added multiple times.
+- Added form-level support for FHIR Questionnaire Usage Context, including
+  CodeableConcept, Quantity, Range, and Reference values with FHIR validation
+  and version-compatible export handling.
+
+### Changed
+- Refactored option widget inheritance with enableWhen answer option service.
+- Migrated enableWhen answer-option inputs to directive-based wiring (replacing template-level service passing).
+- Updated related template/class markup for enableWhen answer-option inputs in date, string, and time widgets.
 
 ## [12.2.1] 2026-08-04
 ### Changed
@@ -1028,4 +1047,3 @@ ranked higher during the auto-completion.
 - Fixed displaying other in answer list item.
 ### Changed
 - Changed Text and Code fields to be required.
-

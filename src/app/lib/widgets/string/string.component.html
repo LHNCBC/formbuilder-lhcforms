@@ -1,6 +1,6 @@
 @if (schema.widget.id ==='hidden') {
   <input
-    name="{{name}}" type="hidden" [formControl]="control">
+    [attr.name]="name" type="hidden" [formControl]="control">
 } @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     @if (!nolabel) {
@@ -15,12 +15,13 @@
     <div class="col p-0 position-relative">
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text"
+          <input lfbEnableWhenAnswerOptions
+                 [enableWhenAnswerOptionsId]="id"
                  [formControl]="control"
+                 autocomplete="off"
+                 type="text"
                  [attr.id]="id"
-                 class="form-control form-control-sm"
-                 (input)="onInput($event)"
-                 (blur)="suppressInvalidValue($event)" />
+                 class="form-control form-control-sm" />
         </div>
         @if (errors?.length && formProperty.value) {
           @for (error of errors; track error.code) {
@@ -31,7 +32,7 @@
       } @else {
           @if (schema.widget?.suggestions?.length) {
             <input #inputEl #suggestionTypeahead="ngbTypeahead"
-                   [name]="name" [readonly]="schema.readOnly || schema.widget?.readOnly"
+                   [attr.name]="name" [readonly]="schema.readOnly || schema.widget?.readOnly"
                    class="form-control form-control-sm" [ngClass]="controlClasses" type="text"
                    [attr.id]="id+_id" [formControl]="control" [attr.placeholder]="schema.placeholder"
                    [attr.maxLength]="schema.maxLength || null" [attr.minLength]="schema.minLength || null"
@@ -44,14 +45,20 @@
                    [matTooltip]="getTooltipValue()" matTooltipClass="lfb-tooltip-pre-wrap"
                    [lfbDisableControl]="schema.disabled">
           } @else {
-            <input #inputEl [name]="name" [readonly]="(schema.widget.id!=='color') && (schema.readOnly || schema.widget?.readOnly)"
-                   class="form-control form-control-sm" [ngClass]="controlClasses"
-                   [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
-                   [attr.id]="id+_id" [formControl]="control" [attr.placeholder]="schema.placeholder"
-                   [attr.maxLength]="schema.maxLength || null" [attr.minLength]="schema.minLength || null"
-                   [attr.pattern]="schema.pattern || null" [required]="isRequired"
-                   [matTooltip]="getTooltipValue()" matTooltipClass="lfb-tooltip-pre-wrap"
-                   [lfbDisableControl]="schema.disabled">
+            <input #inputEl [attr.name]="name" [readonly]="(schema.widget.id!=='color') && (schema.readOnly || schema.widget?.readOnly)"
+               class="form-control form-control-sm"
+               [ngClass]="controlClasses"
+               [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
+               [attr.id]="id+_id" [formControl]="control" [attr.placeholder]="schema.placeholder"
+               [attr.maxLength]="schema.maxLength || null"
+               [attr.minLength]="schema.minLength || null"
+               [attr.pattern]="schema.pattern || null"
+               [required]="isRequired"
+               (pointerenter)="updateTooltipVisibility()"
+               (focusin)="updateTooltipVisibility()"
+               [matTooltip]="getTooltipValue()"
+               matTooltipClass="lfb-tooltip-pre-wrap"
+               [lfbDisableControl]="schema.disabled">
           }
           @if (control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
             <ul class="mb-0 ps-4">

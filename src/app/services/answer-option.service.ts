@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, distinctUntilChanged, map, Subject } from 'rxjs';
-import { FormProperty, ObjectProperty } from '@lhncbc/ngx-schema-form';
+import { Subject } from 'rxjs';
+import { FormProperty } from '@lhncbc/ngx-schema-form';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
 
@@ -15,6 +15,18 @@ export interface EnableWhenReference {
   enableWhenItemLinkId: string;
   enableWhenItemName: string;
   enableWhenAnswerValue: any;
+}
+
+export interface EnableWhenAnswerOptionsState {
+  hasAnswerOptions: boolean;
+  answerOptionItemLinkId?: string;
+  answerOptionType: string;
+  answerOptions: any[];
+  answerConstraint: string;
+  codingAnswerOptionsHash: { [code: string]: any };
+  codingAnswerOptionsCodes: any[];
+  codingAnswerOptionsBySystem: { [system: string]: any[] };
+  codingAnswerOptionsByAutocompleteItem: { [display: string]: any };
 }
 
 //type CodeMap<T> = { [code: string]: T };
@@ -33,22 +45,23 @@ export class AnswerOptionService {
     }
   } = {};
 
-  private formProperty$ = new BehaviorSubject<FormProperty | ObjectProperty | null>(null);
-  codingAnswerOptionsHash: { [code: string]: any } = {};
-  codingAnswerOptionsCodes: any[] = [];
-  codingAnswerOptionsBySystem: { [system: string]: any } = {};
-  answerOptions: any[] = [];
-  answerConstraint = "optionsOnly";
-  answerOptionItemLinkId;
-  answerOptionType = "string";
-
   radioSelection$ = this.radioSelection.asObservable();
   checkboxSelection$ = this.checkboxSelection.asObservable();
 
+  /**
+   * Emits the selected answer option index for radio-style option controls.
+   *
+   * @param index - Selected answer option index.
+   */
   setRadioSelection(index: number) {
     this.radioSelection.next(index);
   }
 
+  /**
+   * Emits the selected answer option states for checkbox-style option controls.
+   *
+   * @param options - Boolean selection states for answer options.
+   */
   setCheckboxSelection(options: boolean[]) {
     this.checkboxSelection.next(options);
   }
@@ -176,130 +189,167 @@ export class AnswerOptionService {
     return { valid: true };
   }
 
-  setFormProperty(fp: FormProperty) {
-    this.formProperty$.next(fp);
+  /**
+   * Builds a local answer-option state snapshot for an enableWhen answer field.
+   *
+   * @param formProperty - Form property for an enableWhen answer[x] field.
+   * @returns Answer-option state containing display values and coding lookup maps.
+   */
+  getEnableWhenAnswerOptionsState(formProperty: FormProperty): EnableWhenAnswerOptionsState {
+    const state: EnableWhenAnswerOptionsState = {
+      hasAnswerOptions: false,
+      answerOptionType: 'string',
+      answerOptions: [],
+      answerConstraint: 'optionsOnly',
+      codingAnswerOptionsHash: {},
+      codingAnswerOptionsCodes: [],
+      codingAnswerOptionsBySystem: {},
+      codingAnswerOptionsByAutocompleteItem: {}
+    };
+
+    const canonicalPath = (formProperty as any)?.__canonicalPathNotation || '';
+    const match = canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/);
+
+    if (!match || !formProperty?.parent) {
+      return state;
+    }
+
+    state.answerOptionItemLinkId = formProperty.parent.getProperty('question').value;
+    if (!state.answerOptionItemLinkId) {
+      return state;
+    }
+    const node = this.formService.getTreeNodeByLinkId(state.answerOptionItemLinkId);
+    if (!node?.data) {
+      return state;
+    }
+
+    state.answerOptionType = this.getAnswerOptionType(node.data.type);
+    const valueName = Util.getValueFieldName(state.answerOptionType);
+    state.hasAnswerOptions = Array.isArray(node.data.answerOption);
+
+    if (!state.hasAnswerOptions) {
+      return state;
+    }
+
+    if (valueName === 'valueCoding') {
+      // Count bare displays so ambiguous ones are not aliased to an arbitrary coding.
+      const displayCounts = new Map<string, number>();
+      node.data.answerOption.forEach((obj: any) => {
+        const display = obj[valueName]?.display;
+        if (display) {
+          displayCounts.set(display, (displayCounts.get(display) || 0) + 1);
+        }
+      });
+
+      node.data.answerOption.forEach((obj: any, index: number) => {
+        const coding = obj[valueName];
+
+        if (coding) {
+          const key = `ansOpt_${index}`;
+          state.codingAnswerOptionsHash[key] = coding;
+
+          if (coding.code != null) {
+            state.codingAnswerOptionsCodes.push(key);
+          }
+
+          if (coding.system) {
+            if (!state.codingAnswerOptionsBySystem[coding.system]) {
+              state.codingAnswerOptionsBySystem[coding.system] = [];
+            }
+            state.codingAnswerOptionsBySystem[coding.system].push(coding);
+          }
+
+          const autocompleteItem = this.getEnableWhenAutocompleteItemFromCoding(coding, state);
+          state.codingAnswerOptionsByAutocompleteItem[autocompleteItem] = coding;
+          // Only alias by bare display when it unambiguously maps to a single coding.
+          if (coding.display && displayCounts.get(coding.display) === 1) {
+            state.codingAnswerOptionsByAutocompleteItem[coding.display] = coding;
+          }
+        }
+      });
+    }
+
+    const answerOptions = node.data.answerOption
+      .map((ao: any) => ao[valueName])
+      .filter((v: any) => v !== null && v !== undefined)
+      .map((v: any) => {
+        if (typeof v === 'string') {
+          return v;
+        }
+        if (typeof v === 'number') {
+          return String(v);
+        }
+        if (typeof v === 'object' && valueName === 'valueCoding') {
+          return this.getEnableWhenAutocompleteItemFromCoding(v, state);
+        }
+        return undefined;
+      })
+      .filter((v: any) => v !== undefined);
+
+    state.answerOptions = [...new Set(answerOptions)];
+
+    if ('answerConstraint' in node.data) {
+      state.answerConstraint = node.data.answerConstraint;
+    }
+
+    return state;
   }
 
   /**
-   * Observable that determines if the current enableWhen answer references a question item's answerOption.
-   * - Extracts the relevant question node and its answer options based on the canonical path.
-   * - Populates answer option properties and coding hash for efficient lookup.
-   * - Updates the answer constraint if present.
-   * - Emits true if answer options are available for the referenced question, otherwise false.
+   * Normalizes questionnaire item types to the answer option value type used by answerOption.
    *
-   * @returns Observable<boolean> indicating the presence of answer options for the enableWhen answer.
+   * @param itemType - Questionnaire item type from the referenced enableWhen question.
+   * @returns The type used to resolve value[x] and answer[x] fields.
    */
-  hasAnswerOptions$ = this.formProperty$.pipe(
-    map(fp => {
-      const match = fp.__canonicalPathNotation.match(/^enableWhen\.(\d+)\.answer(\w+).*$/);
-
-      if (!match || !fp.parent) {
-        return false;
-      }
-
-      this.answerOptionItemLinkId = fp.parent.getProperty('question').value;
-      const node = this.formService.getTreeNodeByLinkId(this.answerOptionItemLinkId);
-      this.answerOptionType = node.data.type;
-      const valueName = Util.getValueFieldName(this.answerOptionType);
-
-      const hasOptions = ('answerOption' in node.data);
-
-      // Save answerOptions separately (we'll handle below)
-      if (hasOptions) {
-        if (valueName === "valueCoding") {
-
-          this.codingAnswerOptionsHash = {};
-          this.codingAnswerOptionsCodes = [];
-          this.codingAnswerOptionsBySystem = {};
-
-          node.data.answerOption.forEach((obj, index) => {
-            const coding = obj[valueName];
-
-            if (coding) {
-              // Use code if available, otherwise create a fallback key
-              const key = `ansOpt_${index}`;
-              this.codingAnswerOptionsHash[key] = coding;
-
-              // Only add real codes to the codes array
-              if (coding.code != null) {
-                this.codingAnswerOptionsCodes.push(key);
-              }
-
-              // Index by system for better lookup
-              if (coding.system) {
-                if (!this.codingAnswerOptionsBySystem[coding.system]) {
-                  this.codingAnswerOptionsBySystem[coding.system] = [];
-                }
-                this.codingAnswerOptionsBySystem[coding.system].push(coding);
-              }
-            }
-          });
-        }
-
-        this.answerOptions = [...new Set(
-          node.data.answerOption
-            .map(ao => ao[valueName])
-            .filter(v => v !== null && v !== undefined)
-            .map(v => {
-              if (typeof v === 'string') {
-                return v;
-              }
-              if (typeof v === 'number') {
-                return String(v);
-              }
-              if (typeof v === 'object' && valueName === "valueCoding") {
-                return this.getAutocompleteItemFromCoding(v);
-              }
-              return undefined;
-            })
-            .filter(v => v !== undefined)
-        )];
-      }
-
-      if (hasOptions && 'answerConstraint' in node.data) {
-        this.answerConstraint = node.data.answerConstraint;
-      }
-
-      return hasOptions;
-    }),
-    distinctUntilChanged()
-  );
+  private getAnswerOptionType(itemType: string): string {
+    return itemType === 'choice' || itemType === 'open-choice' ? 'coding' : itemType;
+  }
 
   /**
-   * Returns a display string for an answer option coding object.
+   * Returns the enableWhen answer coding label used by the autocomplete UI.
    * If both display and code are present, returns "display (code)".
    * If only display is present, returns display.
-   * If only code is present, returns code.
+   * If only code is present, returns "(code)".
    * If display is missing, attempts to look up the display value from the codingAnswerOptionsHash
    * using the code and matching system.
    *
    * @param coding - The coding object containing code, display, and system.
-   * @returns A formatted string for use in autocomplete UI.
+   * @param state - Optional answer-options state used for display lookup.
+   * @returns A formatted string that includes system when available.
    */
-  getAutocompleteItemFromCoding(coding: any): string {
+  getEnableWhenAutocompleteItemFromCoding(coding: any, state?: EnableWhenAnswerOptionsState): string {
     const code = coding.code ?? '';
-    let hashEntry = this.codingAnswerOptionsHash?.[code];
-    let display = coding.display;
-
-    // If not found by code, try finding by system match
-    if (!display && !hashEntry && coding.system) {
-      const systemMatches = this.codingAnswerOptionsBySystem?.[coding.system] || [];
-
-      // Try to find exact match by display or other properties
-      hashEntry = systemMatches.find(c =>
-        (!code || c.code === code) &&
-        (!coding.display || c.display === coding.display)
-      );
-    }
-
-    // Use hash entry display if available and systems match
-    if (!display && hashEntry && hashEntry.system === coding.system) {
-      display = hashEntry.display;
-    }
-
-    // Format output
     const system = coding.system ?? '';
+    const display = coding.display || this.findEnableWhenAnswerOptionDisplay(coding, state);
+
     const codePart = [code, system].filter(Boolean).join(' : ');
     return [display, codePart && `(${codePart})`].filter(Boolean).join(' ');
+  }
+
+  /**
+   * Finds display text for an enableWhen answer coding from the referenced question's answer options.
+   *
+   * @param coding - The enableWhen answer coding being displayed.
+   * @param state - Answer-options state for the referenced enableWhen question.
+   * @returns Matching answerOption display text, or undefined when no safe match exists.
+   */
+  private findEnableWhenAnswerOptionDisplay(coding: any, state?: EnableWhenAnswerOptionsState): string | undefined {
+    const answerOptionCodings = Object.values(state?.codingAnswerOptionsHash || {});
+    const matches = answerOptionCodings.filter((answerOptionCoding) => {
+      if (!answerOptionCoding?.display) {
+        return false;
+      }
+
+      const sameCode = coding.code && answerOptionCoding.code === coding.code;
+      const sameSystem = coding.system && answerOptionCoding.system === coding.system;
+
+      if (coding.code && coding.system) {
+        return sameCode && sameSystem;
+      }
+
+      return sameCode;
+    });
+
+    return matches.length === 1 ? matches[0].display : undefined;
   }
 }
