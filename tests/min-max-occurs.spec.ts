@@ -309,7 +309,7 @@ test.describe('Min/Max Occurs', () => {
       await minInput.dispatchEvent('change');
 
       await expect(getValidationAlert(page)).toBeVisible();
-      await expect(getValidationAlert(page)).toContainText('Min occurs must be greater than or equal to 1');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be greater than or equal to 1 when the answer is required');
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
       const extensions = qJson.item[0].extension || [];

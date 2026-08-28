@@ -153,7 +153,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
     } else if (this.maxOccurs != null && !this.isFhirInteger(this.maxOccurs)) {
       this.validationError = 'Max occurs must be a signed 32-bit integer.';
     } else if (this.minOccursAllowed && this.minOccurs != null && this.minOccurs < 1) {
-      this.validationError = 'Min occurs must be greater than or equal to 1.';
+      this.validationError = 'Min occurs must be greater than or equal to 1 when the answer is required.';
     } else if (this.maxOccurs != null && this.maxOccurs <= 1) {
       this.validationError = 'Max occurs must be greater than 1.';
     } else if (this.minOccurs != null && this.maxOccurs != null && this.minOccurs > this.maxOccurs) {
