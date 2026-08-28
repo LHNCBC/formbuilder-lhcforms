@@ -458,6 +458,79 @@ test.describe('attachment data type', () => {
     ]);
   });
 
+  test('should restore attachment metadata when a content edit is reverted', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'attachment-revert-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachments with revertable metadata');
+
+    const initialTable = page.locator('lfb-table').filter({hasText: 'Initial value'});
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+
+    await initialTable.locator('tbody tr').nth(1).getByLabel('Edit this row').click();
+    const urlInput = attachmentDialog.getByRole('textbox', {name: 'URL'});
+    const mimeTypeInput = attachmentDialog.getByRole('combobox', {name: /^Mime Type/});
+    const sizeInput = attachmentDialog.getByRole('textbox', {name: /^Size/});
+    const languageInput = attachmentDialog.getByRole('combobox', {name: /^Language/});
+    const heightInput = attachmentDialog.getByRole('spinbutton', {name: /^Height/});
+    const pagesInput = attachmentDialog.getByRole('spinbutton', {name: /^Pages/});
+
+    await urlInput.fill('https://example.org/replacement.pdf');
+    await expect(mimeTypeInput).toHaveValue('');
+    await expect(sizeInput).toHaveValue('');
+    await expect(languageInput).toHaveValue('');
+    await expect(heightInput).toHaveValue('');
+    await expect(pagesInput).toHaveValue('');
+
+    await urlInput.fill('https://example.org/remote.pdf');
+    await expect(mimeTypeInput).toHaveValue('application/pdf');
+    await expect(sizeInput).toHaveValue('4');
+    await expect(languageInput).toHaveValue('en');
+    await expect(heightInput).toHaveValue('720');
+    await expect(pagesInput).toHaveValue('2');
+    await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
+
+    await initialTable.locator('tbody tr').first().getByLabel('Edit this row').click();
+    const dataInput = attachmentDialog.getByRole('textbox', {name: 'Data', exact: true});
+    await dataInput.fill('!');
+    await expect(attachmentDialog.getByRole('alert')).toContainText('Enter valid base64Binary data.');
+    await expect(sizeInput).toHaveValue('');
+
+    await dataInput.fill('SGVsbG8=');
+    await expect(attachmentDialog.getByRole('alert')).toHaveCount(0);
+    await expect(mimeTypeInput).toHaveValue('text/plain');
+    await expect(sizeInput).toHaveValue('5');
+    await expect(languageInput).toHaveValue('en');
+    await expect(heightInput).toHaveValue('480');
+    await expect(pagesInput).toHaveValue('1');
+    await expect(attachmentDialog.getByRole('button', {name: 'Save and close'})).toBeEnabled();
+    await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[0].initial.map(({valueAttachment}) => valueAttachment)).toEqual([
+      {
+        contentType: 'text/plain',
+        data: 'SGVsbG8=',
+        url: 'https://example.org/hello.txt',
+        size: '5',
+        hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+        language: 'en',
+        height: 480,
+        pages: 1,
+        title: 'Embedded and remote'
+      },
+      {
+        contentType: 'application/pdf',
+        url: 'https://example.org/remote.pdf',
+        size: '4',
+        hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+        language: 'en',
+        height: 720,
+        pages: 2,
+        title: 'Remote only'
+      }
+    ]);
+  });
+
   test('should invalidate stale content metadata when embedded data or a URL changes', async ({ page }) => {
     await PWUtils.uploadFile(page, 'attachment-preservation-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');

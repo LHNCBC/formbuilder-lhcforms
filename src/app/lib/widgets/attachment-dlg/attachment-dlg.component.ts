@@ -69,6 +69,12 @@ export class AttachmentDlgComponent {
     'contentType', 'language', 'size', 'hash', 'creation',
     'height', 'width', 'frames', 'duration', 'pages'
   ];
+  private static readonly URL_INVALIDATED_FIELDS: readonly string[] = [
+    ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS, '_url'
+  ];
+  private static readonly DATA_INVALIDATED_FIELDS: readonly string[] = [
+    ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS, 'url', '_url', '_data'
+  ];
 
   data = inject<DialogData>(MAT_DIALOG_DATA);
   matDialogRef = inject(MatDialogRef<AttachmentDlgComponent>);
@@ -105,6 +111,8 @@ export class AttachmentDlgComponent {
     url: this.createMethodState(),
     base64Binary: this.createMethodState()
   };
+  private readonly urlMetadataSnapshots = new Map<string, fhir.Attachment>();
+  private readonly dataMetadataSnapshots = new Map<string, fhir.Attachment>();
 
   /** Initialize the editor state from the selected Attachment row. */
   constructor() {
@@ -311,6 +319,14 @@ export class AttachmentDlgComponent {
    */
   onAttachmentChange(model: Partial<fhir.Attachment>): void {
     const previousUrl = this.draft.url;
+    if(previousUrl) {
+      this.rememberAttachmentFields(
+        this.urlMetadataSnapshots,
+        previousUrl,
+        this.draft,
+        AttachmentDlgComponent.URL_INVALIDATED_FIELDS
+      );
+    }
     let changed = false;
     Object.keys(this.attachmentSchema.properties || {}).forEach((field: keyof fhir.Attachment) => {
       const modelValue = model?.[field];
@@ -327,10 +343,11 @@ export class AttachmentDlgComponent {
       }
     });
     if(previousUrl !== this.draft.url) {
-      this.clearAttachmentFields(this.draft, [
-        ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS,
-        '_url'
-      ]);
+      this.restoreAttachmentFields(
+        this.draft,
+        AttachmentDlgComponent.URL_INVALIDATED_FIELDS,
+        this.draft.url ? this.urlMetadataSnapshots.get(this.draft.url) : undefined
+      );
       this.draft = {...this.draft};
     }
     if(changed) {
@@ -346,6 +363,14 @@ export class AttachmentDlgComponent {
     const state = this.activeState;
     const revision = ++state.dataRevision;
     const previousData = AttachmentUtil.parseBase64(state.attachment.data || '')?.data;
+    if(previousData !== undefined) {
+      this.rememberAttachmentFields(
+        this.dataMetadataSnapshots,
+        previousData,
+        state.attachment,
+        AttachmentDlgComponent.DATA_INVALIDATED_FIELDS
+      );
+    }
     let transitionedToUrl = false;
     state.calculatingDataMetadata = false;
     state.attachment.data = value;
@@ -360,10 +385,11 @@ export class AttachmentDlgComponent {
       }
       else {
         if(parsed.data !== previousData) {
-          this.clearAttachmentFields(state.attachment, [
-            ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS,
-            'url', '_url', '_data'
-          ]);
+          this.restoreAttachmentFields(
+            state.attachment,
+            AttachmentDlgComponent.DATA_INVALIDATED_FIELDS,
+            this.dataMetadataSnapshots.get(parsed.data)
+          );
         }
         state.attachment.data = parsed.data;
         state.attachment.size = parsed.size;
@@ -563,6 +589,51 @@ export class AttachmentDlgComponent {
       if(!field.startsWith('_')) {
         delete (attachment as any)[`_${field}`];
       }
+    });
+  }
+
+  /**
+   * Save the fields associated with a content source so reverting to that source
+   * can restore its metadata.
+   * @param snapshots - Snapshot map indexed by normalized URL or base64 data.
+   * @param key - The normalized source value associated with the metadata.
+   * @param attachment - The Attachment containing the fields to remember.
+   * @param fields - The fields invalidated when the source changes.
+   */
+  private rememberAttachmentFields(
+    snapshots: Map<string, fhir.Attachment>,
+    key: string,
+    attachment: fhir.Attachment,
+    fields: readonly string[]
+  ): void {
+    const snapshot: fhir.Attachment = {};
+    fields.forEach((field) => {
+      const fieldNames = field.startsWith('_') ? [field] : [field, `_${field}`];
+      fieldNames.forEach((fieldName) => {
+        if(Object.prototype.hasOwnProperty.call(attachment, fieldName) &&
+          (attachment as any)[fieldName] !== undefined) {
+          (snapshot as any)[fieldName] = JSON.parse(JSON.stringify((attachment as any)[fieldName]));
+        }
+      });
+    });
+    snapshots.set(key, snapshot);
+  }
+
+  /**
+   * Replace content-derived fields with a previously remembered snapshot, or
+   * leave them cleared when the source has not been seen before.
+   * @param attachment - The Attachment whose content-derived fields should change.
+   * @param fields - The fields invalidated when the content source changes.
+   * @param snapshot - Previously remembered fields for the active source.
+   */
+  private restoreAttachmentFields(
+    attachment: fhir.Attachment,
+    fields: readonly string[],
+    snapshot: fhir.Attachment | undefined
+  ): void {
+    this.clearAttachmentFields(attachment, fields);
+    Object.keys(snapshot || {}).forEach((field) => {
+      (attachment as any)[field] = JSON.parse(JSON.stringify((snapshot as any)[field]));
     });
   }
 
