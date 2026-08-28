@@ -12,10 +12,12 @@ import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LfbArrayComponent} from "../lfb-array/lfb-array.component";
 import {
+  EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
   EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_MIME_TYPE,
   EXTENSION_URL_RENDERING_STYLE,
-  EXTENSION_URL_RENDERING_XHTML
+  EXTENSION_URL_RENDERING_XHTML,
+  EXTENSION_URL_VARIABLE
 } from '../../constants/constants';
 import {
   ExtensionCardinalityCandidate,
@@ -67,14 +69,18 @@ describe('ExtensionDlgComponent', () => {
    * @param extensions - Extensions used to populate the parent array property.
    * @param rowIndex - Existing row to edit, or a negative value for a new row.
    */
-  async function createDialog(extensions: fhir.Extension[], rowIndex = 0) {
+  async function createDialog(
+    extensions: fhir.Extension[],
+    rowIndex = 0,
+    extensionEditorScope: 'form' | 'item' = 'form'
+  ) {
     const rootProperty = formPropertyFactory.createProperty(extSchema) as ArrayProperty;
     arrayProperty = formPropertyFactory.createProperty(extSchema.properties.extension, rootProperty, 'extension') as ArrayProperty;
     arrayProperty.setValue(extensions.map((ext) => extensionsService.updateExtension(ext)), false);
     data = {
       arrayProperty,
       rowIndex,
-      extensionEditorScope: 'form'
+      extensionEditorScope
     } as DialogData;
     fixture = TestBed.createComponent(ExtensionDlgComponent);
     component = fixture.componentInstance;
@@ -169,6 +175,37 @@ describe('ExtensionDlgComponent', () => {
     expect(urlInput.getAttribute('aria-invalid')).toBe('true');
     expect(urlWidget.querySelector('.managed-extension-url-error-icon')).not.toBeNull();
     expect(urlWidget.textContent).toContain('Use the dedicated “Hide this item from users?” field');
+  });
+
+  it('should use the item-level field label for a managed variable extension', async () => {
+    await createDialog([], -1, 'item');
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = EXTENSION_URL_VARIABLE;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Item variables” field instead.'
+    );
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('should show how to reach the Variable Type field for custom variable metadata', async () => {
+    await createDialog([], -1, 'item');
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = EXTENSION_URL_CUSTOM_VARIABLE_TYPE;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Variable Type” field in the '
+      + '“Create/edit variables” dialog opened from the “Item variables” section instead.'
+    );
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
   });
 
   it('should reject changing an editable extension URL to an existing managed URL', async () => {

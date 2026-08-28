@@ -35,6 +35,9 @@ export type ExtensionEditorScope = 'form' | 'item';
 interface DedicatedExtensionDefinition {
   url: string;
   fieldName: string;
+  fieldNameByScope?: Partial<Record<ExtensionEditorScope, string>>;
+  fieldLocationByScope?: Partial<Record<ExtensionEditorScope, string>>;
+  alternativeFieldNames?: ReadonlyArray<string>;
   fieldScope: ExtensionEditorScope | 'both';
   fieldSection?: 'advanced';
 }
@@ -56,8 +59,21 @@ export class ExtensionsService {
   /** URLs, labels, and locations for extensions managed outside the general editor. */
   private readonly dedicatedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
     {url: EXTENSION_URL_ENTRY_FORMAT, fieldName: 'Entry format', fieldScope: 'item'},
-    {url: EXTENSION_URL_VARIABLE, fieldName: 'Variables', fieldScope: 'both'},
-    {url: EXTENSION_URL_CUSTOM_VARIABLE_TYPE, fieldName: 'Variables', fieldScope: 'both'},
+    {
+      url: EXTENSION_URL_VARIABLE,
+      fieldName: 'Variables',
+      fieldNameByScope: {item: 'Item variables'},
+      fieldScope: 'both'
+    },
+    {
+      url: EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+      fieldName: 'Variable Type',
+      fieldLocationByScope: {
+        form: ' in the “Create/edit variables” dialog opened from the “Variables” section',
+        item: ' in the “Create/edit variables” dialog opened from the “Item variables” section'
+      },
+      fieldScope: 'both'
+    },
     {url: EXTENSION_URL_INITIAL_EXPRESSION, fieldName: 'Value method', fieldScope: 'item'},
     {url: EXTENSION_URL_CALCULATED_EXPRESSION, fieldName: 'Value method', fieldScope: 'item'},
     {url: EXTENSION_URL_ANSWER_EXPRESSION, fieldName: 'Answer list source', fieldScope: 'item'},
@@ -67,7 +83,16 @@ export class ExtensionsService {
       fieldScope: 'item',
       fieldSection: 'advanced'
     },
-    {url: EXTENSION_URL_ITEM_CONTROL, fieldName: 'Answer list layout or item control', fieldScope: 'item'},
+    {
+      url: EXTENSION_URL_ITEM_CONTROL,
+      fieldName: 'Answer list layout',
+      alternativeFieldNames: [
+        'Question item control',
+        'Group Item Control',
+        'Display Item Control'
+      ],
+      fieldScope: 'item'
+    },
     {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation', fieldScope: 'item'},
     {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count', fieldScope: 'item'},
     {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count', fieldScope: 'item'},
@@ -497,18 +522,28 @@ export class ExtensionsService {
     editorScope?: ExtensionEditorScope
   ): string {
     const field = this.dedicatedExtensionFields.get(url?.trim());
-    let location = '';
-    if(editorScope === 'form' && field?.fieldScope === 'item') {
+    let location = field?.fieldLocationByScope?.[editorScope] || '';
+    if(!location && editorScope === 'form' && field?.fieldScope === 'item') {
       location = field.fieldSection === 'advanced'
         ? ' under a questionnaire item’s Advanced fields'
         : ' on a questionnaire item';
     }
-    else if(editorScope === 'item' && field?.fieldScope === 'form') {
+    else if(!location && editorScope === 'item' && field?.fieldScope === 'form') {
       location = ' in the form attributes';
     }
-    return field
-      ? `This extension cannot be added here. Use the dedicated “${field.fieldName}” field${location} instead.`
-      : 'This extension is managed by a dedicated Form Builder field and cannot be added here.';
+    if(!field) {
+      return 'This extension is managed by a dedicated Form Builder field and cannot be added here.';
+    }
+
+    const primaryFieldName = field.fieldNameByScope?.[editorScope] || field.fieldName;
+    const fieldNames = [primaryFieldName, ...(field.alternativeFieldNames || [])];
+    if(fieldNames.length === 1) {
+      return `This extension cannot be added here. Use the dedicated “${primaryFieldName}” field${location} instead.`;
+    }
+
+    const quotedFieldNames = fieldNames.map((fieldName) => `“${fieldName}”`);
+    const lastFieldName = quotedFieldNames.pop();
+    return `This extension cannot be added here. Use one of the dedicated ${quotedFieldNames.join(', ')}, or ${lastFieldName} fields${location} instead.`;
   }
 
   updateExtension(newValue: fhir.Extension) {

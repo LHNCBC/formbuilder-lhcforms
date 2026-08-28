@@ -25,9 +25,9 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
-import {MatDialogModule} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialogModule} from "@angular/material/dialog";
 import {MatTooltip} from "@angular/material/tooltip";
-import {ExtensionsService} from "../../../services/extensions.service";
+import {ExtensionEditorScope, ExtensionsService} from "../../../services/extensions.service";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
 import {FormService} from "../../../services/form.service";
@@ -63,6 +63,7 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
   formService = inject(FormService);
   modelService = inject(SharedObjectService);
   cdr = inject(ChangeDetectorRef);
+  private readonly parentDialogData = inject<Partial<DialogData>>(MAT_DIALOG_DATA, {optional: true});
 
   extensionSchema: ISchema = {};
 
@@ -77,10 +78,17 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
    * to fields that only exist on the form or on an item.
    */
   override openDialog(contentData: DialogData, contentDlg: ComponentType<unknown>) {
+    const inheritedScope = this.parentDialogData?.extensionEditorScope;
     const rootProperties = this.formProperty?.findRoot()?.schema?.properties || {};
-    const extensionEditorScope = Object.prototype.hasOwnProperty.call(rootProperties, 'linkId')
-      ? 'item'
-      : 'form';
+    let extensionEditorScope: ExtensionEditorScope = 'form';
+    if(Object.prototype.hasOwnProperty.call(rootProperties, 'linkId')) {
+      extensionEditorScope = 'item';
+    }
+    else if(inheritedScope === 'form' || inheritedScope === 'item') {
+      // A nested Extension form has no linkId, so retain the scope passed to
+      // the dialog that owns it instead of treating it as a form-level field.
+      extensionEditorScope = inheritedScope;
+    }
     return super.openDialog({...contentData, extensionEditorScope}, contentDlg);
   }
 
