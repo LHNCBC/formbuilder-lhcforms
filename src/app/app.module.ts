@@ -160,8 +160,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
     InitialNumberComponent,
-    MetaProfileComponent,
-    QuestionnaireHiddenComponent
+    MetaProfileComponent
   ],
   imports: [
     AppFormElementComponent,
@@ -229,6 +228,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     ItemControlComponent,
     LabelRadioComponent,
     PickAnswerComponent,
+    QuestionnaireHiddenComponent,
     SfFormWrapperComponent,
     VariableComponent,
   ],
