@@ -119,6 +119,11 @@ td.error-column {
   width: 100%;
 }
 
+.lfb-table + .array-add-menu,
+.array-add-menu .array-add-button {
+  width: 100%;
+}
+
 /* override the default bootstrap color that is too light */
 .text-warning {
   color: darkorange !important;

@@ -34,6 +34,10 @@ import {ClipboardModule} from "@angular/cdk/clipboard";
 import {LfbSpinnerComponent} from "../lfb-spinner/lfb-spinner.component";
 import {MatButtonModule} from "@angular/material/button";
 import {SubjectTypeService} from "../../../services/subject-type.service";
+import {
+  ContainedResourceService,
+  ContainedResourceVersionRecord
+} from '../../../services/contained-resource.service';
 declare var LForms: any;
 
 /**
@@ -42,6 +46,7 @@ declare var LForms: any;
 export interface PreviewData {
   questionnaire: fhir.Questionnaire;
   lfData?: any;
+  containedResourceVersionRecords?: ContainedResourceVersionRecord[];
 }
 
 type NoErrorsMap = {
@@ -75,6 +80,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   formService = inject(FormService);
   private fhirService = inject(FhirService);
   private subjectTypeService = inject(SubjectTypeService);
+  private containedResourceService = inject(ContainedResourceService);
   dialogRef = inject<MatDialogRef<PreviewDlgComponent>>(MatDialogRef);
   data = inject<PreviewData>(MAT_DIALOG_DATA);
 
@@ -112,6 +118,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   // Warning shown in the rendered-form tab, built in ngOnInit to include the affected linkIds.
   preferredTerminologyServerMsg = '';
+  renderedFormCompatibilityWarning = '';
 
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
@@ -160,6 +167,10 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.activeJsonTabIndex = FHIR_VERSIONS.R4;
     this.missingTerminologyServerLinkIds = Util.getItemsMissingPreferredTerminologyServer(this.data.questionnaire);
     this.preferredTerminologyServerMsg = this.buildPreferredTerminologyServerMsg(this.missingTerminologyServerLinkIds);
+    this.renderedFormCompatibilityWarning = this.containedResourceService.getCompatibilityWarning(
+      this.data.containedResourceVersionRecords,
+      'R5'
+    );
     this.onJsonVersionSelected(this.activeJsonTabIndex);
   }
 
@@ -201,8 +212,20 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.codeMirrorModel = conversionError
       ? ''
       : JSON.stringify(this.getQuestionnaire(this.format), null, 2);
-    this.compatibilityWarnings[this.format] =
-      this.subjectTypeService.getSubjectTypeCompatibilityWarning(this.data.questionnaire, this.format, 'preview');
+    this.compatibilityWarnings[this.format] = this.combineCompatibilityWarnings([
+      this.subjectTypeService.getSubjectTypeCompatibilityWarning(this.data.questionnaire, this.format, 'preview'),
+      this.containedResourceService.getCompatibilityWarning(this.data.containedResourceVersionRecords, this.format)
+    ]);
+  }
+
+  /**
+   * Combine independently produced compatibility warnings for one preview format.
+   *
+   * @param warnings - Warning HTML fragments, including optional empty values.
+   * @returns Combined warning HTML.
+   */
+  private combineCompatibilityWarnings(warnings: Array<string | null | undefined>): string {
+    return warnings.filter(Boolean).join('<hr>');
   }
 
   /**

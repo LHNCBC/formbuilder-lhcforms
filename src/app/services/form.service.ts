@@ -20,6 +20,10 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {ImportQuestionnaireService} from "./import.questionnaire.service";
 import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
+import {
+  ContainedResourceService,
+  ContainedResourceVersionRecord
+} from './contained-resource.service';
 
 declare var LForms: any;
 
@@ -145,6 +149,7 @@ export class FormService {
     reference: this.operatorOptions2
   };
   private importService = inject(ImportQuestionnaireService);
+  private containedResourceService = inject(ContainedResourceService);
 
   constructor() {
   }
@@ -277,9 +282,10 @@ export class FormService {
   /**
    * Get resource schema based on the resource type.
    *
-   * @param resourceType
+   * @param resourceType - FHIR resource type whose specialized editor schema is requested.
+   * @returns Specialized schema, or null when Form Builder treats the resource as opaque JSON.
    */
-  getResourceSchema(resourceType: 'ValueSet' | 'Binary') {
+  getResourceSchema(resourceType: string) {
     let ret = null;
     if(resourceType === 'Binary') {
       ret = this.binarySchema;
@@ -1536,8 +1542,10 @@ export class FormService {
    * @param fhirQ - Questionnaire
    */
   autoSaveForm(fhirQ: fhir.Questionnaire) {
-    this.autoSave('fhirQuestionnaire', fhirQ);
-    this.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire: fhirQ});
+    const cleanQuestionnaire = Util.convertToQuestionnaireJSON(fhirQ);
+    this.autoSave('fhirQuestionnaire', cleanQuestionnaire);
+    this.autoSave('containedResourceVersions', this.containedResourceService.getVersionRecords(fhirQ));
+    this.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire: cleanQuestionnaire});
   }
 
 
@@ -1582,7 +1590,10 @@ export class FormService {
    * Retrieve questionnaire from the storage.
    */
   autoLoadForm(): fhir.Questionnaire {
-    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+    const questionnaire = this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+    const records = this.autoLoad('containedResourceVersions') as ContainedResourceVersionRecord[];
+    this.containedResourceService.applyVersionRecords(questionnaire, records);
+    return questionnaire;
   }
 
 

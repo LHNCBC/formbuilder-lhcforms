@@ -4,6 +4,7 @@ import { BasePageComponent } from './base-page.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import {FormService} from '../services/form.service';
 import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
+import {ContainedResourceService} from '../services/contained-resource.service';
 
 describe('BasePageComponent', () => {
   let component: BasePageComponent;
@@ -48,6 +49,38 @@ describe('BasePageComponent', () => {
     await component.saveToFile('R4');
 
     expect(component.showError).toHaveBeenCalledOnceWith(compatibilityError);
+  });
+
+  it('should stop a file export when contained-resource compatibility is declined', async () => {
+    const formService = TestBed.inject(FormService);
+    component.formValue = {resourceType: 'Questionnaire', status: 'draft'};
+    spyOn(component, 'confirmContainedResourceExport').and.resolveTo(false);
+    const convertSpy = spyOn(formService, 'convertFromR5');
+
+    await component.saveToFile('R4');
+
+    expect(convertSpy).not.toHaveBeenCalled();
+  });
+
+  it('should describe contained-resource mismatches in the export confirmation', async () => {
+    const containedResourceService = TestBed.inject(ContainedResourceService);
+    const patient = {resourceType: 'Patient', id: 'patient-1'} as any;
+    containedResourceService.annotateContainedResources({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    }, 'R4');
+    component.formValue = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    };
+    const modalRef = {componentInstance: {}, result: Promise.resolve('cancel')};
+    spyOn(component['modalService'], 'open').and.returnValue(modalRef as any);
+
+    expect(await component.confirmContainedResourceExport('R5')).toBeFalse();
+    expect(modalRef.componentInstance['options'].message)
+      .toContain('Patient #patient-1 was imported as FHIR R4');
   });
 
   it('should clear extension cardinality selections when loading a Questionnaire', async () => {

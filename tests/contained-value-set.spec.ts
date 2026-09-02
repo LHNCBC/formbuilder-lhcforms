@@ -19,7 +19,8 @@ test.describe('Contained resources table in form level page', () => {
       'Contained resources'
     );
 
-    await PWUtils.clickButton(page, null, 'Add new ValueSet');
+    await PWUtils.clickButton(page, null, 'Add contained resource');
+    await page.getByRole('button', {name: 'Create a ValueSet…'}).click();
     const dialog = page.locator('mat-dialog-container');
     await dialog.waitFor({ state: 'visible', timeout: 10000 });
 
@@ -56,12 +57,11 @@ test.describe('Contained resources table in form level page', () => {
 
     await dialog.getByRole('button', {name: 'Save and close'}).click();
     await expect(containedTable.locator('tbody > tr')).toHaveCount(1);
-    await expect(PWUtils.getTableCell(containedTable, 1, 1).locator('input')).toHaveValue('ValueSet');
-    await expect(PWUtils.getTableCell(containedTable, 1, 2).locator('input')).toHaveValue('vs1');
-    await expect(PWUtils.getTableCell(containedTable, 1, 3).locator('input')).toHaveValue('A title');
-    await expect(PWUtils.getTableCell(containedTable, 1, 4).locator('input'))
-      .toHaveValue(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/);
-    await expect(PWUtils.getTableCell(containedTable, 1, 5).locator('input')).toHaveValue('active');
+    await expect(PWUtils.getTableCell(containedTable, 1, 1)).toHaveText('ValueSet');
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('vs1');
+    await expect(PWUtils.getTableCell(containedTable, 1, 3)).toHaveText('A title');
+    await expect(PWUtils.getTableCell(containedTable, 1, 4)).toHaveText('R5');
+    await expect(PWUtils.getTableCell(containedTable, 1, 5)).toHaveText('active');
 
     const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
 
@@ -204,6 +204,68 @@ test.describe(() => {
     await dialog.getByRole('button', {name: 'Save and close'}).click();
     await expect(dialog).not.toBeVisible();
     await expect(flContainedTable.locator('tbody > tr')).toHaveCount(3);
-    await expect(PWUtils.getTableCellInput(flContainedTable, 2, 2)).toHaveValue('vs2-modified');
+    await expect(PWUtils.getTableCell(flContainedTable, 2, 2)).toHaveText('vs2-modified');
+  });
+});
+
+test.describe('Contained resource local-file import', () => {
+  test.beforeEach(async ({page}) => {
+    await page.goto('/');
+    const mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+  });
+
+  test('imports arbitrary resource JSON and warns only for mismatched preview versions', async ({page}) => {
+    const containedTable = PWUtils.getTableByFieldLabel(
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    const addButton = page.getByRole('button', {name: 'Add contained resource'});
+    const tableBox = await containedTable.boundingBox();
+    const addButtonBox = await addButton.boundingBox();
+    expect(Math.abs(tableBox.width - addButtonBox.width)).toBeLessThanOrEqual(1);
+    const chooserPromise = page.waitForEvent('filechooser');
+    await addButton.click();
+    const addMenu = page.locator('lfb-contained .dropdown-menu.show');
+    const openButtonBox = await addButton.boundingBox();
+    const addMenuBox = await addMenu.boundingBox();
+    const buttonCenter = openButtonBox.x + openButtonBox.width / 2;
+    const menuCenter = addMenuBox.x + addMenuBox.width / 2;
+    expect(Math.abs(buttonCenter - menuCenter)).toBeLessThanOrEqual(1);
+    await expect(page.getByRole('button', {name: 'Import from a FHIR server…'})).toBeDisabled();
+    await page.getByRole('button', {name: 'Upload from a local file…'}).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles('tests/fixtures/contained-patient-r4.json');
+
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(1);
+    await expect(PWUtils.getTableCell(containedTable, 1, 1)).toHaveText('Patient');
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('patient-template');
+    await expect(PWUtils.getTableCell(containedTable, 1, 4)).toHaveText('R4');
+    const viewButton = containedTable.getByRole('button', {name: 'View contained resource JSON'});
+    await expect(viewButton.locator('svg[data-icon="eye"]')).toBeVisible();
+    await viewButton.click();
+    const resourceDialog = page.getByRole('dialog', {name: 'Contained Resource'});
+    await expect(resourceDialog).toContainText('"resourceType": "Patient"');
+    await expect(resourceDialog).not.toContainText('__$fhirVersionInfo');
+    await resourceDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+
+    await page.getByRole('button', {name: 'Preview'}).click();
+    await expect(page.locator('.contained-resource-version-warning'))
+      .toContainText('Patient #patient-template was imported as FHIR R4');
+    await page.getByRole('tab', {name: 'View/Validate Questionnaire JSON'}).click();
+    await page.getByRole('tab', {name: 'R4 Version'}).click();
+    await expect(page.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toHaveCount(0);
+    await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
+    const r4Questionnaire = JSON.parse(await PWUtils.getClipboardContent(page));
+    expect(r4Questionnaire.contained[0]).toEqual({
+      resourceType: 'Patient',
+      id: 'patient-template',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Patient']},
+      active: true,
+      name: [{use: 'official', family: 'Contained', given: ['Patient']}]
+    });
+    await page.getByRole('tab', {name: 'R5 Version'}).click();
+    await expect(page.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toBeVisible();
   });
 });

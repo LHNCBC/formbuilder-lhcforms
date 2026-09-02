@@ -540,7 +540,7 @@ test.describe('Usage Context field tests', () => {
       'Contained resources'
     );
     const referencedRow = containedTable.locator('tbody > tr').nth(0);
-    await expect(PWUtils.getTableCellInput(containedTable, 1, 2)).toHaveValue('vs1');
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('vs1');
 
     await referencedRow.getByRole('button', {name: 'Remove this row'}).click();
     const inUseDialog = page.getByRole('dialog', {name: 'Contained resource is in use'});

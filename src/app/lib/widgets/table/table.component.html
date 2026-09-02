@@ -115,16 +115,37 @@
           </table>
         @if (!singleItem &&
           (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))) {
-          <button type="button" (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
-            [attr.disabled]="isAddButtonDisabled() ? '' : null"
-            [ngbPopover]="'Please fill in the above fields before adding a new item'"
-            #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
-            container="body"
-            popoverClass=""
-            [attr.title]="schema.widget?.addButtonTitle"
-            >
-            <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
-          </button>
+          @if(addMenuItems.length) {
+            <div class="d-block w-100 array-add-menu" ngbDropdown placement="bottom">
+              <button type="button" class="btn btn-sm btn-light text-primary shadow-sm array-add-button w-100"
+                ngbDropdownToggle
+                [attr.disabled]="isAddButtonDisabled() ? '' : null"
+                [attr.title]="schema.widget?.addButtonTitle">
+                <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+              </button>
+              <div ngbDropdownMenu>
+                @for(menuItem of addMenuItems; track menuItem.id) {
+                  <button type="button" ngbDropdownItem
+                    [disabled]="menuItem.disabled"
+                    [attr.title]="menuItem.title || null"
+                    (click)="onAddMenuItem(menuItem.id, alertPopover)">{{menuItem.label}}</button>
+                }
+              </div>
+            </div>
+            <span class="d-none"
+              [ngbPopover]="'Please fill in the above fields before adding a new item'"
+              #alertPopover="ngbPopover" triggers="manual" placement="bottom top" container="body"></span>
+          } @else {
+            <button type="button" (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+              [attr.disabled]="isAddButtonDisabled() ? '' : null"
+              [ngbPopover]="'Please fill in the above fields before adding a new item'"
+              #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
+              container="body"
+              popoverClass=""
+              [attr.title]="schema.widget?.addButtonTitle">
+              <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+            </button>
+          }
         }
         @if (tableStatus) {
           <div class="mt-2" role="alert">
@@ -182,11 +203,11 @@
     <div class="btn-group btn-group-sm p-0 pt-0 pe-0 ps-1">
       <button type="button"
         class="btn btn-link btn-sm p-0 rounded-0"
-        matTooltip="Edit this row"
-        aria-label="Edit this row"
+        [matTooltip]="getEditActionLabel(index)"
+        [attr.aria-label]="getEditActionLabel(index)"
         (click)="onEditProperty(index)"
         [disabled]="formProperty | isDisabledPipe : index : isDisabled | async"
-      ><fa-icon [icon]="faEdit" class="fa-sm" aria-hidden="true"></fa-icon></button>
+      ><fa-icon [icon]="getEditActionIcon(index)" class="fa-sm" aria-hidden="true"></fa-icon></button>
     </div>
 </ng-template>
 

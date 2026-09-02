@@ -149,6 +149,45 @@ describe('Util', () => {
     });
   });
 
+  it('should preserve template extraction resources and annotations during version conversion', () => {
+    const templateExtractUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract';
+    const templateValueUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue';
+    const questionnaire: any = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      contained: [{
+        resourceType: 'Observation',
+        id: 'observation-template',
+        status: 'final',
+        code: {text: 'Measurement'},
+        _valueString: {
+          extension: [{url: templateValueUrl, valueString: 'answer.value.first()'}]
+        }
+      }],
+      item: [{
+        linkId: 'measurement',
+        text: 'Measurement',
+        type: 'string',
+        extension: [{
+          url: templateExtractUrl,
+          extension: [{url: 'template', valueReference: {reference: '#observation-template'}}]
+        }]
+      }]
+    };
+
+    const convertedToR5: any = Util.convertQuestionnaire(questionnaire, 'R5');
+    const convertedBackToR4: any = Util.convertQuestionnaire(convertedToR5, 'R4');
+
+    [convertedToR5, convertedBackToR4].forEach(converted => {
+      expect(converted.item[0].extension[0]).toEqual(questionnaire.item[0].extension[0]);
+      expect(converted.contained[0]._valueString.extension[0]).toEqual({
+        url: templateValueUrl,
+        valueString: 'answer.value.first()'
+      });
+    });
+  });
+
   it('should check for empty answer options', () => {
 
     const answerOption = [
@@ -609,5 +648,4 @@ describe('Util', () => {
     });
   });
 });
-
 

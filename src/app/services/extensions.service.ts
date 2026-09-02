@@ -13,6 +13,7 @@ import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_TEMPLATE_EXTRACT,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
@@ -42,6 +43,7 @@ export class ExtensionsService {
     EXTENSION_URL_ANSWER_EXPRESSION,
     EXTENSION_URL_ENABLEWHEN_EXPRESSION,
     EXTENSION_URL_ITEM_CONTROL,
+    EXTENSION_URL_TEMPLATE_EXTRACT,
     PREFERRED_TERMINOLOGY_SERVER_URI,
     ObservationLinkPeriodComponent.extUrl,
     ObservationExtractComponent.extUrl
@@ -296,6 +298,33 @@ export class ExtensionsService {
       // This is the case where all variables got deleted via the Expression Editor
       this.removeExtensionsByUrl(extUrl);
     }
+  }
+
+  /**
+   * Replace every extension matching a URL while preserving the order of all
+   * unrelated extensions. The replacement block is inserted at the position
+   * of the first match, or appended when no match exists.
+   *
+   * This differs from replaceExtensions(), which supports the historical
+   * convention that matching variable extensions form one consecutive block.
+   *
+   * @param extUrl - URL identifying the extensions to replace.
+   * @param newExtensionsJSON - Complete replacement collection for the URL.
+   */
+  replaceAllExtensionsByUrl(extUrl: fhirPrimitives.url, newExtensionsJSON: fhir.Extension[] = []): void {
+    const originalExtensions = this.extensionsProp?.value || [];
+    const firstMatch = originalExtensions.findIndex(extension => extension.url === extUrl);
+    const insertionIndex = firstMatch >= 0
+      ? originalExtensions.slice(0, firstMatch).filter(extension => extension.url !== extUrl).length
+      : originalExtensions.length;
+    const unrelatedExtensions = originalExtensions.filter(extension => extension.url !== extUrl);
+    const replacements = newExtensionsJSON || [];
+
+    this.extensionsProp.reset([
+      ...unrelatedExtensions.slice(0, insertionIndex),
+      ...replacements,
+      ...unrelatedExtensions.slice(insertionIndex)
+    ], false);
   }
 
   /**

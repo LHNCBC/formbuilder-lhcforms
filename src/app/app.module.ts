@@ -85,6 +85,7 @@ import { IntegerDirective } from './lib/directives/integer.directive';
 import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
+import { TemplateExtractComponent } from './lib/widgets/template-extract/template-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
 import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 import { DateComponent } from './lib/widgets/date/date.component';
@@ -198,6 +199,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    TemplateExtractComponent,
     PositiveIntegerComponent,
     UnsignedIntegerComponent,
     PreviewDlgComponent,

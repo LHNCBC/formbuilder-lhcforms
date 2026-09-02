@@ -8,6 +8,7 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {ContainedResourceService} from './contained-resource.service';
 
 describe('FormService', () => {
   let service: FormService;
@@ -23,6 +24,36 @@ describe('FormService', () => {
   it('should be created', async () => {
     expect(service).toBeTruthy();
     expect(service.lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
+  });
+
+  it('autosaves clean Questionnaire JSON and contained-resource version provenance separately', () => {
+    const containedResourceService = TestBed.inject(ContainedResourceService);
+    const patient = {resourceType: 'Patient', id: 'patient-1'} as fhir.Resource;
+    containedResourceService.annotateContainedResources({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    } as fhir.Questionnaire, 'R4');
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    } as fhir.Questionnaire;
+    const autoSaveSpy = spyOn(service, 'autoSave');
+    spyOn(service, 'notifyWindowOpener').and.returnValue(false);
+
+    service.autoSaveForm(questionnaire);
+
+    const cleanQuestionnaire = autoSaveSpy.calls.argsFor(0)[1];
+    expect((cleanQuestionnaire.contained[0] as any).__$fhirVersionInfo).toBeUndefined();
+    expect(autoSaveSpy.calls.argsFor(1)).toEqual([
+      'containedResourceVersions',
+      [{
+        resourceType: 'Patient',
+        id: 'patient-1',
+        info: {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
+      }]
+    ]);
   });
 
   it('should apply explicitly requested widget presets without sharing mutable objects', () => {

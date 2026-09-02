@@ -31,6 +31,7 @@
           { field:  "lastReviewDate", col:  12},
           { field:  "effectivePeriod", col:  12},
           { field:  "contained", "col": 12},
+          { field:  "__$templateExtract", "col": 12},
           { field:  "__$variable", col: 12},
           { field:  "__$extensionContainer", col: 12}
         ]
@@ -190,15 +191,15 @@
       "labelPosition": "left",
       "labelClasses": "col-sm-2 ps-0 pe-1",
       "controlClasses": "col-sm-10",
-      "addButtonLabel": "Add new ValueSet",
-      "addButtonTitle": "At present, only ValueSet is supported as contained resource.",
+      "addButtonLabel": "Add contained resource",
+      "addButtonTitle": "Create or import a contained FHIR resource.",
       "showFields": [
         // The fields here are canonical paths of FormProperty.
-        {"field": "resourceType", "col": 1, "nolabel": true},
-        {"field": "id", "col": 3, "nolabel": true},
-        {"field": "title", "col": 4, "nolabel": true},
-        {"field": "date", "col": 2, "nolabel": true},
-        {"field": "status", "col": 1, "nolabel": true}
+        {"field": "resourceType", "title": "Type", "col": 2, "nolabel": true},
+        {"field": "id", "title": "Id", "col": 3, "nolabel": true},
+        {"field": "__$resourceDisplay", "title": "Display", "col": 4, "nolabel": true},
+        {"field": "__$fhirVersionInfo.version", "title": "FHIR version", "col": 1, "nolabel": true},
+        {"field": "status", "title": "Status", "col": 1, "nolabel": true}
       ]
     },
     "__$extensionContainer": {

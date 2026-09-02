@@ -112,4 +112,33 @@ describe('ExtensionsService', () => {
       expect(result['__$stringify']).toBe(JSON.stringify(42, null, 2));
     });
   });
+
+  describe('replaceAllExtensionsByUrl', () => {
+    it('replaces non-consecutive matches without disturbing unrelated extensions', () => {
+      const reset = jasmine.createSpy('reset');
+      (service as any).extensionsProp = {
+        value: [
+          {url: 'before', valueString: 'before'},
+          {url: 'target', valueString: 'old-1'},
+          {url: 'middle', valueString: 'middle'},
+          {url: 'target', valueString: 'old-2'},
+          {url: 'after', valueString: 'after'}
+        ],
+        reset
+      };
+
+      service.replaceAllExtensionsByUrl('target', [
+        {url: 'target', valueString: 'new-1'},
+        {url: 'target', valueString: 'new-2'}
+      ]);
+
+      expect(reset).toHaveBeenCalledOnceWith([
+        {url: 'before', valueString: 'before'},
+        {url: 'target', valueString: 'new-1'},
+        {url: 'target', valueString: 'new-2'},
+        {url: 'middle', valueString: 'middle'},
+        {url: 'after', valueString: 'after'}
+      ], false);
+    });
+  });
 });

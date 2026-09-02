@@ -1,0 +1,17 @@
+{
+  "resourceType": "Patient",
+  "id": "patient-template",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Patient"
+    ]
+  },
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "Contained",
+      "given": ["Patient"]
+    }
+  ]
+}

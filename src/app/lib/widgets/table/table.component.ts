@@ -30,6 +30,13 @@ import { TableService, TableStatus } from 'src/app/services/table.service';
 import { DialogService } from 'src/app/services/dialog.service';
 import { MessageType } from '../message-dlg/message-dlg.component';
 
+export interface TableAddMenuItem {
+  id: string;
+  label: string;
+  disabled?: boolean;
+  title?: string;
+}
+
 @Component({
   standalone: false,
   selector: 'lfb-table',
@@ -61,6 +68,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
+  addMenuItems: TableAddMenuItem[] = [];
   noCollapseButton = false;
   noTableLabel = false;
   noHeader = false;
@@ -424,6 +432,37 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     else {
       popoverRef.open();
     }
+  }
+
+  /**
+   * Handle a configured add-menu selection.
+   * Subclasses can override this to provide distinct creation or import actions.
+   *
+   * @param actionId - Identifier of the selected add-menu action.
+   * @param popoverRef - Popover used by the default add-row behavior.
+   */
+  onAddMenuItem(actionId: string, popoverRef): void {
+    this.addItemWithAlert(popoverRef);
+  }
+
+  /**
+   * Get the tooltip and accessible label for a row's edit action.
+   *
+   * @param index - Row index.
+   * @returns Edit-action label.
+   */
+  getEditActionLabel(index: number): string {
+    return 'Edit this row';
+  }
+
+  /**
+   * Get the icon for a row's edit action.
+   *
+   * @param index - Row index.
+   * @returns Edit-action icon.
+   */
+  getEditActionIcon(index: number) {
+    return this.faEdit;
   }
 
 

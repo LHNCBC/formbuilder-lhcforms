@@ -12,13 +12,15 @@ import {MessageDlgComponent} from "../message-dlg/message-dlg.component";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
+import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
+import {Util} from '../../util';
 
 /**
  * Define the data structure for the dialog input.
  */
 export interface ResourceData {
   formProperty?: FormProperty | null,
-  resourceType?: 'ValueSet' | 'Binary' | null,
+  resourceType?: string | null,
   options?: any;
   indexInContained?: number;
 }
@@ -37,7 +39,7 @@ export interface ResourceData {
 export class ResourceDlgComponent {
   input: fhir.Resource;
   changedValue: fhir.Resource;
-  resourceType: 'ValueSet' | 'Binary' = 'ValueSet';
+  resourceType = 'ValueSet';
   schema: ISchema;
 
   @ViewChild('vsForm', {read: ValueSetResourceComponent}) vsForm: ValueSetResourceComponent;
@@ -53,8 +55,20 @@ export class ResourceDlgComponent {
     this.input = this.data.formProperty?.value;
     this.changedValue = this.input;
     this.originalResourceId = this.input?.id;
-    this.resourceType = this.data.formProperty?.schema.properties.resourceType?.enum[0] || this.data.resourceType || this.resourceType;
+    this.resourceType = this.data.formProperty?.value?.resourceType ||
+      this.data.formProperty?.schema.properties.resourceType?.enum?.[0] ||
+      this.data.resourceType ||
+      this.resourceType;
     this.schema = this.formService.getResourceSchema(this.resourceType);
+  }
+
+  /**
+   * Serialize a clean copy of the resource for the read-only JSON viewer.
+   *
+   * @returns Pretty-printed JSON without Form Builder's internal __$ fields.
+   */
+  get resourceJson(): string {
+    return JSON.stringify(Util.convertToQuestionnaireJSON(this.input), null, 2);
   }
 
 
@@ -72,8 +86,9 @@ export class ResourceDlgComponent {
         return;
       }
       else if(this.isReferencedResourceIdChanged()) {
+        const referenceType = this.isReferencedByUsageContext() ? 'Usage Context' : 'Template-based extraction';
         this.alertErrors(
-          `Id cannot be changed because Usage Context references #${this.originalResourceId}.`
+          `Id cannot be changed because ${referenceType} references #${this.originalResourceId}.`
         );
         return;
       }
@@ -91,11 +106,23 @@ export class ResourceDlgComponent {
     if(!this.data.formProperty || this.changedValue?.id === this.originalResourceId) {
       return false;
     }
-    const usageContexts = this.data.formProperty
-      .findRoot()
+    return this.isReferencedByUsageContext() || this.isReferencedByTemplateExtraction();
+  }
+
+  /** Check whether Usage Context targets the original contained resource id. */
+  private isReferencedByUsageContext(): boolean {
+    const usageContexts = this.data.formProperty.findRoot()
       ?.getProperty('useContext')
       ?.value as UsageContextEditModel[] | undefined;
     return hasUsageContextLocalReference(usageContexts, this.originalResourceId);
+  }
+
+  /** Check whether template-based extraction targets the original contained resource id. */
+  private isReferencedByTemplateExtraction(): boolean {
+    return hasTemplateExtractReference(
+      this.data.formProperty.findRoot()?.value,
+      this.originalResourceId
+    );
   }
 
   /**
