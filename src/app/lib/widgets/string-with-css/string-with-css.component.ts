@@ -48,8 +48,10 @@ export class StringWithCssComponent extends StringComponent implements OnInit, A
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.formProperty.parent.getProperty(this.elName).valueChanges.subscribe((val) => {
-      val?.extension.forEach((ext) => {
-        this.extChanged(ext.valueString, ext.url);
+      val?.extension?.forEach((ext) => {
+        if(ext.url === EXTENSION_URL_RENDERING_STYLE || ext.url === EXTENSION_URL_RENDERING_XHTML) {
+          this.extChanged(ext.valueString ?? '', ext.url);
+        }
       });
     });
   }
@@ -59,13 +61,18 @@ export class StringWithCssComponent extends StringComponent implements OnInit, A
    * @param extUrl - Util.RENDERING_STYLE_EXT_URL || Util.RENDERING_XHTML_EXT_URL
    */
   extChanged(extValue: string, extUrl: fhirPrimitives.url) {
-    if(this.extValObj[extUrl] === extValue.trim()) {
+    const value = (extValue ?? '').trim();
+    if(this.extValObj[extUrl] === value) {
       return;
     }
 
+    if(!this.elementTypeField) {
+      return;
+    }
+    this.elementTypeField.extension = this.elementTypeField.extension ?? [];
     const ind = Util.findExtensionIndexByUrl(this.elementTypeField.extension, extUrl);
     let ext: fhir.Extension;
-    this.extValObj[extUrl] = extValue.trim();
+    this.extValObj[extUrl] = value;
     if(this.extValObj[extUrl]) {
       if(ind < 0) {
         ext = {url: extUrl};

@@ -176,6 +176,44 @@ test.describe('string-with-css.component.spec.ts', () => {
     expect(q.item[0].item[0]._text.extension[1].valueString).toEqual('Help text: modified <b>XHTML</b>');
   });
 
+  test('should import items with a non-string primitive extension without error', async ({page}) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    const fileJson = await PWUtils.uploadFile(page, 'css-xhtml-non-string-ext-sample.json', true);
+    let q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q).toEqual(fileJson);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+
+    // The rendering-style/XHTML values still load into the widget's dropdowns.
+    const inputGroup = page.getByLabel('Question text', {exact: true})
+      .locator('xpath=ancestor::div[contains(@class, "input-group")][1]');
+    await inputGroup.getByRole('button', {name: 'CSS Styles'}).click();
+    await expect(inputGroup.getByLabel('Specify CSS Styles'))
+      .toHaveValue('color: red; /*Question text: CSS*/');
+    await inputGroup.getByRole('button', {name: 'Close'}).click();
+    await inputGroup.getByRole('button', {name: 'XHTML'}).click();
+    await expect(inputGroup.getByLabel('Specify XHTML'))
+      .toHaveValue('Question text: <b>XHTML</b>');
+    await inputGroup.getByRole('button', {name: 'Close'}).click();
+
+    // The non-string extension must not crash the component (no undefined.trim()).
+    expect(pageErrors).toEqual([]);
+
+    // Round-trip preserves the rendering extensions.
+    q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    const renderingExtensions = q.item[0]._text.extension.filter((ext) =>
+      ext.url === 'http://hl7.org/fhir/StructureDefinition/rendering-style' ||
+      ext.url === 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml');
+    expect(renderingExtensions).toEqual([{
+      url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+      valueString: 'color: red; /*Question text: CSS*/'
+    }, {
+      url: 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml',
+      valueString: 'Question text: <b>XHTML</b>'
+    }]);
+  });
+
   test('Bugfix: should detect help text on the second item in the tree', async ({page}) => {
     await PWUtils.uploadFile(page, 'help-text-sample1.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
