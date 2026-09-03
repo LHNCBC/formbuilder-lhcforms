@@ -200,8 +200,20 @@ test.describe('string-with-css.component.spec.ts', () => {
     // The non-string extension must not crash the component (no undefined.trim()).
     expect(pageErrors).toEqual([]);
 
-    // Round-trip preserves the rendering extensions.
+    // Round-trip preserves the non-string primitive and rendering extensions.
     q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q.item[0]._text.extension).toContainEqual({
+      url: 'https://example.org/flag',
+      valueBoolean: true
+    });
+    expect(q.item[0]._prefix.extension).toContainEqual({
+      url: 'https://example.org/prefix-count',
+      valueInteger: 7
+    });
+    expect(q.item[0].item[0]._text.extension).toContainEqual({
+      url: 'https://example.org/help-flag',
+      valueBoolean: true
+    });
     const renderingExtensions = q.item[0]._text.extension.filter((ext) =>
       ext.url === 'http://hl7.org/fhir/StructureDefinition/rendering-style' ||
       ext.url === 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml');

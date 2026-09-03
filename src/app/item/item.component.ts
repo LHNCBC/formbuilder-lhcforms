@@ -35,6 +35,10 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
 import copy from "fast-copy";
 import traverse from "traverse";
 import { ValidationService } from '../services/validation.service';
+import {
+  EXTENSION_URL_RENDERING_STYLE,
+  EXTENSION_URL_RENDERING_XHTML
+} from '../lib/constants/constants';
 
 declare var LForms: any;
 
@@ -288,6 +292,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   spinnerCounter = 0;
 
   validationErrorsAllItemsErrorStr: string;
+  private readonly renderingExtensionUrls = new Set([
+    EXTENSION_URL_RENDERING_STYLE,
+    EXTENSION_URL_RENDERING_XHTML
+  ]);
 
 
   liveAnnouncer = inject(LiveAnnouncer);
@@ -354,6 +362,20 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   itemChanged(item) {
     if(this.itemData) {
+      const currentItem = this.itemData as any;
+      ['_text', '_prefix'].forEach((elementName) => {
+        const mergedElement = this.preserveNonRenderingExtensions(
+          currentItem[elementName], item[elementName]
+        );
+        if(mergedElement) {
+          item[elementName] = mergedElement;
+        }
+      });
+      if(currentItem.__$helpText && item.__$helpText) {
+        item.__$helpText._text = this.preserveNonRenderingExtensions(
+          currentItem.__$helpText._text, item.__$helpText._text
+        );
+      }
       for (const key of Object.keys(this.itemData)) {
         if(key !== 'item') {
           delete this.itemData[key];
@@ -368,6 +390,32 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     if(!this.formService.loading) {
       this.itemChange.emit(this.itemList);
     }
+  }
+
+  /**
+   * Preserve primitive extensions that are not managed by the string-with-css control while using
+   * the control's current rendering-style and rendering-xhtml extensions.
+   *
+   * @param sourceElement - Primitive element from the current questionnaire item.
+   * @param targetElement - Primitive element emitted by the item editor.
+   * @returns The merged primitive element, or the unchanged target when there is nothing to preserve.
+   */
+  private preserveNonRenderingExtensions(sourceElement: fhir.Element | undefined,
+                                         targetElement: fhir.Element | undefined): fhir.Element | undefined {
+    const preservedExtensions = sourceElement?.extension?.filter((extension) => {
+      return !this.renderingExtensionUrls.has(extension.url);
+    }) ?? [];
+    if(!preservedExtensions.length) {
+      return targetElement;
+    }
+
+    const renderingExtensions = targetElement?.extension?.filter((extension) => {
+      return this.renderingExtensionUrls.has(extension.url);
+    }) ?? [];
+    return {
+      ...(targetElement ?? {}),
+      extension: [...preservedExtensions, ...renderingExtensions]
+    };
   }
 
   /**

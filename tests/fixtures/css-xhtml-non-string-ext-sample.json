@@ -11,6 +11,15 @@
     {
       "type": "string",
       "linkId": "1",
+      "prefix": "Prefix: plain text",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "https://example.org/prefix-count",
+            "valueInteger": 7
+          }
+        ]
+      },
       "text": "Question text: plain text",
       "_text": {
         "extension": [
@@ -27,7 +36,37 @@
             "valueString": "Question text: <b>XHTML</b>"
           }
         ]
-      }
+      },
+      "item": [
+        {
+          "type": "display",
+          "linkId": "1-helpText",
+          "text": "Help text: plain text",
+          "_text": {
+            "extension": [
+              {
+                "url": "https://example.org/help-flag",
+                "valueBoolean": true
+              }
+            ]
+          },
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "text": "Help-Button",
+                "coding": [
+                  {
+                    "code": "help",
+                    "display": "Help-Button",
+                    "system": "http://hl7.org/fhir/questionnaire-item-control"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
