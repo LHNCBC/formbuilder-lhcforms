@@ -70,11 +70,35 @@ test.describe('string-with-css.component.spec.ts', () => {
         await mainPO.cleanLoadILPage();
   });
 
+  test('should use multiline fields for question and help text', async ({page}) => {
+    await expect(page.getByLabel('Question text', {exact: true})).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(page.getByLabel('Help text', {exact: true})).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(page.getByLabel('Prefix', {exact: true})).toHaveJSProperty('tagName', 'INPUT');
+  });
+
+  test('should reflect question and help text changes in the rendered preview', async ({page}) => {
+    const questionText = 'Updated question text\nwith a second line';
+    const helpText = 'Updated help text\nwith a second line';
+
+    await page.getByLabel('Question text', {exact: true}).fill(questionText);
+    await page.getByLabel('Help text', {exact: true}).fill(helpText);
+    await PWUtils.clickMenuBarButton(page, 'Preview');
+
+    const preview = page.locator('lfb-preview-dlg');
+    await expect(preview.locator('lhc-item-question span.question').first()).toHaveText(questionText);
+    const helpButton = preview.getByRole('button', {name: /Help button for Updated question text/});
+    await helpButton.click();
+    const helpPopover = page.locator('.lhc-popover-help');
+    await expect(helpPopover).toBeVisible();
+    await expect(helpPopover).toContainText(helpText);
+  });
+
   FIELD_LABELS.forEach((fieldLabel) => {
     test(fieldLabel + ': Should add plain text/CSS/XHTML', async ({page}) => {
       const inputGroup = page.getByLabel(fieldLabel).locator('..');
-      await inputGroup.locator('input').clear();
-      await inputGroup.locator('input').fill(fieldLabel+' plain text');
+      const plainTextField = page.getByLabel(fieldLabel, {exact: true});
+      await plainTextField.clear();
+      await plainTextField.fill(fieldLabel+' plain text');
       await inputGroup.getByRole('button', {name: 'CSS Styles'}).click();
       let dropdown = await inputGroup.locator('div.dropdown-menu.show');
       await expect(dropdown).toBeVisible();
