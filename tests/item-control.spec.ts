@@ -648,6 +648,53 @@ test.describe('Item control', () => {
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[6].extension).toBeUndefined();
     });
+
+    test('should preserve multiline question and help text in the legal and help preview icons', async ({page}) => {
+      const legalTextWithCrLf = 'Updated legal text from Question text\r\nwith a second line';
+      const helpTextWithCrLf = 'Updated help text from Help text\r\nwith a second line';
+      // HTML textareas normalize CRLF line endings to LF while retaining the line break.
+      const legalText = legalTextWithCrLf.replaceAll('\r\n', '\n');
+      const helpText = helpTextWithCrLf.replaceAll('\r\n', '\n');
+
+      await PWUtils.uploadFile(page, 'legal-item-control-sample.json', true);
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+      const helpTextField = page.getByLabel('Help text', {exact: true});
+      await helpTextField.fill(helpTextWithCrLf);
+      await expect(helpTextField).toHaveValue(helpText);
+      await PWUtils.clickAndToggleTreeNode(page, 'Question with legal information');
+      await PWUtils.clickTreeNode(page, 'Initial legal text');
+      const questionTextField = page.getByLabel('Question text', {exact: true});
+      await questionTextField.fill(legalTextWithCrLf);
+      await expect(questionTextField).toHaveValue(legalText);
+
+      const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      expect(questionnaire.item[0].item[0].text).toBe(legalText);
+      expect(questionnaire.item[0].item[1].text).toBe(helpText);
+
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await page.getByRole('tab', {name: 'View Rendered Form'}).click();
+
+      const preview = page.locator('lfb-preview-dlg');
+      const legalButton = preview.getByRole('button', {
+        name: 'Legal button for Question with legal information',
+        exact: true
+      });
+      await expect(legalButton).toBeVisible();
+      await legalButton.click();
+      const legalPopover = page.locator('.lhc-popover-legal');
+      await expect(legalPopover).toBeVisible();
+      expect(await legalPopover.textContent()).toContain(legalText);
+
+      const helpButton = preview.getByRole('button', {
+        name: 'Help button for Question with legal information',
+        exact: true
+      });
+      await expect(helpButton).toBeVisible();
+      await helpButton.click();
+      const helpPopover = page.locator('.lhc-popover-help');
+      await expect(helpPopover).toBeVisible();
+      expect(await helpPopover.textContent()).toContain(helpText);
+    });
   });
 
   test.describe('Question item control', () => {
