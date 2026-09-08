@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.4.0] 2026-09-03
+## [12.5.0] 2026-09-08
 ### Changed
 - Changed the item-level Question text and Help text fields to inline textareas
   while preserving their CSS and XHTML controls.
@@ -10,6 +10,11 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed a crash when loading non-string primitive extensions in the
   string-with-css control.
+
+## [12.4.0] 2026-08-26
+### Added
+- Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
+  via a combined Min/Max Occurs widget that is shown when an item allows repeats.
 
 ## [12.3.1] 2026-08-20
 ### Fixed

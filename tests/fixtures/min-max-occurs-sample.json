@@ -1,0 +1,114 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Min Max Occurs Test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "q1",
+      "text": "Repeating with both",
+      "type": "string",
+      "required": true,
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "q2",
+      "text": "Non-repeating question",
+      "type": "string"
+    },
+    {
+      "linkId": "q3",
+      "text": "Repeating min only",
+      "type": "integer",
+      "required": true,
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "linkId": "q4",
+      "text": "Repeating max only",
+      "type": "decimal",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 10
+        }
+      ]
+    },
+    {
+      "linkId": "q5",
+      "text": "Repeating no occurs",
+      "type": "string",
+      "required": true,
+      "repeats": true
+    },
+    {
+      "linkId": "q6",
+      "text": "Repeating invalid occurs",
+      "type": "string",
+      "required": true,
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 6
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "q7",
+      "text": "Repeating optional with invalid min",
+      "type": "string",
+      "required": false,
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 3
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 8
+        }
+      ]
+    },
+    {
+      "linkId": "q8",
+      "text": "Repeating with occurrence metadata",
+      "type": "string",
+      "required": true,
+      "repeats": true,
+      "extension": [
+        {
+          "id": "min-occurs-extension",
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 2
+        },
+        {
+          "id": "max-occurs-extension",
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 5
+        }
+      ]
+    }
+  ]
+}

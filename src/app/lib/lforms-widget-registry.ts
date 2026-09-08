@@ -73,6 +73,7 @@ import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
+import {MinMaxOccursComponent} from './widgets/min-max-occurs/min-max-occurs.component';
 import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
 
 @Injectable()
@@ -143,6 +144,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
     this.register('enable-when-expression', EnableWhenExpressionComponent);
+    this.register('min-max-occurs', MinMaxOccursComponent);
+
     this.register('meta-profile', MetaProfileComponent);
     this.register('usage-context', UsageContextComponent);
     this.register('usage-context-code', UsageContextCodeComponent);
