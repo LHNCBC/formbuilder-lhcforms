@@ -16,7 +16,9 @@ import {
   EXTENSION_URL_COLUMN_COUNT,
   EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_ITEM_CONTROL,
-  PREFERRED_TERMINOLOGY_SERVER_URI
+  PREFERRED_TERMINOLOGY_SERVER_URI,
+  EXTENSION_URL_MIN_OCCURS,
+  EXTENSION_URL_MAX_OCCURS
 } from '../lib/constants/constants';
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
 import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
@@ -50,7 +52,9 @@ export class ExtensionsService {
     EXTENSION_URL_ITEM_CONTROL,
     PREFERRED_TERMINOLOGY_SERVER_URI,
     ObservationLinkPeriodComponent.extUrl,
-    ObservationExtractComponent.extUrl
+    ObservationExtractComponent.extUrl,
+    EXTENSION_URL_MIN_OCCURS,
+    EXTENSION_URL_MAX_OCCURS
   ]);
 
   _id = 'extensionServiceInstance_';
