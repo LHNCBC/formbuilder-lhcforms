@@ -14,7 +14,7 @@
     <div [ngClass]="controlClasses">
       <div class="input-group">
         @if (widgetInfo.rows) {
-          <textarea [name]="name" [readonly]="schema.readOnly"
+          <textarea [name]="name" [attr.readonly]="schema.readOnly ? true : null"
                     class="form-control form-control-sm"
                     [attr.id]="id" [formControl]="control" [attr.placeholder]="schema.placeholder"
                     [attr.maxLength]="schema.maxLength || null"
