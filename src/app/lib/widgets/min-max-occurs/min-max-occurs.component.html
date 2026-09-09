@@ -1,0 +1,51 @@
+<div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+  @if (!nolabel) {
+    <lfb-label
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      [ngClass]="labelClasses"
+      [labelId]="'label_'+elementId"
+    ></lfb-label>
+  }
+
+  <div [ngClass]="controlClasses">
+    <div class="d-flex gap-3 align-items-start">
+      <!-- Min Occurs -->
+      <div class="input-group input-group-sm" style="max-width: 160px;">
+        <span class="input-group-text py-0"
+              [attr.id]="'minOccursLabel_'+elementId">Min</span>
+        <input type="number" class="form-control"
+          autocomplete="off"
+          lfbInteger
+          [ngModel]="minOccurs"
+          (change)="onMinChange($any($event.target).value)"
+          [attr.aria-labelledby]="'minOccursLabel_'+elementId"
+          [disabled]="!minOccursAllowed"
+          [min]="minOccursAllowed ? 1 : 0"
+          [max]="fhirIntegerMax"
+          [placeholder]="minOccursAllowed ? '1' : '0'" />
+      </div>
+
+      <!-- Max Occurs -->
+      <div class="input-group input-group-sm" style="max-width: 160px;">
+        <span class="input-group-text py-0"
+              [attr.id]="'maxOccursLabel_'+elementId">Max</span>
+        <input type="number" class="form-control"
+          autocomplete="off"
+          lfbInteger
+          [ngModel]="maxOccurs"
+          (change)="onMaxChange($any($event.target).value)"
+          [attr.aria-labelledby]="'maxOccursLabel_'+elementId"
+          [min]="2"
+          [max]="fhirIntegerMax"
+          placeholder="*" />
+      </div>
+    </div>
+
+    @if (validationError) {
+      <div class="alert alert-warning p-1 mt-2" role="alert">
+        <small>{{ validationError }}</small>
+      </div>
+    }
+  </div>
+</div>
