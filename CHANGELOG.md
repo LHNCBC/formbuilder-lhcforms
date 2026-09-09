@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.4.1] 2026-09-09
+### Added
+- Added `SECURITY.md`
+
 ## [12.4.0] 2026-08-26
 ### Added
 - Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
