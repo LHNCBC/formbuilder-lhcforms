@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.4.1] 2026-09-09
+## [12.4.1] 2026-09-10
 ### Added
 - Added `SECURITY.md`
 
