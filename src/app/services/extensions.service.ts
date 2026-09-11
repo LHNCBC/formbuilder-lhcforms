@@ -1,5 +1,5 @@
 import {DestroyRef, inject, Injectable } from '@angular/core';
-import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
@@ -390,14 +390,24 @@ export class ExtensionsService {
    * @param keepValueType - value[x] to keep.
    */
   pruneUnusedValues(extProperty: FormProperty, keepValueType: string) {
-    const value = extProperty.value;
+    this.pruneUnusedValueFields(extProperty.value, keepValueType);
+    return extProperty;
+  }
+
+
+  /**
+   * Remove value[x] fields other than the selected value type from an extension value.
+   *
+   * @param value - Extension JSON value.
+   * @param keepValueType - value[x] to keep.
+   */
+  private pruneUnusedValueFields(value: fhir.Extension, keepValueType: string): void {
     const keys = Object.keys(value);
     for (const key of keys) {
       if(value.hasOwnProperty(key) && key.startsWith('value') && key !== keepValueType) {
         delete value[key];
       }
     }
-    return extProperty;
   }
 
 
@@ -413,9 +423,25 @@ export class ExtensionsService {
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
       this.updateExtension(value);
-      extProp.reset(value, selfOnly);
-      if(valueType) {
-        this.pruneUnusedValues(extProp, valueType);
+
+      // Extension ObjectProperties are intentionally sparse: ngx-schema-form creates only
+      // the value[x] property present in imported JSON. ObjectProperty.reset() cannot add a
+      // different schema-defined value[x], so replace the array item when the destination
+      // property is absent (for example valueInteger -> valuePositiveInt).
+      const valueTypePropertyMissing = valueType &&
+        !(extProp as PropertyGroup).getProperty(valueType);
+      if(valueTypePropertyMissing) {
+        this.pruneUnusedValueFields(value, valueType);
+        const extIndex = (this.extensionsProp.properties as FormProperty[]).indexOf(extProp);
+        const extensions = [...this.extensionsProp.value];
+        extensions[extIndex] = value;
+        this.extensionsProp.reset(extensions, selfOnly);
+      }
+      else {
+        extProp.reset(value, selfOnly);
+        if(valueType) {
+          this.pruneUnusedValues(extProp, valueType);
+        }
       }
     }
     else {

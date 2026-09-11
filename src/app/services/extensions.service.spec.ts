@@ -1,4 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import {
+  ArrayProperty,
+  DefaultLogService,
+  FormPropertyFactory,
+  JEXLExpressionCompilerFactory,
+  PropertyBindingRegistry,
+  PropertyGroup,
+  ValidatorRegistry,
+  ZSchemaValidatorFactory
+} from '@lhncbc/ngx-schema-form';
 
 import { ExtensionsService } from './extensions.service';
 import { SchemaService } from './schema.service';
@@ -28,6 +38,56 @@ describe('ExtensionsService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('should preserve the value when changing the value type of a sparse imported extension', () => {
+    const extensionUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount';
+    const factory = new FormPropertyFactory(
+      new ZSchemaValidatorFactory(),
+      new ValidatorRegistry(),
+      new PropertyBindingRegistry(),
+      new JEXLExpressionCompilerFactory(),
+      new DefaultLogService(3)
+    );
+    const extensionsProperty = factory.createProperty({
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          url: {type: 'string'},
+          extension: {type: 'array', items: {type: 'object', properties: {}}},
+          valueAddress: {type: 'object', properties: {}},
+          valueAge: {type: 'object', properties: {}},
+          valueInteger: {type: 'integer'},
+          valuePositiveInt: {type: 'integer'},
+          '__$isValueX': {type: 'boolean'},
+          '__$valueType': {type: 'string'},
+          '__$valueTypeCategory': {type: 'string'},
+          '__$primitiveType': {type: 'string'},
+          '__$stringify': {type: 'string'}
+        }
+      }
+    }) as ArrayProperty;
+    extensionsProperty.setValue([{url: extensionUrl, valueInteger: 2}], false);
+    service.setExtensions(extensionsProperty);
+
+    const importedProperty = service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup;
+    expect(importedProperty.getProperty('valuePositiveInt')).toBeUndefined();
+
+    service.resetExtension(
+      extensionUrl,
+      {url: extensionUrl, valuePositiveInt: 2},
+      'valuePositiveInt',
+      false
+    );
+
+    expect(service.getFirstExtensionByUrl(extensionUrl).valuePositiveInt).toBe(2);
+    expect(service.getFirstExtensionByUrl(extensionUrl).valueInteger).toBeUndefined();
+    expect(
+      (service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup)
+        .getProperty('valuePositiveInt')
+    ).toBeDefined();
   });
 
   describe('updateExtension', () => {
