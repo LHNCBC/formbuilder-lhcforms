@@ -20,6 +20,7 @@ describe('ExtensionPrimitiveComponent', () => {
 
   beforeEach(async () => {
     extensionsService = jasmine.createSpyObj('ExtensionsService', [
+      'getFirstExtensionByUrl',
       'removeExtensionsByUrl',
       'resetExtension'
     ]);
@@ -85,6 +86,38 @@ describe('ExtensionPrimitiveComponent', () => {
       extensionUrl,
       {url: extensionUrl, valueCode: 'horizontal'},
       'valueCode',
+      false
+    );
+  });
+
+  it('should preserve metadata from an existing canonical extension', () => {
+    extensionsService.getFirstExtensionByUrl.and.callFake((url) => url === extensionUrl
+      ? {id: 'column-count-id', url: extensionUrl, valuePositiveInt: 2}
+      : null);
+    initialize('3');
+
+    errorsChanges.next([]);
+
+    expect(extensionsService.resetExtension).toHaveBeenCalledWith(
+      extensionUrl,
+      {id: 'column-count-id', url: extensionUrl, valuePositiveInt: 3},
+      'valuePositiveInt',
+      false
+    );
+  });
+
+  it('should preserve metadata while migrating a legacy extension', () => {
+    extensionsService.getFirstExtensionByUrl.and.callFake((url) => url === legacyExtensionUrl
+      ? {id: 'legacy-column-count-id', url: legacyExtensionUrl, valueInteger: 2}
+      : null);
+    initialize('2');
+
+    errorsChanges.next([]);
+
+    expect(extensionsService.resetExtension).toHaveBeenCalledWith(
+      extensionUrl,
+      {id: 'legacy-column-count-id', url: extensionUrl, valuePositiveInt: 2},
+      'valuePositiveInt',
       false
     );
   });

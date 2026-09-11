@@ -6,6 +6,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgClass} from '@angular/common';
 import {LabelComponent} from '../label/label.component';
 import {IntegerDirective} from '../../directives/integer.directive';
+import fhir from 'fhir/r4';
 
 @Component({
   selector: 'lfb-extension-primitive',
@@ -125,8 +126,8 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
           this.extensionsService.removeExtensionsByUrl(extUrl);
           return;
         }
-        const ext: any = {url: extUrl};
-        ext[valueX] = fhirValue;
+        const currentExtension = this.getCurrentExtension(extUrl);
+        const ext = this.mergeExtensionValue(currentExtension, extUrl, valueX, fhirValue);
         this.removeLegacyExtensions();
         this.extensionsService.resetExtension(extUrl, ext, valueX, false);
       }
@@ -148,6 +149,46 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
       return Number.isFinite(numericValue) ? numericValue : undefined;
     }
     return value;
+  }
+
+  /**
+   * Find the canonical extension, or a legacy extension that will be migrated to it.
+   */
+  private getCurrentExtension(extUrl: string): fhir.Extension | null {
+    const canonicalExtension = this.extensionsService.getFirstExtensionByUrl(extUrl);
+    if(canonicalExtension) {
+      return canonicalExtension;
+    }
+
+    for (const legacyUrl of this.schema.widget?.legacyExtensionUrls || []) {
+      const legacyExtension = this.extensionsService.getFirstExtensionByUrl(legacyUrl);
+      if(legacyExtension) {
+        return legacyExtension;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Update an extension's primitive value while retaining metadata such as its id.
+   */
+  private mergeExtensionValue(
+    currentExtension: fhir.Extension | null,
+    extUrl: string,
+    valueX: string,
+    value: any
+  ): fhir.Extension {
+    const extension: fhir.Extension = {
+      ...currentExtension,
+      url: extUrl,
+      [valueX]: value
+    };
+    Object.keys(extension).forEach((key) => {
+      if(key.startsWith('value') && key !== valueX) {
+        delete extension[key];
+      }
+    });
+    return extension;
   }
 
   private removeLegacyExtensions(): void {

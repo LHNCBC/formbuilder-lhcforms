@@ -55,6 +55,7 @@ describe('ExtensionsService', () => {
         type: 'object',
         additionalProperties: false,
         properties: {
+          id: {type: 'string'},
           url: {type: 'string'},
           extension: {type: 'array', items: {type: 'object', properties: {}}},
           valueAddress: {type: 'object', properties: {}},
@@ -69,7 +70,11 @@ describe('ExtensionsService', () => {
         }
       }
     }) as ArrayProperty;
-    extensionsProperty.setValue([{url: extensionUrl, valueInteger: 2}], false);
+    extensionsProperty.setValue([{
+      id: 'column-count-id',
+      url: extensionUrl,
+      valueInteger: 2
+    }], false);
     service.setExtensions(extensionsProperty);
 
     const importedProperty = service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup;
@@ -77,13 +82,14 @@ describe('ExtensionsService', () => {
 
     service.resetExtension(
       extensionUrl,
-      {url: extensionUrl, valuePositiveInt: 2},
+      {id: 'column-count-id', url: extensionUrl, valuePositiveInt: 2},
       'valuePositiveInt',
       false
     );
 
     expect(service.getFirstExtensionByUrl(extensionUrl).valuePositiveInt).toBe(2);
     expect(service.getFirstExtensionByUrl(extensionUrl).valueInteger).toBeUndefined();
+    expect(service.getFirstExtensionByUrl(extensionUrl).id).toBe('column-count-id');
     expect(
       (service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup)
         .getProperty('valuePositiveInt')
