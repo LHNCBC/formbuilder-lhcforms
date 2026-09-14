@@ -1841,6 +1841,12 @@
                   "placeholder": "Number of bytes"
                 }
               },
+              "_size": {
+                "$ref": "#/definitions/Element",
+                "widget": {
+                  "id": "hidden"
+                }
+              },
               "hash": {
                 "description": "The calculated hash of the data using SHA-1. Represented using base64.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",

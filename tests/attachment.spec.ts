@@ -458,6 +458,94 @@ test.describe('attachment data type', () => {
     ]);
   });
 
+  test('should preserve initial-row metadata without restoring cleared Attachment fields', async ({ page }) => {
+    const initialRow = {
+      id: 'initial-note',
+      extension: [{
+        url: 'https://example.org/initial-note',
+        valueString: 'Preserve this annotation'
+      }],
+      modifierExtension: [{
+        url: 'https://example.org/initial-modifier',
+        valueBoolean: true
+      }],
+      valueAttachment: {
+        contentType: 'application/pdf',
+        url: 'https://example.org/report.pdf',
+        hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+        title: 'Original attachment',
+        _size: {
+          id: 'size-note',
+          extension: [{
+            url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason',
+            valueCode: 'unknown'
+          }]
+        }
+      }
+    };
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      item: [{
+        linkId: 'attachment-metadata',
+        text: 'Attachment metadata',
+        type: 'attachment',
+        initial: [initialRow]
+      }]
+    };
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'attachment-metadata.json',
+      mimeType: 'application/fhir+json',
+      buffer: Buffer.from(JSON.stringify(questionnaire))
+    });
+    await expect(page.getByRole('dialog', {name: 'Replace existing form?'})).toBeVisible();
+    await page.getByRole('button', {name: 'Continue', exact: true}).click();
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachment metadata');
+
+    for(const version of ['R5', 'R4']) {
+      const imported = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(imported.item[0].initial[0]).toEqual(initialRow);
+    }
+
+    const row = page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr').first();
+    await row.getByLabel('Edit this row').click();
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+    const titleInput = attachmentDialog.getByRole('textbox', {name: /^Title/});
+    await titleInput.fill('Edited attachment');
+    await titleInput.press('Tab');
+    const saveAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveAttachment).toBeEnabled();
+    await saveAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    for(const version of ['R5', 'R4']) {
+      const edited = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(edited.item[0].initial[0]).toEqual({
+        ...initialRow,
+        valueAttachment: {...initialRow.valueAttachment, title: 'Edited attachment'}
+      });
+    }
+
+    await row.getByLabel('Edit this row').click();
+    await attachmentDialog.getByRole('button', {name: 'Clear all fields'}).click();
+    await attachmentDialog.getByRole('textbox', {name: 'URL'}).fill('https://example.org/replacement.pdf');
+    await expect(saveAttachment).toBeEnabled();
+    await saveAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    for(const version of ['R5', 'R4']) {
+      const cleared = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(cleared.item[0].initial[0]).toEqual({
+        ...initialRow,
+        valueAttachment: {url: 'https://example.org/replacement.pdf'}
+      });
+    }
+  });
+
   test('should preserve URL metadata and restore base64 metadata when content is edited', async ({ page }) => {
     await PWUtils.uploadFile(page, 'attachment-revert-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');

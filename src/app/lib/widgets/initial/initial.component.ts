@@ -124,7 +124,7 @@ export class InitialComponent extends TableEditRowInDlgComponent implements OnIn
   }
 
   /**
-   * Open the Attachment editor for an existing initial-value row.
+   * Open the Attachment editor, preserving row metadata when replacing its Attachment.
    * @param index - The row index to edit.
    */
   override onEditProperty(index: number): void {
@@ -136,7 +136,7 @@ export class InitialComponent extends TableEditRowInDlgComponent implements OnIn
       const subscription = matDialogRef.afterClosed().subscribe((submittedValue) => {
         if(submittedValue) {
           const rows = [...(this.formProperty.value || [])];
-          rows[index] = submittedValue;
+          rows[index] = {...rows[index], ...submittedValue};
           this.formProperty.setValue(rows, false);
         }
         subscription.unsubscribe();

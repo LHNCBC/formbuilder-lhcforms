@@ -139,6 +139,41 @@ describe('FormService', () => {
       .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
   });
 
+  ['R5', 'R4'].forEach((version) => {
+    it(`should preserve extension-only Attachment.size metadata through import and ${version} export`, () => {
+      const sizeMetadata: fhir.Element = {
+        id: 'size-note',
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason',
+          valueCode: 'unknown'
+        }]
+      };
+      const expectedAttachment = {
+        url: 'https://example.org/report.pdf',
+        _size: sizeMetadata
+      };
+      const questionnaire: fhir.Questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        item: [{
+          linkId: 'attachment',
+          type: 'attachment',
+          initial: [{
+            valueAttachment: {...expectedAttachment}
+          }]
+        }]
+      };
+
+      const imported = service.convertToR5(questionnaire);
+      expect(imported.item[0].initial[0].valueAttachment).toEqual(expectedAttachment);
+      expect(imported.item[0].initial[0].valueAttachment.size).toBeUndefined();
+
+      const exported = service.convertFromR5(imported, version);
+      expect(exported.item[0].initial[0].valueAttachment).toEqual(expectedAttachment);
+      expect(exported.item[0].initial[0].valueAttachment.size).toBeUndefined();
+    });
+  });
+
   it('should report an incompatible opener notification without repeating the dialog', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',

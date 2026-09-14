@@ -244,7 +244,8 @@ export class AttachmentUtil {
       }
       else if(value && typeof value === 'object') {
         cleanedValue = Object.entries(value).reduce((objectResult, [objectKey, objectValue]) => {
-          if(objectValue !== null && objectValue !== undefined && objectValue !== '') {
+          if(objectValue !== null && objectValue !== undefined && objectValue !== '' &&
+            (!Array.isArray(objectValue) || objectValue.length > 0)) {
             objectResult[objectKey] = objectValue;
           }
           return objectResult;
@@ -326,6 +327,7 @@ export class AttachmentUtil {
 
   /**
    * Convert Attachment.size to the R5 integer64 JSON representation.
+   * Preserve primitive metadata when the scalar value is absent.
    * @param attachment - The Attachment object to normalize in place.
    */
   private static normalizeR5Size(attachment: Record<string, any>): void {
@@ -337,7 +339,8 @@ export class AttachmentUtil {
       attachment.size = size.trim();
     }
 
-    if(!AttachmentUtil.isUnsignedIntegerInRange(attachment.size, '9223372036854775807')) {
+    if(attachment.size !== undefined &&
+      !AttachmentUtil.isUnsignedIntegerInRange(attachment.size, '9223372036854775807')) {
       delete attachment.size;
       delete attachment._size;
     }
@@ -345,6 +348,7 @@ export class AttachmentUtil {
 
   /**
    * Convert an R5 Attachment to the fields and primitive representation supported before R5.
+   * Preserve primitive size metadata when the scalar value is absent.
    * @param attachment - The Attachment object to normalize in place.
    */
   private static normalizeLegacyAttachment(attachment: Record<string, any>): void {
@@ -354,7 +358,7 @@ export class AttachmentUtil {
     if(AttachmentUtil.isUnsignedIntegerInRange(size, '2147483647')) {
       attachment.size = Number(size);
     }
-    else {
+    else if(attachment.size !== undefined) {
       delete attachment.size;
       delete attachment._size;
     }

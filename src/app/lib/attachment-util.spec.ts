@@ -78,6 +78,16 @@ describe('AttachmentUtil', () => {
       .toBe('{"title":"Report","size":"0"}');
   });
 
+  it('omits empty size metadata from compact JSON without discarding a primitive id', () => {
+    const attachment = {url: 'https://example.org/report.pdf', _size: {extension: []}};
+    expect(AttachmentUtil.compactJson(attachment)).toBe('{"url":"https://example.org/report.pdf"}');
+    expect(attachment._size).toEqual({extension: []});
+
+    const attachmentWithId = {...attachment, _size: {id: 'size-note', extension: []}};
+    expect(AttachmentUtil.compactJson(attachmentWithId))
+      .toBe('{"url":"https://example.org/report.pdf","_size":{"id":"size-note"}}');
+  });
+
   it('normalizes Attachment fields for R5 and earlier releases', () => {
     const questionnaire: any = {
       item: [{initial: [{valueAttachment: {
@@ -95,6 +105,37 @@ describe('AttachmentUtil', () => {
 
     AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, 'R4');
     expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({size: 5});
+  });
+
+  ['R5', 'R4', 'STU3'].forEach((version) => {
+    it(`preserves Attachment.size metadata without a scalar value for ${version}`, () => {
+      const extension = [{
+        url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason',
+        valueCode: 'unknown'
+      }];
+
+      [{id: 'size-note'}, {extension}, {id: 'size-note', extension}].forEach((metadata) => {
+        const attachment = {url: 'https://example.org/report.pdf', _size: metadata};
+        const questionnaire = {item: [{initial: [{valueAttachment: attachment}]}]};
+
+        AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, version);
+
+        expect(attachment).toEqual({url: 'https://example.org/report.pdf', _size: metadata});
+      });
+    });
+
+    it(`still removes malformed Attachment.size values and their metadata for ${version}`, () => {
+      [null, '', 'invalid', '-1', '1.5', '9223372036854775808', -1, 1.5, NaN, Infinity]
+        .forEach((size) => {
+          const attachment = {size, _size: {id: 'invalid-size'}};
+          const questionnaire = {item: [{initial: [{valueAttachment: attachment}]}]};
+
+          AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, version);
+
+          expect(attachment.size).withContext(`size: ${String(size)}`).toBeUndefined();
+          expect(attachment._size).withContext(`size: ${String(size)}`).toBeUndefined();
+        });
+    });
   });
 
   it('preserves the full R5 integer64 range without JavaScript number coercion', () => {
