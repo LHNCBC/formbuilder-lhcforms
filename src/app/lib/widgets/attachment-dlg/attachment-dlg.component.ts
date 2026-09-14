@@ -69,9 +69,6 @@ export class AttachmentDlgComponent {
     'contentType', 'language', 'size', 'hash', 'creation',
     'height', 'width', 'frames', 'duration', 'pages'
   ];
-  private static readonly URL_INVALIDATED_FIELDS: readonly string[] = [
-    ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS, '_url'
-  ];
   private static readonly DATA_INVALIDATED_FIELDS: readonly string[] = [
     ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS, 'url', '_url', '_data'
   ];
@@ -111,7 +108,6 @@ export class AttachmentDlgComponent {
     url: this.createMethodState(),
     base64Binary: this.createMethodState()
   };
-  private readonly urlMetadataSnapshots = new Map<string, fhir.Attachment>();
   private readonly dataMetadataSnapshots = new Map<string, fhir.Attachment>();
 
   /** Initialize the editor state from the selected Attachment row. */
@@ -314,19 +310,10 @@ export class AttachmentDlgComponent {
 
   /**
    * Merge the shared metadata form into the active Attachment draft without
-   * disturbing specialized fields such as data and hash.
+   * disturbing fields not managed by the form or clearing metadata when the URL changes.
    * @param model - Attachment metadata emitted by the schema form.
    */
   onAttachmentChange(model: Partial<fhir.Attachment>): void {
-    const previousUrl = this.draft.url;
-    if(previousUrl) {
-      this.rememberAttachmentFields(
-        this.urlMetadataSnapshots,
-        previousUrl,
-        this.draft,
-        AttachmentDlgComponent.URL_INVALIDATED_FIELDS
-      );
-    }
     let changed = false;
     Object.keys(this.attachmentSchema.properties || {}).forEach((field: keyof fhir.Attachment) => {
       const modelValue = model?.[field];
@@ -342,14 +329,6 @@ export class AttachmentDlgComponent {
         changed = true;
       }
     });
-    if(previousUrl !== this.draft.url) {
-      this.restoreAttachmentFields(
-        this.draft,
-        AttachmentDlgComponent.URL_INVALIDATED_FIELDS,
-        this.draft.url ? this.urlMetadataSnapshots.get(this.draft.url) : undefined
-      );
-      this.draft = {...this.draft};
-    }
     if(changed) {
       this.markDirty();
     }
@@ -506,6 +485,22 @@ export class AttachmentDlgComponent {
     const state = this.activeState;
     this.clearEmbeddedData(state);
     this.activateRetainedUrl(state);
+    this.attachmentSchema = this.createAttachmentSchema();
+    this.markDirty();
+  }
+
+  /** Clear every field and validation state in the selected input method's draft. */
+  clearAllFields(): void {
+    const state = this.activeState;
+    state.dataRevision++;
+    state.attachment = {};
+    state.dataError = '';
+    state.fileError = '';
+    state.calculatingDataMetadata = false;
+    state.formValid = true;
+    if(this.inputMethod === 'base64Binary') {
+      this.dataMetadataSnapshots.clear();
+    }
     this.attachmentSchema = this.createAttachmentSchema();
     this.markDirty();
   }

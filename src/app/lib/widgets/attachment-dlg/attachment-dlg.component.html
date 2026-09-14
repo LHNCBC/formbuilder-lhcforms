@@ -26,6 +26,8 @@
                    value="base64Binary" [ngModel]="inputMethod" (ngModelChange)="onInputMethodChange($event)">
             <label class="form-check-label" for="attachment-input-base64">base64Binary</label>
           </div>
+          <button type="button" class="btn btn-sm btn-light text-primary shadow-sm ms-auto"
+                  [disabled]="isEmpty" (click)="clearAllFields()">Clear all fields</button>
         </div>
       </fieldset>
 

@@ -458,7 +458,7 @@ test.describe('attachment data type', () => {
     ]);
   });
 
-  test('should restore attachment metadata when a content edit is reverted', async ({ page }) => {
+  test('should preserve URL metadata and restore base64 metadata when content is edited', async ({ page }) => {
     await PWUtils.uploadFile(page, 'attachment-revert-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
     await PWUtils.clickTreeNode(page, 'Attachments with revertable metadata');
@@ -475,11 +475,11 @@ test.describe('attachment data type', () => {
     const pagesInput = attachmentDialog.getByRole('spinbutton', {name: /^Pages/});
 
     await urlInput.fill('https://example.org/replacement.pdf');
-    await expect(mimeTypeInput).toHaveValue('');
-    await expect(sizeInput).toHaveValue('');
-    await expect(languageInput).toHaveValue('');
-    await expect(heightInput).toHaveValue('');
-    await expect(pagesInput).toHaveValue('');
+    await expect(mimeTypeInput).toHaveValue('application/pdf');
+    await expect(sizeInput).toHaveValue('4');
+    await expect(languageInput).toHaveValue('en');
+    await expect(heightInput).toHaveValue('720');
+    await expect(pagesInput).toHaveValue('2');
 
     await urlInput.fill('https://example.org/remote.pdf');
     await expect(mimeTypeInput).toHaveValue('application/pdf');
@@ -531,7 +531,7 @@ test.describe('attachment data type', () => {
     ]);
   });
 
-  test('should invalidate stale content metadata when embedded data or a URL changes', async ({ page }) => {
+  test('should invalidate stale content metadata only when embedded data changes', async ({ page }) => {
     await PWUtils.uploadFile(page, 'attachment-preservation-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
     await PWUtils.clickTreeNode(page, 'Attachments with retained metadata');
@@ -563,8 +563,7 @@ test.describe('attachment data type', () => {
     await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
     await expect(attachmentDialog).not.toBeVisible();
 
-    // Changing a URL invalidates the old hash, size, MIME type, and other
-    // content-derived metadata.
+    // Changing a URL preserves the metadata entered by the user.
     await initialTable.locator('tbody tr').nth(1).getByLabel('Edit this row').click();
     const urlInput = attachmentDialog.getByRole('textbox', {name: 'URL'});
     const remoteSizeInput = attachmentDialog.getByRole('textbox', {name: /^Size/});
@@ -575,10 +574,10 @@ test.describe('attachment data type', () => {
     await heightInput.fill('720');
     await heightInput.press('Tab');
     await urlInput.fill('https://example.org/replacement.pdf');
-    await expect(remoteSizeInput).toHaveValue('');
-    await expect(mimeTypeInput).toHaveValue('');
-    await expect(languageInput).toHaveValue('');
-    await expect(heightInput).toHaveValue('');
+    await expect(remoteSizeInput).toHaveValue('4');
+    await expect(mimeTypeInput).toHaveValue('application/pdf');
+    await expect(languageInput).toHaveValue('en');
+    await expect(heightInput).toHaveValue('720');
     await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('Replacement');
     await attachmentDialog.getByRole('textbox', {name: /^Title/}).press('Tab');
     await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
@@ -594,10 +593,51 @@ test.describe('attachment data type', () => {
         title: 'Embedded and remote'
       },
       {
+        contentType: 'application/pdf',
         url: 'https://example.org/replacement.pdf',
+        size: '4',
+        hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+        language: 'en',
+        height: 720,
         title: 'Replacement'
       }
     ]);
+  });
+
+  test('should clear only the selected input method draft and keep that method selected', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'attachment-preservation-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachments with retained metadata');
+
+    const initialRow = page.locator('lfb-table')
+      .filter({hasText: 'Initial value'}).locator('tbody tr').first();
+    await initialRow.getByLabel('Edit this row').click();
+
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+    await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
+    await attachmentDialog.getByRole('textbox', {name: 'URL'})
+      .fill('https://example.org/alternate.pdf');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('Alternate draft');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).press('Tab');
+
+    await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
+    const clearAllFields = attachmentDialog.getByRole('button', {name: 'Clear all fields'});
+    await expect(clearAllFields).toBeEnabled();
+    await clearAllFields.click();
+
+    await expect(attachmentDialog.getByRole('radio', {name: 'base64Binary'})).toBeChecked();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'Data', exact: true})).toHaveValue('');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveValue('');
+    await expect(clearAllFields).toBeDisabled();
+    await expect(attachmentDialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+
+    await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'}))
+      .toHaveValue('https://example.org/alternate.pdf');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/}))
+      .toHaveValue('Alternate draft');
   });
 
   test('should retain URL metadata and expose the URL after clearing embedded data', async ({ page }) => {
