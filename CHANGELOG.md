@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.5.0] 2026-09-08
+## [12.5.0] 2026-09-14
 ### Added
 - Support choice orientation and column count for Questionnaire items.
+
+## [12.4.1] 2026-09-10
+### Added
+- Added `SECURITY.md`
 
 ## [12.4.0] 2026-08-26
 ### Added
