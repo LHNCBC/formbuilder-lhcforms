@@ -26,6 +26,8 @@
           { "field": "__$pickInitial", "col": 12 },
           { "field": "__$initialCalculatedExpression", "col": 12 },
           { "field": "__$itemControl", "col": 12 },
+          { "field": "__$choiceOrientation", "col": 12 },
+          { "field": "__$columnCount", "col": 12 },
           { "field": "__$itemControlQuestion", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
           { "field": "__$itemControlDisplay", "col": 12 },

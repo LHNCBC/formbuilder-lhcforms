@@ -74,6 +74,68 @@
         "controlClasses": "col-10 p-0"
       }
     },
+    "__$choiceOrientation": {
+      "description": "Identifies the desired orientation when rendering a list of choices.",
+      "title": "Choice orientation",
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ],
+      "default": "",
+      "visibleIf": {
+        "allOf": [
+          {
+            "__$isAnswerList": [true]
+          },
+          {
+            "__$itemControl": ["$EXP$ target.value == 'radio-button' || target.value == 'check-box'"]
+          }
+        ]
+      },
+      "widget": {
+        "id": "extension-primitive",
+        "extensionUrl": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+        "valueX": "valueCode",
+        "buttonRadio": true,
+        "addEmptyOption": true,
+        "emptyOptionValue": "",
+        "emptyOptionLabel": "Unspecified",
+        "optionLabels": {
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0"
+      }
+    },
+    "__$columnCount": {
+      "description": "The number of columns to use when rendering a list of choices.",
+      "title": "Column count",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647,
+      "visibleIf": {
+        "allOf": [
+          {
+            "__$isAnswerList": [true]
+          },
+          {
+            "__$itemControl": ["$EXP$ target.value == 'radio-button' || target.value == 'check-box'"]
+          }
+        ]
+      },
+      "widget": {
+        "id": "extension-primitive",
+        "extensionUrl": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount",
+        "legacyExtensionUrls": ["http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount"],
+        "valueX": "valuePositiveInt",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0"
+      }
+    },
     "__$restrictions": {
       "description": "Choose to add value restrictions to the input.",
       "title": "Restrictions",
@@ -2879,6 +2941,28 @@
       "showFields": [
         {
           "field": "__$entryFormat",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$choiceOrientation"
+      ],
+      "showFields": [
+        {
+          "field": "__$choiceOrientation",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$columnCount"
+      ],
+      "showFields": [
+        {
+          "field": "__$columnCount",
           "col": 12
         }
       ]
