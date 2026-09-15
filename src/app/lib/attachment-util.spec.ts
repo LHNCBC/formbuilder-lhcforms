@@ -62,6 +62,50 @@ describe('AttachmentUtil', () => {
     expect(AttachmentUtil.isValidLanguageTag('en--US')).toBeFalse();
   });
 
+  it('accepts extended-language subtags and complete BCP-47 combinations', () => {
+    [
+      'zh-cmn-Hans', 'zh-yue-HK', 'ar-aao', 'sgn-ase-US', 'ZH-CMN-hANS-CN',
+      'zh-cmn-Hans-CN-u-ca-chinese-x-record', '  zh-cmn-Hans  ',
+      'en-Latn-US', 'es-419', 'de-CH-1901', 'sl-rozaj-biske-1994',
+      'en-a-myext-b-another', 'en-0-abc', 'en-a-abcde-abcde',
+      'qaa-Qaaa-QM-x-southern'
+    ].forEach((tag) => {
+      expect(AttachmentUtil.isValidLanguageTag(tag)).withContext(tag).toBeTrue();
+    });
+  });
+
+  it('preserves grandfathered and private-use language tags', () => {
+    [
+      'i-klingon', 'I-DEFAULT', 'en-GB-oed', 'sgn-BE-FR', 'zh-min-nan',
+      'x-project', 'X-a-1', 'en-x-private', 'en-x-a-a', 'en-x-abcde-abcde'
+    ].forEach((tag) => {
+      expect(AttachmentUtil.isValidLanguageTag(tag)).withContext(tag).toBeTrue();
+    });
+  });
+
+  it('accepts reserved grammatical forms without requiring subtag registration', () => {
+    ['abcd', 'abcde', 'abcdefgh', 'aaa-bbb-ccc-ddd'].forEach((tag) => {
+      expect(AttachmentUtil.isValidLanguageTag(tag)).withContext(tag).toBeTrue();
+    });
+  });
+
+  it('rejects malformed BCP-47 subtag sequences and non-ASCII characters', () => {
+    [
+      '', ' ', 'en_US', 'en--US', 'en US', 'en-\u00e9', '\u212aen',
+      'en-', '-en', 'e', 'abcdefghi', 'abcd-abc', 'en-abc-def-ghi-jkl',
+      'en-US-Latn', 'en-12', 'en-a', 'en-a-b', 'en-a-123456789',
+      'en-x', 'x', 'i-unknown', 'en-x-123456789'
+    ].forEach((tag) => {
+      expect(AttachmentUtil.isValidLanguageTag(tag)).withContext(tag).toBeFalse();
+    });
+  });
+
+  it('rejects repeated variants and extension singletons regardless of case', () => {
+    ['en-abcde-abcde', 'sl-rozaj-ROZAJ', 'en-a-foo-A-bar', 'en-0-foo-0-bar'].forEach((tag) => {
+      expect(AttachmentUtil.isValidLanguageTag(tag)).withContext(tag).toBeFalse();
+    });
+  });
+
   it('provides the FHIR R4 Common Languages as preferred suggestions', () => {
     expect(AttachmentUtil.COMMON_LANGUAGES.find(({code}) => code === 'en-US'))
       .toEqual({code: 'en-US', display: 'English (United States)'});

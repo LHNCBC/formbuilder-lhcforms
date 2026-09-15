@@ -83,6 +83,16 @@ export class AttachmentUtil {
     'zh-xiang'
   ]);
 
+  /** RFC 5646 langtag grammar, capturing variants and extensions for duplicate checks. */
+  private static readonly LANGUAGE_TAG_PATTERN = new RegExp(
+    '^(?:[a-z]{2,3}(?:-[a-z]{3}){0,3}|[a-z]{4,8})' +
+    '(?:-[a-z]{4})?' +
+    '(?:-(?:[a-z]{2}|[0-9]{3}))?' +
+    '((?:-(?:[a-z0-9]{5,8}|[0-9][a-z0-9]{3}))*)' +
+    '((?:-[0-9a-wy-z](?:-[a-z0-9]{2,8})+)*)' +
+    '(?:-x(?:-[a-z0-9]{1,8})+)?$'
+  );
+
   /**
    * Parse plain base64 or a base64 data URI into the representation required by
    * FHIR Attachment.data. Whitespace is ignored and data URI metadata is removed.
@@ -162,25 +172,31 @@ export class AttachmentUtil {
   }
 
   /**
-   * Return whether a value is a well-formed BCP-47 language tag.
-   * @param value - The language tag to validate.
-   * @returns True when the value is a valid BCP-47 language tag.
+   * Check BCP-47 syntax, including extlangs, grandfathered tags, and private use.
+   * Subtag registration and extension-specific semantics are not validated.
+   * @param value - The language tag to validate, ignoring surrounding whitespace and case.
+   * @returns True for a well-formed tag without repeated variants or extension singletons.
    */
   static isValidLanguageTag(value: string): boolean {
     const tag = value?.trim();
-    if(!tag || /\s/.test(tag)) {
+    if(!tag || !/^[A-Za-z0-9-]+$/.test(tag)) {
       return false;
     }
-    if(AttachmentUtil.GRANDFATHERED_LANGUAGE_TAGS.has(tag.toLowerCase()) ||
-      /^x(?:-[A-Za-z0-9]{1,8})+$/i.test(tag)) {
+
+    const normalizedTag = tag.toLowerCase();
+    if(AttachmentUtil.GRANDFATHERED_LANGUAGE_TAGS.has(normalizedTag) ||
+      /^x(?:-[a-z0-9]{1,8})+$/.test(normalizedTag)) {
       return true;
     }
-    try {
-      return Intl.getCanonicalLocales(tag).length === 1;
-    }
-    catch {
+
+    const match = AttachmentUtil.LANGUAGE_TAG_PATTERN.exec(normalizedTag);
+    if(!match) {
       return false;
     }
+
+    const variants = match[1].split('-').filter(Boolean);
+    const singletons = match[2].split('-').filter((subtag) => subtag.length === 1);
+    return new Set(variants).size === variants.length && new Set(singletons).size === singletons.length;
   }
 
   /**

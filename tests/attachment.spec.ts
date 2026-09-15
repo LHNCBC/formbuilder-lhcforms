@@ -137,6 +137,9 @@ test.describe('attachment data type', () => {
     await languageInput.fill('zh-Hant-TW');
     await expect(attachmentDialog.getByText('Enter a valid BCP-47 language tag, such as en, en-US, or zh-Hant-TW.'))
       .toHaveCount(0);
+    await languageInput.fill('zh-cmn-Hans');
+    await expect(attachmentDialog.getByText('Enter a valid BCP-47 language tag, such as en, en-US, or zh-Hant-TW.'))
+      .toHaveCount(0);
     const saveAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
     await expect(saveAttachment).toBeEnabled();
     await saveAttachment.click();
@@ -156,7 +159,7 @@ test.describe('attachment data type', () => {
       url: 'http://example.org/report.pdf',
       title: 'Report',
       contentType: 'application/pdf',
-      language: 'zh-Hant-TW',
+      language: 'zh-cmn-Hans',
       size: '9007199254740993',
       height: 1080,
       width: 1920,
@@ -169,7 +172,7 @@ test.describe('attachment data type', () => {
     const r5Questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(r5Questionnaire.item[0].initial[0].valueAttachment).toEqual({
       contentType: 'application/pdf',
-      language: 'zh-Hant-TW',
+      language: 'zh-cmn-Hans',
       url: 'http://example.org/report.pdf',
       size: '9007199254740993',
       title: 'Report',
@@ -187,7 +190,7 @@ test.describe('attachment data type', () => {
     await PWUtils.assertValueInQuestionnaire(
       page, '/item/0/initial/0/valueAttachment/contentType', 'application/pdf', 'R4');
     await PWUtils.assertValueInQuestionnaire(
-      page, '/item/0/initial/0/valueAttachment/language', 'zh-Hant-TW', 'R4');
+      page, '/item/0/initial/0/valueAttachment/language', 'zh-cmn-Hans', 'R4');
     const r4Questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     expect(r4Questionnaire.item[0].initial[0].valueAttachment.size).toBeUndefined();
     expect(r4Questionnaire.item[0].initial[0].valueAttachment.height).toBeUndefined();
@@ -458,7 +461,7 @@ test.describe('attachment data type', () => {
     ]);
   });
 
-  test('should preserve initial-row metadata without restoring cleared Attachment fields', async ({ page }) => {
+  test('should preserve initial-row metadata and language tags without restoring cleared Attachment fields', async ({ page }) => {
     const initialRow = {
       id: 'initial-note',
       extension: [{
@@ -474,6 +477,7 @@ test.describe('attachment data type', () => {
         url: 'https://example.org/report.pdf',
         hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
         title: 'Original attachment',
+        language: 'zh-cmn-Hans',
         _size: {
           id: 'size-note',
           extension: [{
@@ -514,6 +518,7 @@ test.describe('attachment data type', () => {
     const row = page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr').first();
     await row.getByLabel('Edit this row').click();
     const attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Language/})).toHaveValue('zh-cmn-Hans');
     const titleInput = attachmentDialog.getByRole('textbox', {name: /^Title/});
     await titleInput.fill('Edited attachment');
     await titleInput.press('Tab');
