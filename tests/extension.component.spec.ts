@@ -2,10 +2,34 @@ import {Page, test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 import {
-  EXTENSION_URL_ENTRY_FORMAT
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT,
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_REGEX,
+  EXTENSION_URL_RENDERING_STYLE
 } from '../src/app/lib/constants/constants';
 
 const EXTENSION_URL_REPLACES = 'http://hl7.org/fhir/StructureDefinition/replaces';
+const RESTRICTION_EXTENSION_URLS = [
+  EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_REGEX,
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MIME_TYPE
+];
+const CHOICE_LAYOUT_EXTENSION_FIELDS = [
+  {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation'},
+  {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count'},
+  {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count'}
+];
 
 
 /**
@@ -69,14 +93,14 @@ test.describe('extension.component', async () => {
 
   test('Form level page - should reject a second extension when the maximum cardinality is one', async ({page}) => {
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
-    await addPrimitiveExtension(page, EXTENSION_URL_ENTRY_FORMAT, 'valueString', 'First format');
+    await addPrimitiveExtension(page, EXTENSION_URL_RENDERING_STYLE, 'valueString', 'First style');
 
     await page.getByRole('button', {name: 'Add new extension'}).first().click();
     const dialog = page.locator('lfb-extension-dlg').last();
     const formLoc = dialog.locator('lfb-extension-obj sf-form');
     const urlInput = formLoc.getByLabel('Url', {exact: true});
-    await urlInput.fill(EXTENSION_URL_ENTRY_FORMAT);
-    await formLoc.locator('input[id^="valueString"]').fill('Second format');
+    await urlInput.fill(EXTENSION_URL_RENDERING_STYLE);
+    await formLoc.locator('input[id^="valueString"]').fill('Second style');
 
     const urlWidget = urlInput.locator('xpath=ancestor::lfb-extension-url');
     await expect(urlInput).toHaveClass(/\binvalid\b/);
@@ -89,9 +113,24 @@ test.describe('extension.component', async () => {
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.extension).toEqual([{
-      url: EXTENSION_URL_ENTRY_FORMAT,
-      valueString: 'First format'
+      url: EXTENSION_URL_RENDERING_STYLE,
+      valueString: 'First style'
     }]);
+  });
+
+  test('Form level page - should reject a managed extension URL with surrounding whitespace', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+    const dialog = page.locator('lfb-extension-dlg').last();
+    const urlInput = dialog.getByLabel('Url', {exact: true});
+
+    await urlInput.fill(`  ${EXTENSION_URL_ENTRY_FORMAT}  `);
+
+    await expect(dialog).toContainText(
+      'This extension cannot be added here. Use the dedicated “Entry format” field on a questionnaire item instead.'
+    );
+    await expect(urlInput).toHaveAttribute('aria-invalid', 'true');
+    await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
   });
 
   test('Form level page - should allow a known repeatable extension in a valid context', async ({page}) => {
@@ -295,6 +334,48 @@ test.describe('extension.component', async () => {
     }]);
   });
 
+  test('Item level page - should reject assigning questionnaire-unit through General Extensions', async ({page}) => {
+    await page.getByRole('button', {name: 'Create questions'}).first().click();
+    await PWUtils.expandAdvancedFields(page);
+    await assertCreateExtension(page);
+
+    const extensionRow = page.locator('lfb-extension table tbody tr').first();
+    await extensionRow.getByLabel('Edit this row').click();
+    const dialog = page.locator('lfb-extension-dlg').last();
+    await dialog.getByLabel('Url', {exact: true}).fill(EXTENSION_URL_QUESTIONNAIRE_UNIT);
+
+    await expect(dialog).toContainText('Use the dedicated “Units” field instead.');
+    await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+  });
+
+  for (const url of RESTRICTION_EXTENSION_URLS) {
+    const extensionName = url.substring(url.lastIndexOf('/') + 1);
+    test(`Item level page - should reject the ${extensionName} extension managed by Restrictions`, async ({page}) => {
+      await page.getByRole('button', {name: 'Create questions'}).first().click();
+      await PWUtils.expandAdvancedFields(page);
+      await page.getByRole('button', {name: 'Add new extension'}).first().click();
+      const dialog = page.locator('lfb-extension-dlg').last();
+      await dialog.getByLabel('Url', {exact: true}).fill(url);
+
+      await expect(dialog).toContainText('Use the dedicated “Restrictions” field instead.');
+      await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    });
+  }
+
+  for (const {url, fieldName} of CHOICE_LAYOUT_EXTENSION_FIELDS) {
+    const extensionName = url.substring(url.lastIndexOf('/') + 1);
+    test(`Item level page - should reject the ${extensionName} extension managed by ${fieldName}`, async ({page}) => {
+      await page.getByRole('button', {name: 'Create questions'}).first().click();
+      await PWUtils.expandAdvancedFields(page);
+      await page.getByRole('button', {name: 'Add new extension'}).first().click();
+      const dialog = page.locator('lfb-extension-dlg').last();
+      await dialog.getByLabel('Url', {exact: true}).fill(url);
+
+      await expect(dialog).toContainText(`Use the dedicated “${fieldName}” field instead.`);
+      await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    });
+  }
+
   test('Should import a questionnaire with form level extensions, display and see it in the JSON', async ({page}) => {
     const fileJson = await PWUtils.uploadFile(page, 'extensions-sample.json');
 
@@ -373,19 +454,17 @@ test.describe('extension.component', async () => {
     await expect(extRows).toHaveCount(3);
     await expect(extRows.nth(0).getByLabel('Edit this row')).toBeDisabled();
     await expect(extRows.nth(1).getByLabel('Edit this row')).toBeDisabled();
-    const editableRowEditBtn = extRows.nth(2).getByLabel('Edit this row');
-    await expect(editableRowEditBtn).toBeEnabled();
-    await editableRowEditBtn.click();
-    const dialogLoc = page.locator('lfb-extension-dlg').nth(0);
-    const formLoc = dialogLoc.locator('lfb-extension-obj sf-form');
-    await expect(formLoc).toBeVisible();
-    await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
-    await expect(formLoc.getByLabel('Value Type', {exact: true})).toHaveValue(/valueCoding$/);
-    const codingLoc = formLoc.locator('lfb-object', {has: page.getByText('Value coding', {exact: true})});
-    await expect(codingLoc.getByLabel('Code', {exact: true})).toHaveValue('kg');
-    await expect(codingLoc.getByLabel('System', {exact: true})).toHaveValue('http://unitsofmeasure.org');
-    await dialogLoc.getByRole('button', {name: 'Discard changes'}).click();
-    // No items are changed, should see the same JSON.
+    await expect(extRows.nth(2).getByLabel('Edit this row')).toBeDisabled();
+    await expect(extRows.nth(2).getByLabel('Remove this row')).toBeDisabled();
+    await expect(extRows.nth(2).getByLabel('Move this row up')).toBeDisabled();
+
+    // The imported unit is available through the dedicated Units field.
+    const unitsRow = page.locator('lfb-units table tbody tr').first();
+    await expect(unitsRow).toBeVisible();
+    await expect(unitsRow.locator('td input').nth(1)).toHaveValue('kg');
+    await expect(unitsRow.locator('td input').nth(2)).toHaveValue('http://unitsofmeasure.org');
+
+    // The read-only managed extension remains unchanged in output JSON.
     let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     expect(q.item).toEqual(fileJson.item);
 
@@ -393,6 +472,8 @@ test.describe('extension.component', async () => {
     await expect(page.locator('.spinner-border')).not.toBeVisible();
     await expect(extRows).toHaveCount(1);
     await extRows.nth(0).getByLabel('Edit this row').click();
+    const dialogLoc = page.locator('lfb-extension-dlg').nth(0);
+    const formLoc = dialogLoc.locator('lfb-extension-obj sf-form');
     await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/codeable-concept')
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use a value type', formLoc)).toBeChecked();
@@ -492,14 +573,15 @@ test.describe('extension.component', async () => {
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await PWUtils.clickTreeNode(page, 'Extension with array value type');
 
     // Wait for the item-level advanced fields to finish loading and the extension
     // table to be fully rendered before interacting. Clicking a row while the table
     // is still (re)rendering is what made the assertions below flaky.
     await expect(page.locator('.spinner-border')).not.toBeVisible();
     const extRows = page.locator('lfb-extension table tbody tr');
-    await expect(extRows).toHaveCount(3);
-    const editRowBtn = extRows.nth(2).getByLabel('Edit this row');
+    await expect(extRows).toHaveCount(1);
+    const editRowBtn = extRows.nth(0).getByLabel('Edit this row');
     await expect(editRowBtn).toBeEnabled();
     const formLoc = page.locator('lfb-extension-dlg').nth(0);
     await expect(async () => {

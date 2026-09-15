@@ -36,6 +36,11 @@ export const CONDITIONAL_METHOD_NONE = "none";
 // Extension URL
 // formerly ENTRY_FORMAT_URI
 export const EXTENSION_URL_ENTRY_FORMAT = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
+export const EXTENSION_URL_MIN_LENGTH = 'http://hl7.org/fhir/StructureDefinition/minLength';
+export const EXTENSION_URL_REGEX = 'http://hl7.org/fhir/StructureDefinition/regex';
+export const EXTENSION_URL_MIN_VALUE = 'http://hl7.org/fhir/StructureDefinition/minValue';
+export const EXTENSION_URL_MAX_VALUE = 'http://hl7.org/fhir/StructureDefinition/maxValue';
+export const EXTENSION_URL_MAX_SIZE = 'http://hl7.org/fhir/StructureDefinition/maxSize';
 export const EXTENSION_URL_MIME_TYPE = 'http://hl7.org/fhir/StructureDefinition/mimeType';
 // formerly VARIABLE
 export const EXTENSION_URL_VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';

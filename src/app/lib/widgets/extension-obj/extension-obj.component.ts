@@ -55,6 +55,14 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
     this.updateUrlValidationError();
   }
 
+  private _managedUrlError: string | null = null;
+
+  @Input()
+  set managedUrlError(error: string | null) {
+    this._managedUrlError = error;
+    this.updateUrlValidationError();
+  }
+
   extSchema = this.formService.getExtensionSchema();
   sfFormRootProperty: PropertyGroup;
 
@@ -79,8 +87,8 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Add the dialog's scope-aware duplicate check to the URL form property so
-   * the URL widget renders and announces it like its other validation errors.
+   * Add the dialog's URL checks to the URL form property so the URL widget
+   * renders and announces them like its schema validation errors.
    */
   private updateUrlValidationError() {
     const urlProperty = this.sfFormRootProperty?.getProperty('url');
@@ -88,14 +96,22 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // Re-run the schema validators first to remove a previous duplicate error
-    // while preserving any built-in URL errors.
+    // Re-run the schema validators first to remove previous dialog errors while
+    // preserving any built-in URL errors.
     urlProperty.updateValueAndValidity(true, false);
     if (this._duplicateUrlError) {
       urlProperty.extendErrors({
         code: 'DUPLICATE_EXTENSION_URL',
         path: '#url',
         message: this._duplicateUrlError.message,
+        params: []
+      });
+    }
+    if (this._managedUrlError) {
+      urlProperty.extendErrors({
+        code: 'MANAGED_EXTENSION_URL',
+        path: '#url',
+        message: this._managedUrlError,
         params: []
       });
     }

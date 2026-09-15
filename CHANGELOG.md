@@ -8,6 +8,12 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added item-level support for the FHIR Questionnaire `questionnaire-hidden`
   extension.
 
+### Fixed
+- Prevented extensions managed by dedicated fields from being added or reassigned
+  through the general Extensions editor. Inline validation now directs users to the
+  appropriate dedicated field and identifies when it is located on a questionnaire
+  item.
+
 ## [12.4.1] 2026-09-10
 ### Added
 - Added `SECURITY.md`

@@ -1,5 +1,5 @@
 import {DestroyRef, inject, Injectable } from '@angular/core';
-import {ArrayProperty, FormProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, ISchema, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
@@ -10,17 +10,40 @@ import {
   EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
   EXTENSION_URL_INITIAL_EXPRESSION,
   EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
-  EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
-  PREFERRED_TERMINOLOGY_SERVER_URI,
+  EXTENSION_URL_MAX_OCCURS,
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_MIN_LENGTH,
   EXTENSION_URL_MIN_OCCURS,
-  EXTENSION_URL_MAX_OCCURS
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT,
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  EXTENSION_URL_REGEX,
+  PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
 import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
 import {Util} from "../lib/util";
+
+export type ExtensionEditorScope = 'form' | 'item';
+
+interface DedicatedExtensionDefinition {
+  url: string;
+  fieldName: string;
+  fieldNameByScope?: Partial<Record<ExtensionEditorScope, string>>;
+  fieldLocationByScope?: Partial<Record<ExtensionEditorScope, string>>;
+  alternativeFieldNames?: ReadonlyArray<string>;
+  fieldScope: ExtensionEditorScope | 'both';
+  fieldSection?: 'advanced';
+}
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -36,22 +59,88 @@ import {Util} from "../lib/util";
 export class ExtensionsService {
   static __ID = 0;
 
-  extensionsEditedInWidgets: Set<string> = new Set([
-    EXTENSION_URL_ENTRY_FORMAT,
-    EXTENSION_URL_VARIABLE,
-    EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
-    EXTENSION_URL_INITIAL_EXPRESSION,
-    EXTENSION_URL_CALCULATED_EXPRESSION,
-    EXTENSION_URL_ANSWER_EXPRESSION,
-    EXTENSION_URL_ENABLEWHEN_EXPRESSION,
-    EXTENSION_URL_ITEM_CONTROL,
-    EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
-    PREFERRED_TERMINOLOGY_SERVER_URI,
-    ObservationLinkPeriodComponent.extUrl,
-    ObservationExtractComponent.extUrl,
-    EXTENSION_URL_MIN_OCCURS,
-    EXTENSION_URL_MAX_OCCURS
-  ]);
+  /** URLs with dedicated fields only in schemas that declare their owning widgets. */
+  private readonly schemaScopedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
+    {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation', fieldScope: 'item'},
+    {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count', fieldScope: 'item'},
+    {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count', fieldScope: 'item'}
+  ];
+
+  /** URLs, labels, and locations for extensions managed outside the general editor. */
+  private readonly dedicatedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
+    {url: EXTENSION_URL_ENTRY_FORMAT, fieldName: 'Entry format', fieldScope: 'item'},
+    {
+      url: EXTENSION_URL_VARIABLE,
+      fieldName: 'Variables',
+      fieldNameByScope: {item: 'Item variables'},
+      fieldScope: 'both'
+    },
+    {
+      url: EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+      fieldName: 'Variable Type',
+      fieldLocationByScope: {
+        form: ' in the “Create/edit variables” dialog opened from the “Variables” section',
+        item: ' in the “Create/edit variables” dialog opened from the “Item variables” section'
+      },
+      fieldScope: 'both'
+    },
+    {url: EXTENSION_URL_INITIAL_EXPRESSION, fieldName: 'Value method', fieldScope: 'item'},
+    {url: EXTENSION_URL_CALCULATED_EXPRESSION, fieldName: 'Value method', fieldScope: 'item'},
+    {url: EXTENSION_URL_ANSWER_EXPRESSION, fieldName: 'Answer list source', fieldScope: 'item'},
+    {
+      url: EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+      fieldName: 'Conditional method',
+      fieldScope: 'item',
+      fieldSection: 'advanced'
+    },
+    {
+      url: EXTENSION_URL_ITEM_CONTROL,
+      fieldName: 'Answer list layout',
+      alternativeFieldNames: [
+        'Question item control',
+        'Group Item Control',
+        'Display Item Control'
+      ],
+      fieldScope: 'item'
+    },
+    {url: EXTENSION_URL_MIN_LENGTH, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_REGEX, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MIN_VALUE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MAX_VALUE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MAX_SIZE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_MIME_TYPE, fieldName: 'Restrictions', fieldScope: 'item'},
+    {url: EXTENSION_URL_QUESTIONNAIRE_UNIT, fieldName: 'Units', fieldScope: 'item'},
+    {url: EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, fieldName: 'Units', fieldScope: 'item'},
+    {
+      url: EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
+      fieldName: 'Hide this item from users?',
+      fieldScope: 'item'
+    },
+    {url: EXTENSION_URL_MIN_OCCURS, fieldName: 'Repeat count range', fieldScope: 'item'},
+    {url: EXTENSION_URL_MAX_OCCURS, fieldName: 'Repeat count range', fieldScope: 'item'},
+    {url: PREFERRED_TERMINOLOGY_SERVER_URI, fieldName: 'Terminology server', fieldScope: 'both'},
+    {
+      url: ObservationLinkPeriodComponent.extUrl,
+      fieldName: 'Add link to pre-populate FHIR Observation?',
+      fieldScope: 'item',
+      fieldSection: 'advanced'
+    },
+    {
+      url: ObservationExtractComponent.extUrl,
+      fieldName: 'Use FHIR Observation extraction?',
+      fieldScope: 'item',
+      fieldSection: 'advanced'
+    }
+  ];
+
+  private readonly dedicatedExtensionFields: ReadonlyMap<string, DedicatedExtensionDefinition> = new Map(
+    [...this.dedicatedExtensionDefinitions, ...this.schemaScopedExtensionDefinitions]
+      .map((definition) => [definition.url, definition] as const)
+  );
+
+  extensionsEditedInWidgets: Set<string> = new Set(
+    this.dedicatedExtensionDefinitions.map(({url}) => url)
+  );
 
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
@@ -447,10 +536,70 @@ export class ExtensionsService {
 
   /**
    * Check if the extension is editable in the extension dialog.
+   * Surrounding whitespace is ignored so the same comparison can be used while
+   * validating URLs entered in the general Extensions editor.
+   *
+   * @param url - Extension URL to check.
    * @returns - True if the extension is not editable in dialog.
    */
   isNotEditableInDlg(url: fhirPrimitives.url): boolean {
-    return this.extensionsEditedInWidgets.has(url);
+    return this.extensionsEditedInWidgets.has(url?.trim());
+  }
+
+  /**
+   * Check whether the current schema assigns an extension URL to a dedicated widget.
+   * Generic nested-extension schemas are excluded because their proxy fields describe
+   * the Extension resource itself rather than fields on the owning Questionnaire scope.
+   *
+   * @param url - Extension URL to check.
+   * @param rootSchema - Root schema containing the general Extensions field.
+   * @returns True when a widget in this schema owns the URL.
+   */
+  isExtensionUrlOwnedByWidget(url: fhirPrimitives.url, rootSchema: ISchema): boolean {
+    if(rootSchema?.formLayout?.targetPage === 'extensionResource') {
+      return false;
+    }
+    return Object.values(rootSchema?.properties || {}).some((propertySchema: ISchema) => {
+      const widget = propertySchema?.widget;
+      return widget?.extensionUrl === url || widget?.legacyExtensionUrls?.includes(url);
+    });
+  }
+
+  /**
+   * Build the validation message shown when a managed URL is entered in the
+   * general Extensions editor.
+   *
+   * @param url - Managed extension URL entered by the user.
+   * @param editorScope - Scope containing the general Extensions editor.
+   * @returns Guidance pointing to the dedicated field when its label is known.
+   */
+  getManagedExtensionValidationMessage(
+    url: fhirPrimitives.url,
+    editorScope?: ExtensionEditorScope
+  ): string {
+    const field = this.dedicatedExtensionFields.get(url?.trim());
+    let location = field?.fieldLocationByScope?.[editorScope] || '';
+    if(!location && editorScope === 'form' && field?.fieldScope === 'item') {
+      location = field.fieldSection === 'advanced'
+        ? ' under a questionnaire item’s Advanced fields'
+        : ' on a questionnaire item';
+    }
+    else if(!location && editorScope === 'item' && field?.fieldScope === 'form') {
+      location = ' in the form attributes';
+    }
+    if(!field) {
+      return 'This extension is managed by a dedicated Form Builder field and cannot be added here.';
+    }
+
+    const primaryFieldName = field.fieldNameByScope?.[editorScope] || field.fieldName;
+    const fieldNames = [primaryFieldName, ...(field.alternativeFieldNames || [])];
+    if(fieldNames.length === 1) {
+      return `This extension cannot be added here. Use the dedicated “${primaryFieldName}” field${location} instead.`;
+    }
+
+    const quotedFieldNames = fieldNames.map((fieldName) => `“${fieldName}”`);
+    const lastFieldName = quotedFieldNames.pop();
+    return `This extension cannot be added here. Use one of the dedicated ${quotedFieldNames.join(', ')}, or ${lastFieldName} fields${location} instead.`;
   }
 
   updateExtension(newValue: fhir.Extension) {
