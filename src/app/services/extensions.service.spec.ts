@@ -1,4 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import {
+  ArrayProperty,
+  DefaultLogService,
+  FormPropertyFactory,
+  JEXLExpressionCompilerFactory,
+  PropertyBindingRegistry,
+  PropertyGroup,
+  ValidatorRegistry,
+  ZSchemaValidatorFactory
+} from '@lhncbc/ngx-schema-form';
 
 import { ExtensionsService } from './extensions.service';
 import { SchemaService } from './schema.service';
@@ -13,11 +23,14 @@ import {
   EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_INITIAL_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_MAX_OCCURS,
   EXTENSION_URL_MAX_SIZE,
   EXTENSION_URL_MAX_VALUE,
   EXTENSION_URL_MIME_TYPE,
   EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_MIN_OCCURS,
   EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   EXTENSION_URL_REGEX,
@@ -82,19 +95,21 @@ const dedicatedExtensionMessageExpectations: ReadonlyArray<DedicatedExtensionMes
     formLocation: advancedItemLocation
   },
   {
-    urls: [EXTENSION_URL_ITEM_CONTROL],
-    fieldReference: 'one of the dedicated “Answer list layout”, “Question item control”, '
-      + '“Group Item Control”, or “Display Item Control” fields',
-    formLocation: itemLocation
-  },
-  {
     urls: [EXTENSION_URL_CHOICE_ORIENTATION],
     fieldReference: 'the dedicated “Choice orientation” field',
-    formLocation: itemLocation
+    formLocation: itemLocation,
+    registered: false
   },
   {
     urls: [EXTENSION_URL_COLUMN_COUNT, EXTENSION_URL_COLUMN_COUNT_LEGACY],
     fieldReference: 'the dedicated “Column count” field',
+    formLocation: itemLocation,
+    registered: false
+  },
+  {
+    urls: [EXTENSION_URL_ITEM_CONTROL],
+    fieldReference: 'one of the dedicated “Answer list layout”, “Question item control”, '
+      + '“Group Item Control”, or “Display Item Control” fields',
     formLocation: itemLocation
   },
   {
@@ -129,12 +144,14 @@ const dedicatedExtensionMessageExpectations: ReadonlyArray<DedicatedExtensionMes
     formLocation: advancedItemLocation
   },
   {
-    // Metadata is ready for the questionnaire-hidden feature, which registers
-    // this URL dynamically when that feature is present.
-    urls: ['http://hl7.org/fhir/StructureDefinition/questionnaire-hidden'],
+    urls: [EXTENSION_URL_QUESTIONNAIRE_HIDDEN],
     fieldReference: 'the dedicated “Hide this item from users?” field',
-    formLocation: itemLocation,
-    registered: false
+    formLocation: itemLocation
+  },
+  {
+    urls: [EXTENSION_URL_MIN_OCCURS, EXTENSION_URL_MAX_OCCURS],
+    fieldReference: 'the dedicated “Repeat count range” field',
+    formLocation: itemLocation
   }
 ];
 
@@ -168,6 +185,7 @@ describe('ExtensionsService', () => {
     schemaService._valueXCategoryMap = {
       valueString: '__$primitiveType',
       valueInteger: '__$primitiveType',
+      valuePositiveInt: '__$primitiveType',
       valueCoding: '__$generalPurposeDatatype',
       valueCodeableConcept: '__$generalPurposeDatatype',
       valueBoolean: '__$primitiveType',
@@ -216,6 +234,66 @@ describe('ExtensionsService', () => {
     expect(service.getManagedExtensionValidationMessage(extensionUrl)).toBe(
       'This extension is managed by a dedicated Form Builder field and cannot be added here.'
     );
+  });
+
+  it('should reserve questionnaire-hidden for its dedicated item widget', () => {
+    expect(service.isNotEditableInDlg(EXTENSION_URL_QUESTIONNAIRE_HIDDEN)).toBeTrue();
+  });
+
+  it('should preserve the value when changing the value type of a sparse imported extension', () => {
+    const extensionUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount';
+    const factory = new FormPropertyFactory(
+      new ZSchemaValidatorFactory(),
+      new ValidatorRegistry(),
+      new PropertyBindingRegistry(),
+      new JEXLExpressionCompilerFactory(),
+      new DefaultLogService(3)
+    );
+    const extensionsProperty = factory.createProperty({
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          id: {type: 'string'},
+          url: {type: 'string'},
+          extension: {type: 'array', items: {type: 'object', properties: {}}},
+          valueAddress: {type: 'object', properties: {}},
+          valueAge: {type: 'object', properties: {}},
+          valueInteger: {type: 'integer'},
+          valuePositiveInt: {type: 'integer'},
+          '__$isValueX': {type: 'boolean'},
+          '__$valueType': {type: 'string'},
+          '__$valueTypeCategory': {type: 'string'},
+          '__$primitiveType': {type: 'string'},
+          '__$stringify': {type: 'string'}
+        }
+      }
+    }) as ArrayProperty;
+    extensionsProperty.setValue([{
+      id: 'column-count-id',
+      url: extensionUrl,
+      valueInteger: 2
+    }], false);
+    service.setExtensions(extensionsProperty);
+
+    const importedProperty = service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup;
+    expect(importedProperty.getProperty('valuePositiveInt')).toBeUndefined();
+
+    service.resetExtension(
+      extensionUrl,
+      {id: 'column-count-id', url: extensionUrl, valuePositiveInt: 2},
+      'valuePositiveInt',
+      false
+    );
+
+    expect(service.getFirstExtensionByUrl(extensionUrl).valuePositiveInt).toBe(2);
+    expect(service.getFirstExtensionByUrl(extensionUrl).valueInteger).toBeUndefined();
+    expect(service.getFirstExtensionByUrl(extensionUrl).id).toBe('column-count-id');
+    expect(
+      (service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup)
+        .getProperty('valuePositiveInt')
+    ).toBeDefined();
   });
 
   describe('updateExtension', () => {
@@ -299,6 +377,20 @@ describe('ExtensionsService', () => {
       expect(result['__$isValueX']).toBe(true);
       expect(result['__$valueType']).toBe('valueInteger');
       expect(result['__$stringify']).toBe(JSON.stringify(42, null, 2));
+    });
+
+    it('should handle extension with positive integer value type', () => {
+      const ext: any = {
+        url: 'http://example.org',
+        valuePositiveInt: 3
+      };
+      const result = service.updateExtension(ext);
+
+      expect(result['__$isValueX']).toBe(true);
+      expect(result['__$valueType']).toBe('valuePositiveInt');
+      expect(result['__$valueTypeCategory']).toBe('__$primitiveType');
+      expect(result['__$primitiveType']).toBe('valuePositiveInt');
+      expect(result['__$stringify']).toBe(JSON.stringify(3, null, 2));
     });
   });
 });

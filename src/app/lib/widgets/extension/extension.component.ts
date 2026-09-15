@@ -139,7 +139,20 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
    */
   _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     const extensionProp = arrayProperty.properties[index] as ObjectProperty;
-    return this.extensionsService.isNotEditableInDlg(extensionProp.value.url);
+    const url = extensionProp.value.url;
+    return this.extensionsService.isNotEditableInDlg(url) || this.isExtensionUrlOwnedByWidget(url);
+  }
+
+  /**
+   * Check if an extension URL is edited by a schema-backed custom widget on this form.
+   * This keeps widget-owned proxy fields from becoming editable in the generic
+   * extension table while allowing those URLs to be managed in other schemas.
+   * @param url - The canonical URL of the extension to check.
+   * @returns true if a schema-backed custom widget owns the extension URL, false otherwise.
+   */
+  isExtensionUrlOwnedByWidget(url: string): boolean {
+    const rootSchema = this.formProperty.findRoot()?.schema;
+    return this.extensionsService.isExtensionUrlOwnedByWidget(url, rootSchema);
   }
 
   /**
@@ -164,15 +177,13 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
 
   /**
    * Hide rows in the extension table that are not editable in the dialog.
-   * Used to hide standard extensions that should not be modified. These extensions are
-   * defined in the ExtensionsService.
+   * Uses the same global and schema-scoped ownership rules as the row actions.
    */
   hideUneditableRows() {
     const extArray = this.formProperty.value;
     this.hideRows.clear();
     for(let i = 0; i < extArray.length; i++) {
-      const ext = extArray[i];
-      if(this.extensionsService.isNotEditableInDlg(ext.url)) {
+      if(this._isDisabled(this.formProperty, i)) {
         this.hideRows.add(i);
       }
     }

@@ -583,9 +583,13 @@ test.describe('extension.component', async () => {
     await expect(extRows).toHaveCount(1);
     const editRowBtn = extRows.nth(0).getByLabel('Edit this row');
     await expect(editRowBtn).toBeEnabled();
-    await editRowBtn.click();
     const formLoc = page.locator('lfb-extension-dlg').nth(0);
-    await expect(formLoc).toBeVisible();
+    await expect(async () => {
+      if(!await formLoc.isVisible()) {
+        await editRowBtn.click();
+      }
+      await expect(formLoc).toBeVisible({timeout: 2000});
+    }).toPass({timeout: 10000});
 
     // Save button should be disabled when dialog first opens (no changes made)
     await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();

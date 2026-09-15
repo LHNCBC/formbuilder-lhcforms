@@ -1,5 +1,5 @@
 import {DestroyRef, inject, Injectable } from '@angular/core';
-import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, ISchema, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
@@ -16,11 +16,14 @@ import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_MAX_OCCURS,
   EXTENSION_URL_MAX_SIZE,
   EXTENSION_URL_MAX_VALUE,
   EXTENSION_URL_MIME_TYPE,
   EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_MIN_OCCURS,
   EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   EXTENSION_URL_REGEX,
@@ -55,6 +58,13 @@ interface DedicatedExtensionDefinition {
 })
 export class ExtensionsService {
   static __ID = 0;
+
+  /** URLs with dedicated fields only in schemas that declare their owning widgets. */
+  private readonly schemaScopedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
+    {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation', fieldScope: 'item'},
+    {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count', fieldScope: 'item'},
+    {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count', fieldScope: 'item'}
+  ];
 
   /** URLs, labels, and locations for extensions managed outside the general editor. */
   private readonly dedicatedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
@@ -93,9 +103,6 @@ export class ExtensionsService {
       ],
       fieldScope: 'item'
     },
-    {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation', fieldScope: 'item'},
-    {url: EXTENSION_URL_COLUMN_COUNT, fieldName: 'Column count', fieldScope: 'item'},
-    {url: EXTENSION_URL_COLUMN_COUNT_LEGACY, fieldName: 'Column count', fieldScope: 'item'},
     {url: EXTENSION_URL_MIN_LENGTH, fieldName: 'Restrictions', fieldScope: 'item'},
     {url: EXTENSION_URL_REGEX, fieldName: 'Restrictions', fieldScope: 'item'},
     {url: EXTENSION_URL_MIN_VALUE, fieldName: 'Restrictions', fieldScope: 'item'},
@@ -104,6 +111,13 @@ export class ExtensionsService {
     {url: EXTENSION_URL_MIME_TYPE, fieldName: 'Restrictions', fieldScope: 'item'},
     {url: EXTENSION_URL_QUESTIONNAIRE_UNIT, fieldName: 'Units', fieldScope: 'item'},
     {url: EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, fieldName: 'Units', fieldScope: 'item'},
+    {
+      url: EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
+      fieldName: 'Hide this item from users?',
+      fieldScope: 'item'
+    },
+    {url: EXTENSION_URL_MIN_OCCURS, fieldName: 'Repeat count range', fieldScope: 'item'},
+    {url: EXTENSION_URL_MAX_OCCURS, fieldName: 'Repeat count range', fieldScope: 'item'},
     {url: PREFERRED_TERMINOLOGY_SERVER_URI, fieldName: 'Terminology server', fieldScope: 'both'},
     {
       url: ObservationLinkPeriodComponent.extUrl,
@@ -119,17 +133,10 @@ export class ExtensionsService {
     }
   ];
 
-  private readonly dedicatedExtensionFields: ReadonlyMap<string, DedicatedExtensionDefinition> = new Map([
-    ...this.dedicatedExtensionDefinitions.map((definition) => [definition.url, definition] as const),
-    // This field is supplied by the questionnaire-hidden feature. Keeping its
-    // metadata here makes the central validation message ready when its URL is
-    // registered in extensionsEditedInWidgets.
-    ['http://hl7.org/fhir/StructureDefinition/questionnaire-hidden', {
-      url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-hidden',
-      fieldName: 'Hide this item from users?',
-      fieldScope: 'item'
-    }]
-  ]);
+  private readonly dedicatedExtensionFields: ReadonlyMap<string, DedicatedExtensionDefinition> = new Map(
+    [...this.dedicatedExtensionDefinitions, ...this.schemaScopedExtensionDefinitions]
+      .map((definition) => [definition.url, definition] as const)
+  );
 
   extensionsEditedInWidgets: Set<string> = new Set(
     this.dedicatedExtensionDefinitions.map(({url}) => url)
@@ -468,14 +475,24 @@ export class ExtensionsService {
    * @param keepValueType - value[x] to keep.
    */
   pruneUnusedValues(extProperty: FormProperty, keepValueType: string) {
-    const value = extProperty.value;
+    this.pruneUnusedValueFields(extProperty.value, keepValueType);
+    return extProperty;
+  }
+
+
+  /**
+   * Remove value[x] fields other than the selected value type from an extension value.
+   *
+   * @param value - Extension JSON value.
+   * @param keepValueType - value[x] to keep.
+   */
+  private pruneUnusedValueFields(value: fhir.Extension, keepValueType: string): void {
     const keys = Object.keys(value);
     for (const key of keys) {
       if(value.hasOwnProperty(key) && key.startsWith('value') && key !== keepValueType) {
         delete value[key];
       }
     }
-    return extProperty;
   }
 
 
@@ -490,7 +507,27 @@ export class ExtensionsService {
   resetExtension(extUrl: fhirPrimitives.url, value: fhir.Extension, valueType: string, selfOnly: boolean) {
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
-      extProp.reset(value, selfOnly);
+      this.updateExtension(value);
+
+      // Extension ObjectProperties are intentionally sparse: ngx-schema-form creates only
+      // the value[x] property present in imported JSON. ObjectProperty.reset() cannot add a
+      // different schema-defined value[x], so replace the array item when the destination
+      // property is absent (for example valueInteger -> valuePositiveInt).
+      const valueTypePropertyMissing = valueType &&
+        !(extProp as PropertyGroup).getProperty(valueType);
+      if(valueTypePropertyMissing) {
+        this.pruneUnusedValueFields(value, valueType);
+        const extIndex = (this.extensionsProp.properties as FormProperty[]).indexOf(extProp);
+        const extensions = [...this.extensionsProp.value];
+        extensions[extIndex] = value;
+        this.extensionsProp.reset(extensions, selfOnly);
+      }
+      else {
+        extProp.reset(value, selfOnly);
+        if(valueType) {
+          this.pruneUnusedValues(extProp, valueType);
+        }
+      }
     }
     else {
       this.addExtension(value, valueType);
@@ -507,6 +544,25 @@ export class ExtensionsService {
    */
   isNotEditableInDlg(url: fhirPrimitives.url): boolean {
     return this.extensionsEditedInWidgets.has(url?.trim());
+  }
+
+  /**
+   * Check whether the current schema assigns an extension URL to a dedicated widget.
+   * Generic nested-extension schemas are excluded because their proxy fields describe
+   * the Extension resource itself rather than fields on the owning Questionnaire scope.
+   *
+   * @param url - Extension URL to check.
+   * @param rootSchema - Root schema containing the general Extensions field.
+   * @returns True when a widget in this schema owns the URL.
+   */
+  isExtensionUrlOwnedByWidget(url: fhirPrimitives.url, rootSchema: ISchema): boolean {
+    if(rootSchema?.formLayout?.targetPage === 'extensionResource') {
+      return false;
+    }
+    return Object.values(rootSchema?.properties || {}).some((propertySchema: ISchema) => {
+      const widget = propertySchema?.widget;
+      return widget?.extensionUrl === url || widget?.legacyExtensionUrls?.includes(url);
+    });
   }
 
   /**

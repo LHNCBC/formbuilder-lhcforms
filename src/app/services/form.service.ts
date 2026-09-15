@@ -1493,6 +1493,9 @@ export class FormService {
         throw new Error(compatibilityError);
       }
       ret = Util.convertQuestionnaire(fhirQ, version);
+      if(version === 'R4' || version === 'STU3') {
+        ret = Util.removeInvalidChoiceLayoutExtensions(ret, version);
+      }
       // Apply FHIR canonical field ordering after version conversion
       ret = Util.orderQuestionnaireFields(ret);
     }

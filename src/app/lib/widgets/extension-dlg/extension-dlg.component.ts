@@ -176,7 +176,9 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   protected override updateDisableSave(): void {
     const url = (this.changedValue?.url || '').trim();
     this.dismissObsoleteCardinalitySelection(url);
-    const isManagedUrl = this.extensionsService.isNotEditableInDlg(url);
+    const rootSchema = this.data.arrayProperty?.findRoot()?.schema;
+    const isManagedUrl = this.extensionsService.isNotEditableInDlg(url)
+      || this.extensionsService.isExtensionUrlOwnedByWidget(url, rootSchema);
     const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
     const localCardinality = getExtensionMaxCardinality(url);
 

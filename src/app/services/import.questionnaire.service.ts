@@ -7,9 +7,10 @@ import {ExtensionsService} from "./extensions.service";
 import {
   ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET,
   EXTENSION_URL_ANSWER_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_CHOICE_ORIENTATION, EXTENSION_URL_COLUMN_COUNT, EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION, EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_QUESTIONNAIRE_UNIT,
-  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_VARIABLE,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_VARIABLE,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from "../lib/constants/constants";
 // import {TerminologyServerComponent} from "../lib/widgets/terminology-server/terminology-server.component";
@@ -96,6 +97,10 @@ export class ImportQuestionnaireService {
    *   fields, on this object based on the extensions it contains.
    */
   updateExtensionRelatedCustomFields(extParent: {extension: fhir.Extension[], [key: string]: any}) {
+    const hasCanonicalColumnCount = extParent.extension.some(
+      (extension) => extension.url === EXTENSION_URL_COLUMN_COUNT
+    );
+
     // Terminology server.
     for (let i = 0; i < extParent.extension.length; i++) {
 
@@ -135,6 +140,26 @@ export class ImportQuestionnaireService {
 
         case EXTENSION_URL_ENTRY_FORMAT:
           extParent.__$entryFormat = extension.valueString;
+          break;
+
+        case EXTENSION_URL_QUESTIONNAIRE_HIDDEN:
+          // Keep the imported extension unchanged for lossless round trips. The
+          // custom field is only a UI projection of its effective state.
+          extParent.__$hidden = extParent.__$hidden || extension.valueBoolean === true;
+          break;
+
+        case EXTENSION_URL_CHOICE_ORIENTATION:
+          extParent.__$choiceOrientation = extension.valueCode;
+          break;
+
+        case EXTENSION_URL_COLUMN_COUNT:
+          extParent.__$columnCount = extension.valuePositiveInt ?? extension.valueInteger;
+          break;
+
+        case EXTENSION_URL_COLUMN_COUNT_LEGACY:
+          if(!hasCanonicalColumnCount) {
+            extParent.__$columnCount = extension.valuePositiveInt ?? extension.valueInteger;
+          }
           break;
 
         case EXTENSION_URL_QUESTIONNAIRE_UNIT:

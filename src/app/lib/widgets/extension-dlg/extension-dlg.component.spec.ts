@@ -12,6 +12,7 @@ import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LfbArrayComponent} from "../lfb-array/lfb-array.component";
 import {
+  EXTENSION_URL_COLUMN_COUNT,
   EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
   EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_MIME_TYPE,
@@ -152,6 +153,27 @@ describe('ExtensionDlgComponent', () => {
       expect(component.disableSave()).withContext(url).toBeTrue();
     }
     expect(resolveCardinalitySpy).not.toHaveBeenCalled();
+  });
+
+  it('should reject an extension owned by a dedicated widget in the current schema', async () => {
+    extSchema = formService.getItemSchema();
+    await createDialog([], -1, 'item');
+
+    component.onChange({url: EXTENSION_URL_COLUMN_COUNT, valueInteger: 2});
+
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Column count” field instead.'
+    );
+    expect(component.disableSave()).toBeTrue();
+    expect(resolveCardinalitySpy).not.toHaveBeenCalled();
+  });
+
+  it('should not reject a schema-scoped extension when the current schema does not own it', async () => {
+    await createDialog([], -1, 'form');
+
+    component.onChange({url: EXTENSION_URL_COLUMN_COUNT, valueInteger: 2});
+
+    expect(component.managedUrlError()).toBeNull();
   });
 
   it('should reject questionnaire-hidden when it is registered in the central managed URL set', async () => {
