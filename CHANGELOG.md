@@ -5,6 +5,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [12.5.0] 2026-09-14
 ### Added
 - Support choice orientation and column count for Questionnaire items.
+- Added item-level support for the FHIR Questionnaire `questionnaire-hidden`
+  extension.
 
 ## [12.4.1] 2026-09-10
 ### Added

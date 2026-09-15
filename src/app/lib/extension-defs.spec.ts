@@ -4,6 +4,7 @@ import {
   EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
   EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   EXTENSION_URL_VARIABLE,
@@ -29,6 +30,7 @@ describe('extension cardinality', () => {
     expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_CHOICE_ORIENTATION)).toBe('1');
     expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_COLUMN_COUNT)).toBe('1');
     expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_CUSTOM_VARIABLE_TYPE)).toBe('1');
+    expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_QUESTIONNAIRE_HIDDEN)).toBe('1');
     expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_MIME_TYPE)).toBe('*');
     expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION)).toBe('*');
     expect(EXTENSION_MAX_CARDINALITIES.get(EXTENSION_URL_VARIABLE)).toBe('*');
@@ -37,6 +39,7 @@ describe('extension cardinality', () => {
 
   it('should distinguish single and repeatable cardinalities', () => {
     expect(getExtensionMaxCardinality(EXTENSION_URL_ENTRY_FORMAT)).toBe('1');
+    expect(getExtensionMaxCardinality(EXTENSION_URL_QUESTIONNAIRE_HIDDEN)).toBe('1');
     expect(getExtensionMaxCardinality(EXTENSION_URL_MIME_TYPE)).toBe('*');
     expect(getExtensionMaxCardinality('http://hl7.org/fhir/StructureDefinition/replaces')).toBe('*');
     expect(getExtensionMaxCardinality(

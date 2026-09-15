@@ -12,6 +12,7 @@ import {
 
 import { ExtensionsService } from './extensions.service';
 import { SchemaService } from './schema.service';
+import {EXTENSION_URL_QUESTIONNAIRE_HIDDEN} from '../lib/constants/constants';
 
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
@@ -38,6 +39,10 @@ describe('ExtensionsService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('should reserve questionnaire-hidden for its dedicated item widget', () => {
+    expect(service.isNotEditableInDlg(EXTENSION_URL_QUESTIONNAIRE_HIDDEN)).toBeTrue();
   });
 
   it('should preserve the value when changing the value type of a sparse imported extension', () => {

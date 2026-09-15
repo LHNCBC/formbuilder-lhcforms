@@ -76,6 +76,7 @@ import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-
 import {ExtensionPrimitiveComponent} from "./widgets/extension-primitive/extension-primitive.component";
 import {MinMaxOccursComponent} from './widgets/min-max-occurs/min-max-occurs.component';
 import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
+import {QuestionnaireHiddenComponent} from './widgets/questionnaire-hidden/questionnaire-hidden.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -134,6 +135,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('variable', VariableComponent);
     this.register('initial-number', InitialNumberComponent);
     this.register('entry-format', EntryFormatComponent);
+    this.register('questionnaire-hidden', QuestionnaireHiddenComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
     this.register('extension', ExtensionComponent);
     this.register('extension-container', ExtensionContainerComponent);

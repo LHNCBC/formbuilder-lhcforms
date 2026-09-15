@@ -62,6 +62,7 @@ export const EXTENSION_URL_UCUM_SYSTEM = 'http://unitsofmeasure.org'
 export const PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
 // formerly ITEM_CONTROL_EXT_URL
 export const EXTENSION_URL_ITEM_CONTROL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
+export const EXTENSION_URL_QUESTIONNAIRE_HIDDEN = 'http://hl7.org/fhir/StructureDefinition/questionnaire-hidden';
 // formerly RENDERING_STYLE_EXT_URL
 export const EXTENSION_URL_RENDERING_STYLE = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
 // formerly RENDERING_XHTML_EXT_URL

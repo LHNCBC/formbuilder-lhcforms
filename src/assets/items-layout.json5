@@ -54,6 +54,7 @@
       {
         "showFields": [
           { "field": "linkId", "col": 12 },
+          { "field": "__$hidden", "col": 12 },
           { "field": "__$enableWhenMethod", "col": 12 },
           { "field": "enableWhen", "col": 12 },
           { "field": "enableBehavior", "col": 12 },
