@@ -2,10 +2,20 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.4.0] 2026-08-25
+## [12.5.0] 2026-09-14
 ### Added
+- Support choice orientation and column count for Questionnaire items.
 - Added item-level support for the FHIR Questionnaire `questionnaire-hidden`
   extension.
+
+## [12.4.1] 2026-09-10
+### Added
+- Added `SECURITY.md`
+
+## [12.4.0] 2026-08-26
+### Added
+- Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
+  via a combined Min/Max Occurs widget that is shown when an item allows repeats.
 
 ## [12.3.1] 2026-08-20
 ### Fixed

@@ -50,6 +50,7 @@ export const EXTENSION_URL_ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/Struc
 export const EXTENSION_URL_ENABLEWHEN_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
 export const EXTENSION_URL_CHOICE_ORIENTATION = 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation';
 export const EXTENSION_URL_COLUMN_COUNT = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount';
+export const EXTENSION_URL_COLUMN_COUNT_LEGACY = 'http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount';
 
 // Unit
 // formerly questionUnitExtUrl
@@ -66,6 +67,10 @@ export const EXTENSION_URL_QUESTIONNAIRE_HIDDEN = 'http://hl7.org/fhir/Structure
 export const EXTENSION_URL_RENDERING_STYLE = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
 // formerly RENDERING_XHTML_EXT_URL
 export const EXTENSION_URL_RENDERING_XHTML = 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml';
+
+// Min/Max Occurs
+export const EXTENSION_URL_MIN_OCCURS = 'http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs';
+export const EXTENSION_URL_MAX_OCCURS = 'http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs';
 
 // answerConstraint
 export const ANSWER_CONSTRAINT_OPTIONS_ONLY = "optionsOnly";
