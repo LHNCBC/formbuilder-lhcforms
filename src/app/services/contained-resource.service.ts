@@ -7,7 +7,7 @@ export type ContainedResourceVersionConfidence = 'authoritative' | 'inferred' | 
 export interface ContainedResourceVersionInfo {
   version: ContainedResourceFHIRVersion | null;
   confidence: ContainedResourceVersionConfidence;
-  source: 'content-type' | 'meta.profile' | 'questionnaire' | 'editor' | 'unknown';
+  source: 'content-type' | 'meta.profile' | 'questionnaire' | 'fhir-server' | 'editor' | 'unknown';
   details?: string;
 }
 
@@ -59,20 +59,24 @@ export class ContainedResourceService {
   /**
    * Parse and prepare a single JSON FHIR resource for insertion into Questionnaire.contained.
    *
-   * @param text - JSON file contents.
+   * @param input - JSON file contents or a parsed FHIR resource.
    * @param existingResources - Resources already present in Questionnaire.contained.
    * @param contentType - Browser-provided file MIME type, when available.
+   * @param serverVersion - Known version of the source FHIR server, when applicable.
    * @returns Prepared resource, version information, and normalization details.
    * @throws Error when the input is not a usable single FHIR resource.
    */
   prepareImportedResource(
-    text: string,
+    input: string | fhir.Resource,
     existingResources: fhir.Resource[] = [],
-    contentType = ''
+    contentType = '',
+    serverVersion?: string
   ): PreparedContainedResource {
     let resource: AnnotatedResource;
     try {
-      resource = JSON.parse(text);
+      resource = typeof input === 'string'
+        ? JSON.parse(input)
+        : JSON.parse(JSON.stringify(input));
     }
     catch (_error) {
       throw new Error('The selected file is not valid JSON.');
@@ -100,7 +104,14 @@ export class ContainedResourceService {
       throw new Error(`A contained resource with id "${resource.id}" already exists.`);
     }
 
-    const versionInfo = this.detectVersion(resource, contentType);
+    const normalizedServerVersion = this.normalizeVersion(serverVersion);
+    const versionInfo: ContainedResourceVersionInfo = normalizedServerVersion
+      ? {
+        version: normalizedServerVersion,
+        confidence: 'authoritative',
+        source: 'fhir-server'
+      }
+      : this.detectVersion(resource, contentType);
     const removedMetadata = this.removeProhibitedContainedMetadata(resource);
     this.setVersionInfo(resource, versionInfo);
     return {resource, versionInfo, removedMetadata, generatedId};

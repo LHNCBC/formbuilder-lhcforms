@@ -111,6 +111,19 @@ describe('FhirService', () => {
     }});
   });
 
+  it('should read a type-neutral resource without version conversion', (done) => {
+    const patient = {resourceType: 'Patient', id: 'patient-1', active: true} as fhir.Patient;
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
+      .withArgs({url: 'Patient/patient-1?_format=application/fhir+json'})
+      .and.returnValue(Promise.resolve(patient));
+
+    service.readResource('Patient', 'patient-1').subscribe({next: (resource) => {
+      expect(reqSpy).toHaveBeenCalled();
+      expect(resource).toBe(patient);
+      done();
+    }, error: done.fail});
+  });
+
   it('should search()', (done) => {
     const dummyBundle: fhir.Bundle = TestUtil.createDummySearchBundle({total: 1});
     const reqSpy = spyOn(service.getSmartClient(), 'request')
@@ -142,6 +155,53 @@ describe('FhirService', () => {
     }, error: (error) => {
       done.fail(error);
     }});
+  });
+
+  it('should search a caller-selected resource type', (done) => {
+    const dummyBundle: fhir.Bundle = {resourceType: 'Bundle', type: 'searchset'};
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
+      .and.callFake((requestOptions: RequestOptions): Promise<any> => {
+        expect(requestOptions.url).toContain('Practitioner?');
+        expect(requestOptions.url).toContain('_id=p1');
+        return Promise.resolve(dummyBundle);
+      });
+
+    service.searchResources('Practitioner', 'p1', '_id').subscribe({next: (bundle) => {
+      expect(reqSpy).toHaveBeenCalled();
+      expect(bundle).toBe(dummyBundle);
+      done();
+    }, error: done.fail});
+  });
+
+  it('should parse and cache resource capabilities for the selected server', (done) => {
+    const statement = {
+      resourceType: 'CapabilityStatement',
+      status: 'active',
+      date: '2026-09-02',
+      kind: 'instance',
+      fhirVersion: '4.0.1',
+      format: ['json'],
+      rest: [{
+        mode: 'server',
+        resource: [
+          {type: 'Practitioner', searchParam: [{name: 'name', type: 'string'}]},
+          {type: 'Patient', searchParam: [{name: 'name', type: 'string'}]}
+        ]
+      }]
+    } as fhir.CapabilityStatement;
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
+      .withArgs({url: 'metadata?_format=application/fhir+json'})
+      .and.returnValue(Promise.resolve(statement));
+
+    service.getResourceCapabilities().subscribe({next: (first) => {
+      expect(first.map((capability) => capability.resourceType)).toEqual(['Patient', 'Practitioner']);
+      expect(first[0].searchParameters[0].name).toBe('name');
+      service.getResourceCapabilities().subscribe({next: (second) => {
+        expect(second).toEqual(first);
+        expect(reqSpy).toHaveBeenCalledTimes(1);
+        done();
+      }, error: done.fail});
+    }, error: done.fail});
   });
 
   it('Should create() fail', (done) => {

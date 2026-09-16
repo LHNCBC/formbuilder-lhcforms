@@ -42,6 +42,27 @@ describe('ContainedResourceService', () => {
     expect(info).toEqual({version: 'R5', confidence: 'authoritative', source: 'content-type'});
   });
 
+  it('imports a copied server resource with authoritative server-version provenance', () => {
+    const serverResource = {
+      resourceType: 'Practitioner',
+      id: 'p2',
+      meta: {lastUpdated: '2026-09-02T12:00:00Z'},
+      active: true
+    } as fhir.Practitioner;
+
+    const prepared = service.prepareImportedResource(serverResource, [], '', 'R4');
+
+    expect(prepared.resource).not.toBe(serverResource);
+    expect(serverResource.meta.lastUpdated).toBe('2026-09-02T12:00:00Z');
+    expect(prepared.resource.meta).toBeUndefined();
+    expect(prepared.removedMetadata).toEqual(['meta.lastUpdated']);
+    expect(prepared.versionInfo).toEqual({
+      version: 'R4',
+      confidence: 'authoritative',
+      source: 'fhir-server'
+    });
+  });
+
   it('reports conflicting MIME and profile evidence as ambiguous', () => {
     const info = service.detectVersion({
       resourceType: 'Patient',

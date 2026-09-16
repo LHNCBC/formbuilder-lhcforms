@@ -3,7 +3,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TableAddMenuItem, TableComponent } from '../table/table.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {ArrayProperty, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { AppFormElementComponent } from '../form-element/form-element.component';
 import { LabelComponent } from '../label/label.component';
@@ -23,6 +23,14 @@ import {
 } from '../../../services/contained-resource.service';
 import {Util} from '../../util';
 import {faEye} from '@fortawesome/free-solid-svg-icons';
+import {FhirServersDlgComponent} from '../fhir-servers-dlg/fhir-servers-dlg.component';
+import {
+  FhirResourceSelection,
+  FhirSearchDlgComponent
+} from '../fhir-search-dlg/fhir-search-dlg.component';
+import {FhirService} from '../../../services/fhir.service';
+import {firstValueFrom} from 'rxjs';
+import {getContainedResourceDisplay} from './contained-resource-display.util';
 
 
 @Component({
@@ -56,6 +64,8 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
 
   private readonly referencedResourceButtons = [{label: 'Close', value: 'close'}];
   private readonly containedResourceService = inject(ContainedResourceService);
+  private readonly modalService = inject(NgbModal);
+  private readonly fhirService = inject(FhirService);
 
   matDialogService: MatDialog = inject(MatDialog);
   faView = faEye;
@@ -70,9 +80,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
       {id: 'upload-file', label: 'Upload from a local file…'},
       {
         id: 'import-server',
-        label: 'Import from a FHIR server…',
-        disabled: true,
-        title: 'FHIR server import will be added in a later release.'
+        label: 'Import from a FHIR server…'
       }
     ] satisfies TableAddMenuItem[];
     super.ngOnInit();
@@ -146,7 +154,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
       case 'id':
         return resource.id || '';
       case '__$resourceDisplay':
-        return this.getResourceDisplay(resource);
+        return getContainedResourceDisplay(resource);
       case '__$fhirVersionInfo.version': {
         const info = this.containedResourceService.getVersionInfo(resource);
         return info?.version || (info?.confidence === 'ambiguous' ? 'Ambiguous' : 'Unknown');
@@ -180,25 +188,6 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     return this.formProperty?.properties[index]?.value?.resourceType === 'ValueSet'
       ? this.faEdit
       : this.faView;
-  }
-
-  /**
-   * Derive a short display string from common fields without assuming a resource-specific schema.
-   *
-   * @param resource - Contained FHIR resource.
-   * @returns Short display text when one can be derived.
-   */
-  private getResourceDisplay(resource: any): string {
-    for(const value of [resource.title, resource.name, resource.description, resource.url, resource.status]) {
-      if(typeof value === 'string') {
-        return value;
-      }
-    }
-    const name = Array.isArray(resource.name) ? resource.name[0] : null;
-    if(name) {
-      return name.text || [...(name.given || []), name.family].filter(Boolean).join(' ');
-    }
-    return typeof resource.code?.text === 'string' ? resource.code.text : '';
   }
 
   /**
@@ -259,6 +248,51 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     }
     else if(actionId === 'upload-file') {
       this.openResourceFilePicker();
+    }
+    else if(actionId === 'import-server') {
+      void this.importResourceFromFHIRServer();
+    }
+  }
+
+  /**
+   * Select a FHIR server and import one searched resource into Questionnaire.contained.
+   */
+  private async importResourceFromFHIRServer(): Promise<void> {
+    try {
+      const serverSelected = await this.modalService
+        .open(FhirServersDlgComponent, {size: 'lg'})
+        .result
+        .catch(() => false);
+      if(!serverSelected) {
+        return;
+      }
+
+      const searchModal = this.modalService.open(FhirSearchDlgComponent, {
+        size: 'lg',
+        scrollable: true
+      });
+      searchModal.componentInstance.configureForContainedResourceImport();
+      const selection = await searchModal.result.catch(() => false) as FhirResourceSelection | false;
+      if(!selection) {
+        return;
+      }
+
+      const sourceVersion = this.fhirService.getFhirServer().version;
+      const resource = await firstValueFrom(
+        this.fhirService.readResource(selection.resourceType, selection.id)
+      );
+      const prepared = this.containedResourceService.prepareImportedResource(
+        resource,
+        this.formProperty.value || [],
+        '',
+        sourceVersion
+      );
+      if(await this.confirmNormalization(prepared)) {
+        this.formProperty.addItem(prepared.resource);
+      }
+    }
+    catch(error) {
+      this.showImportError(error instanceof Error ? error.message : String(error));
     }
   }
 

@@ -1,5 +1,6 @@
 import {ContainedResourceService} from '../../../services/contained-resource.service';
 import {ContainedComponent} from './contained.component';
+import {of} from 'rxjs';
 
 describe('ContainedComponent', () => {
   let component: ContainedComponent;
@@ -71,9 +72,45 @@ describe('ContainedComponent', () => {
     );
   });
 
+  it('imports a selected server resource through contained-resource normalization', async () => {
+    showDialog.and.returnValue({result: Promise.resolve('import')});
+    const configureSearch = jasmine.createSpy('configureForContainedResourceImport');
+    const open = jasmine.createSpy('open');
+    open.and.returnValues(
+      {result: Promise.resolve(true)},
+      {
+        componentInstance: {configureForContainedResourceImport: configureSearch},
+        result: Promise.resolve({resourceType: 'Practitioner', id: 'p2'})
+      }
+    );
+    Object.defineProperty(component, 'modalService', {value: {open}});
+    Object.defineProperty(component, 'fhirService', {value: {
+      getFhirServer: () => ({version: 'R4'}),
+      readResource: () => of({
+        resourceType: 'Practitioner',
+        id: 'p2',
+        meta: {lastUpdated: '2026-09-02T12:00:00Z'},
+        active: true
+      })
+    }});
+
+    await component['importResourceFromFHIRServer']();
+
+    expect(configureSearch).toHaveBeenCalled();
+    expect(addItem).toHaveBeenCalledTimes(1);
+    const imported = addItem.calls.mostRecent().args[0];
+    expect(imported.meta).toBeUndefined();
+    expect(component['containedResourceService'].getVersionInfo(imported)).toEqual({
+      version: 'R4',
+      confidence: 'authoritative',
+      source: 'fhir-server'
+    });
+  });
+
   it('routes Add menu actions to ValueSet creation and file upload', () => {
     spyOn(component, 'addItemWithAlert');
     spyOn(component, 'openResourceFilePicker');
+    const serverImport = spyOn<any>(component, 'importResourceFromFHIRServer');
 
     component.onAddMenuItem('create-value-set', {});
     component.onAddMenuItem('upload-file', {});
@@ -81,5 +118,6 @@ describe('ContainedComponent', () => {
 
     expect(component.addItemWithAlert).toHaveBeenCalledTimes(1);
     expect(component.openResourceFilePicker).toHaveBeenCalledTimes(1);
+    expect(serverImport).toHaveBeenCalledTimes(1);
   });
 });

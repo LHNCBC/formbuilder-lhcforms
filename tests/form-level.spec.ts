@@ -80,7 +80,7 @@ const fhirSearch = async (page: Page, titleSearchTerm: string) => {
   await page.locator('#searchField1').selectOption('Form title only');
   await page.locator('#button-addon2').click();
   await expect(page.locator('div.list-group')).toBeVisible();
-  await page.locator('a.result-item').first().click();
+  await page.locator('button.result-item').first().click();
 };
 
 const saveDownload = async (download: Download, filePath: string) => {

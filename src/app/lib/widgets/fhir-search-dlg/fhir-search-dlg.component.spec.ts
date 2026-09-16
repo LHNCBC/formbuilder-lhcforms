@@ -37,6 +37,64 @@ describe('FhirSearchDlgComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should require a server-advertised resource type for contained-resource searches', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([{
+      resourceType: 'Practitioner',
+      searchParameters: [{name: 'name', type: 'string'}]
+    }]));
+
+    component.configureForContainedResourceImport();
+    flush();
+    fixture.detectChanges();
+
+    expect(component.mode).toBe('contained-resource');
+    expect(component.resourceTypes).toEqual(['Practitioner']);
+    expect(component.canSearch()).toBeFalse();
+
+    component.onResourceTypeChange('Practitioner');
+
+    expect(component.canSearch()).toBeTrue();
+    expect(component.searchFieldList.map((field) => field.field))
+      .toEqual(['_content', '_id', 'name']);
+  }));
+
+  it('should search and return a type-qualified contained-resource selection', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([{
+      resourceType: 'Practitioner',
+      searchParameters: []
+    }]));
+    const bundle = {
+      resourceType: 'Bundle',
+      type: 'searchset',
+      total: 1,
+      entry: [{resource: {
+        resourceType: 'Practitioner',
+        id: 'p2',
+        active: true,
+        name: [{family: 'Roe', given: ['Jane']}]
+      }}]
+    } as any;
+    const searchSpy = spyOn(component.fhirService, 'searchResources')
+      .withArgs('Practitioner', 'Jane', '_content', {_count: 20})
+      .and.returnValue(of(bundle));
+    const closeSpy = spyOn(component, 'close');
+
+    component.configureForContainedResourceImport();
+    component.onResourceTypeChange('Practitioner');
+    component.inputTerm = 'Jane';
+    component.searchInput();
+    flush();
+    fixture.detectChanges();
+
+    expect(searchSpy).toHaveBeenCalled();
+    expect(component.resources.length).toBe(1);
+    expect(component.getResourceDisplay(component.resources[0])).toBe('Jane Roe');
+
+    component.selectResource(component.resources[0]);
+
+    expect(closeSpy).toHaveBeenCalledWith({resourceType: 'Practitioner', id: 'p2'});
+  }));
+
   [
     {index: 0, field: '_content', term: 'weight', total: 64, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
     {index: 1, field: 'questionnaire-code', term: '11111-1', total: 1, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},

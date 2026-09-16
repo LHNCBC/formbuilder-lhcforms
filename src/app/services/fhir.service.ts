@@ -29,6 +29,17 @@ export interface FHIRServerValidityResponse {
   fhirServer?: FHIRServer;
 }
 
+export interface FHIRResourceSearchParameter {
+  name: string;
+  type?: string;
+  documentation?: string;
+}
+
+export interface FHIRResourceCapability {
+  resourceType: string;
+  searchParameters: FHIRResourceSearchParameter[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -82,6 +93,7 @@ export class FhirService {
   private readonly defaultFhirServer = this.fhirServerList[0];
   private readonly fhirServerChanges = new Subject<FHIRServer>();
   readonly fhirServerChanges$ = this.fhirServerChanges.asObservable();
+  private readonly resourceCapabilitiesByEndpoint = new Map<string, FHIRResourceCapability[]>();
   currentServer: FHIRServer;
   smartClient: Client;
 
@@ -149,6 +161,20 @@ export class FhirService {
       }));
     };
 
+    /**
+     * Read one resource without converting it to Form Builder's internal FHIR version.
+     *
+     * @param resourceType - FHIR resource type used in the REST path.
+     * @param id - Logical resource id.
+     * @returns Resource exactly as supplied by the selected FHIR server.
+     */
+    readResource(resourceType: string, id: string): Observable<fhir.Resource> {
+      this.assertResourceType(resourceType);
+      return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
+        url: `${resourceType}/${encodeURIComponent(id)}?_format=application/fhir+json`
+      }));
+    }
+
 
     /**
      * Delete a questionnaire fhir resource.
@@ -162,14 +188,33 @@ export class FhirService {
 
 
     /**
+     * Search Questionnaires on the current FHIR server.
      *
-     *
-     * @param searchStr - A search term to search FHIR resources
-     * @param searchField - Field to search, should be a valid searchable field. Refer to FHIR REST API for list of fields.
-     * @param otherQueryParams - (Optional) Any additional or overriding query parameters to send to FHIR server.
-     * @returns Http promise
+     * @param searchStr - Search term.
+     * @param searchField - Questionnaire search parameter name.
+     * @param otherQueryParams - Additional or overriding query parameters.
+     * @returns Search-set Bundle returned by the selected FHIR server.
      */
     search(searchStr: string, searchField?: string, otherQueryParams?: any): Observable<fhir.Bundle> {
+      return this.searchResources('Questionnaire', searchStr, searchField, otherQueryParams);
+    };
+
+    /**
+     * Search resources of a selected type on the current FHIR server.
+     *
+     * @param resourceType - FHIR resource type used in the REST path.
+     * @param searchStr - Search term.
+     * @param searchField - FHIR search parameter name.
+     * @param otherQueryParams - Additional or overriding query parameters.
+     * @returns Search-set Bundle returned by the selected FHIR server.
+     */
+    searchResources(
+      resourceType: string,
+      searchStr: string,
+      searchField?: string,
+      otherQueryParams?: any
+    ): Observable<fhir.Bundle> {
+      this.assertResourceType(resourceType);
       const query = {_sort: ['-_lastUpdated'], _total: 'accurate', _format: 'application/fhir+json'};
       Object.assign(query, otherQueryParams);
 
@@ -183,9 +228,55 @@ export class FhirService {
       }
 
       return this.promiseToObservable(this.smartClient.request<fhir.Bundle>({
-        url: 'Questionnaire?' + this.queryToString(query)
+        url: `${resourceType}?${this.queryToString(query)}`
       }));
     };
+
+    /**
+     * Get searchable resource types and parameters advertised by the current server.
+     * Results are cached by server endpoint.
+     *
+     * @returns Resource capabilities declared in the server CapabilityStatement.
+     */
+    getResourceCapabilities(): Observable<FHIRResourceCapability[]> {
+      const endpoint = this.currentServer.endpoint;
+      const cached = this.resourceCapabilitiesByEndpoint.get(endpoint);
+      if(cached?.length) {
+        return of(cached);
+      }
+
+      return this.promiseToObservable(this.smartClient.request<fhir.CapabilityStatement>({
+        url: 'metadata?_format=application/fhir+json'
+      })).pipe(map((statement: fhir.CapabilityStatement) => {
+        const byType = new Map<string, FHIRResourceSearchParameter[]>();
+        (statement.rest || []).forEach((rest) => {
+          (rest.resource || []).forEach((resource) => {
+            if(!resource.type || !/^[A-Z][A-Za-z0-9]{0,63}$/.test(resource.type)) {
+              return;
+            }
+            const parameters = (resource.searchParam || []).flatMap((parameter) =>
+              parameter.name ? [{
+                name: parameter.name,
+                type: parameter.type,
+                documentation: parameter.documentation
+              }] : []
+            );
+            byType.set(resource.type, [
+              ...(byType.get(resource.type) || []),
+              ...parameters
+            ]);
+          });
+        });
+        const capabilities = Array.from(byType, ([resourceType, searchParameters]) => ({
+          resourceType,
+          searchParameters: this.deduplicateSearchParameters(searchParameters)
+        })).sort((left, right) => left.resourceType.localeCompare(right.resourceType));
+        if(capabilities.length) {
+          this.resourceCapabilitiesByEndpoint.set(endpoint, capabilities);
+        }
+        return capabilities;
+      }));
+    }
 
 
     /**
@@ -498,6 +589,37 @@ export class FhirService {
           return of(ret);
         })
       );
+  }
+
+  /**
+   * Reject unsafe resource types before interpolating them into a REST path.
+   *
+   * @param resourceType - Candidate FHIR resource type.
+   * @throws Error when the resource type is not a valid FHIR type token.
+   */
+  private assertResourceType(resourceType: string): void {
+    if(!/^[A-Z][A-Za-z0-9]{0,63}$/.test(resourceType || '')) {
+      throw new Error(`Invalid FHIR resource type: ${resourceType || '(empty)'}`);
+    }
+  }
+
+  /**
+   * Retain one declaration for each advertised search-parameter name.
+   *
+   * @param parameters - Search parameters collected from CapabilityStatement REST entries.
+   * @returns Deduplicated parameters in server declaration order.
+   */
+  private deduplicateSearchParameters(
+    parameters: FHIRResourceSearchParameter[]
+  ): FHIRResourceSearchParameter[] {
+    const names = new Set<string>();
+    return parameters.filter((parameter) => {
+      if(names.has(parameter.name)) {
+        return false;
+      }
+      names.add(parameter.name);
+      return true;
+    });
   }
 
 }

@@ -233,7 +233,7 @@ test.describe('Contained resource local-file import', () => {
     const buttonCenter = openButtonBox.x + openButtonBox.width / 2;
     const menuCenter = addMenuBox.x + addMenuBox.width / 2;
     expect(Math.abs(buttonCenter - menuCenter)).toBeLessThanOrEqual(1);
-    await expect(page.getByRole('button', {name: 'Import from a FHIR server…'})).toBeDisabled();
+    await expect(page.getByRole('button', {name: 'Import from a FHIR server…'})).toBeEnabled();
     await page.getByRole('button', {name: 'Upload from a local file…'}).click();
     const chooser = await chooserPromise;
     await chooser.setFiles('tests/fixtures/contained-patient-r4.json');
@@ -267,5 +267,112 @@ test.describe('Contained resource local-file import', () => {
     });
     await page.getByRole('tab', {name: 'R5 Version'}).click();
     await expect(page.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toBeVisible();
+  });
+});
+
+test.describe('Contained resource import from a FHIR server', () => {
+  test.beforeEach(async ({page}) => {
+    await page.goto('/');
+    const mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+    await PWUtils.uploadFile(page, 'contained-example.json', false);
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+  });
+
+  test('selects a resource type and imports a normalized server resource', async ({page}) => {
+    await page.route('https://lforms-fhir.nlm.nih.gov/baseR5/metadata?*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/fhir+json',
+        json: {
+          resourceType: 'CapabilityStatement',
+          status: 'active',
+          date: '2026-09-02',
+          kind: 'instance',
+          fhirVersion: '5.0.0',
+          format: ['json'],
+          rest: [{
+            mode: 'server',
+            resource: [{
+              type: 'Practitioner',
+              searchParam: [{name: 'name', type: 'string'}]
+            }]
+          }]
+        }
+      });
+    });
+    await page.route('https://lforms-fhir.nlm.nih.gov/baseR5/Practitioner?**', async (route) => {
+      expect(route.request().url()).toContain('_content=Jane');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/fhir+json',
+        json: {
+          resourceType: 'Bundle',
+          type: 'searchset',
+          total: 1,
+          entry: [{
+            resource: {
+              resourceType: 'Practitioner',
+              id: 'p2',
+              active: true,
+              name: [{family: 'Roe', given: ['Jane']}]
+            }
+          }]
+        }
+      });
+    });
+    await page.route(/\/baseR5\/Practitioner\/p2\?/, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/fhir+json',
+        json: {
+          resourceType: 'Practitioner',
+          id: 'p2',
+          meta: {
+            lastUpdated: '2026-09-02T12:00:00Z',
+            tag: [{code: 'server-import'}]
+          },
+          active: true,
+          name: [{family: 'Roe', given: ['Jane']}]
+        }
+      });
+    });
+
+    await page.getByRole('button', {name: 'Add contained resource'}).click();
+    await page.getByRole('button', {name: 'Import from a FHIR server…'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Choose a FHIR server'}, 'Continue');
+
+    const searchDialog = page.getByRole('dialog', {name: 'Import a contained resource'});
+    await expect(searchDialog).toBeVisible();
+    const searchButton = searchDialog.getByRole('button', {name: 'Search'});
+    await expect(searchButton).toBeDisabled();
+    await searchDialog.getByLabel('Resource type').fill('Practitioner');
+    await expect(searchButton).toBeEnabled();
+    await searchDialog.getByLabel('Search term').fill('Jane');
+    await searchButton.click();
+    await searchDialog.getByRole('button', {name: /Jane Roe/}).click();
+
+    const normalizationDialog = page.getByRole('dialog', {name: 'Normalize contained resource'});
+    await expect(normalizationDialog).toContainText('meta.lastUpdated');
+    await normalizationDialog.getByRole('button', {name: 'Import resource'}).click();
+
+    const containedTable = PWUtils.getTableByFieldLabel(
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(2);
+    await expect(PWUtils.getTableCell(containedTable, 2, 1)).toHaveText('Practitioner');
+    await expect(PWUtils.getTableCell(containedTable, 2, 2)).toHaveText('p2');
+    await expect(PWUtils.getTableCell(containedTable, 2, 3)).toHaveText('Jane Roe');
+    await expect(PWUtils.getTableCell(containedTable, 2, 4)).toHaveText('R5');
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.contained[1]).toEqual({
+      resourceType: 'Practitioner',
+      id: 'p2',
+      meta: {tag: [{code: 'server-import'}]},
+      active: true,
+      name: [{family: 'Roe', given: ['Jane']}]
+    });
   });
 });
