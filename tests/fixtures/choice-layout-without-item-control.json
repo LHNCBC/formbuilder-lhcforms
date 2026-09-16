@@ -1,0 +1,35 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Choice layout without item control",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "linkId": "choice-layout",
+      "text": "Choose an option",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+          "valueCode": "vertical"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount",
+          "valuePositiveInt": 3
+        }
+      ],
+      "answerOption": [
+        {
+          "valueString": "One"
+        },
+        {
+          "valueString": "Two"
+        }
+      ]
+    }
+  ]
+}

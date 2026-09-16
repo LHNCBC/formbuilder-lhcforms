@@ -6,6 +6,14 @@ import {RestrictionOperatorService} from '../../../services/restriction-operator
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
+import {
+  EXTENSION_URL_MAX_SIZE,
+  EXTENSION_URL_MAX_VALUE,
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_MIN_LENGTH,
+  EXTENSION_URL_MIN_VALUE,
+  EXTENSION_URL_REGEX
+} from '../../constants/constants';
 
 /**
  * Restrictions are based on table component.
@@ -32,27 +40,27 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
       display: 'Maximum length'
     },
     minLength: {
-      extUrl: 'http://hl7.org/fhir/StructureDefinition/minLength',
+      extUrl: EXTENSION_URL_MIN_LENGTH,
       display: 'Minimum length'
     },
     regex: {
-      extUrl: 'http://hl7.org/fhir/StructureDefinition/regex',
+      extUrl: EXTENSION_URL_REGEX,
       display: 'Regex pattern'
     },
     minValue: {
-      extUrl: 'http://hl7.org/fhir/StructureDefinition/minValue',
+      extUrl: EXTENSION_URL_MIN_VALUE,
       display: 'Minimum value'
     },
     maxValue: {
-      extUrl: 'http://hl7.org/fhir/StructureDefinition/maxValue',
+      extUrl: EXTENSION_URL_MAX_VALUE,
       display: 'Maximum value'
     },
     maxSize: {
-      extUrl: 'http://hl7.org/fhir/StructureDefinition/maxSize',
+      extUrl: EXTENSION_URL_MAX_SIZE,
       display: 'Maximum size'
     },
     mimeType: {
-      extUrl: 'http://hl7.org/fhir/StructureDefinition/mimeType',
+      extUrl: EXTENSION_URL_MIME_TYPE,
       display: 'Mime type'
     }
   };

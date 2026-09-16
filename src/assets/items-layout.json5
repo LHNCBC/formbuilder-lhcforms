@@ -11,7 +11,9 @@
           { "field": "__$helpText", "col": 12},
           { "field": "type", "col": 12 },
           { "field": "__$entryFormat", "col": 12},
+          { "field": "required", "col": 12 },
           { "field": "repeats", "col": 12 },
+          { "field": "__$minMaxOccurs", "col": 12 },
           { "field": "__$variable", "col": 12 },
           { "field": "__$isAnswerList", "col": 12 },
           { "field": "__$answerOptionMethods", "col": 12 },
@@ -24,6 +26,8 @@
           { "field": "__$pickInitial", "col": 12 },
           { "field": "__$initialCalculatedExpression", "col": 12 },
           { "field": "__$itemControl", "col": 12 },
+          { "field": "__$choiceOrientation", "col": 12 },
+          { "field": "__$columnCount", "col": 12 },
           { "field": "__$itemControlQuestion", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
           { "field": "__$itemControlDisplay", "col": 12 },
@@ -32,7 +36,6 @@
       },
       {
         "showFields": [
-          { "field": "required", "col": 12 },
           { "field": "readOnly", "col": 12 },
           { "field": "maxLength", "col": 12 },
           { "field": "__$restrictions", "col": 12 }
@@ -51,6 +54,7 @@
       {
         "showFields": [
           { "field": "linkId", "col": 12 },
+          { "field": "__$hidden", "col": 12 },
           { "field": "__$enableWhenMethod", "col": 12 },
           { "field": "enableWhen", "col": 12 },
           { "field": "enableBehavior", "col": 12 },

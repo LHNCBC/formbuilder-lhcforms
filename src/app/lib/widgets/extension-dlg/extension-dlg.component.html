@@ -12,6 +12,7 @@
     <lfb-extension-obj
                        [model]="inputModel"
                        [duplicateUrlError]="duplicateUrlError()"
+                       [managedUrlError]="managedUrlError()"
                        (changed)="onChange($event)"
     ></lfb-extension-obj>
     @if (checkingExtensionCardinality()) {

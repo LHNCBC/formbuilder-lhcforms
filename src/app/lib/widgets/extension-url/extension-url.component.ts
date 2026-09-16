@@ -32,15 +32,17 @@ export class ExtensionUrlComponent extends StringComponent {
 
   /**
    * Return errors that should currently be rendered below the URL field.
-   * Duplicate errors are always shown because they can be introduced by edits
-   * to another field while the URL control remains pristine.
+   * Dialog-level URL errors are always shown because they can be introduced by
+   * edits to another field while the URL control remains pristine.
    */
   get displayedErrors(): typeof this.errors {
     if (this.control.dirty && (this.formProperty.value || this.schema.widget.showEmptyError)) {
       return this.errors;
     }
 
-    return this.errors?.filter((error) => error.code === 'DUPLICATE_EXTENSION_URL');
+    return this.errors?.filter((error) =>
+      error.code === 'DUPLICATE_EXTENSION_URL' || error.code === 'MANAGED_EXTENSION_URL'
+    );
   }
 
   /**
@@ -52,10 +54,33 @@ export class ExtensionUrlComponent extends StringComponent {
   }
 
   /**
+   * Check whether the URL is reserved for a dedicated Form Builder field.
+   * @returns True when the general editor must reject the URL.
+   */
+  get hasManagedUrlError(): boolean {
+    return !!this.errors?.some((error) => error.code === 'MANAGED_EXTENSION_URL');
+  }
+
+  /** @returns True when the dialog supplied a URL validation error. */
+  get hasDialogUrlError(): boolean {
+    return this.hasDuplicateUrlError || this.hasManagedUrlError;
+  }
+
+  /**
    * Build the unique DOM ID used to associate the URL input with its duplicate error.
    * @returns The duplicate URL error element ID.
    */
   get duplicateErrorId(): string {
     return `duplicate-extension-url-error-${this.id}${this._id}`;
+  }
+
+  /** @returns DOM ID used to associate the managed URL error with its input. */
+  get managedErrorId(): string {
+    return `managed-extension-url-error-${this.id}${this._id}`;
+  }
+
+  /** @returns DOM ID of the active dialog-level URL error. */
+  get dialogErrorId(): string {
+    return this.hasManagedUrlError ? this.managedErrorId : this.duplicateErrorId;
   }
 }

@@ -11,9 +11,9 @@
            type="url"
            class="form-control form-control-sm"
            [ngClass]="controlClasses"
-           [class.invalid]="hasDuplicateUrlError"
-           [attr.aria-invalid]="hasDuplicateUrlError ? 'true' : null"
-           [attr.aria-describedby]="hasDuplicateUrlError ? duplicateErrorId : null"
+           [class.invalid]="hasDialogUrlError"
+           [attr.aria-invalid]="hasDialogUrlError ? 'true' : null"
+           [attr.aria-describedby]="hasDialogUrlError ? dialogErrorId : null"
            [attr.id]="id+_id"
            [formControl]="control"
            [attr.placeholder]="schema.placeholder"
@@ -28,11 +28,14 @@
     @if (errorsToDisplay?.length) {
       <ul class="mb-0 ps-0 list-unstyled">
         @for (error of errorsToDisplay; track error.code) {
-          <li [attr.id]="error.code === 'DUPLICATE_EXTENSION_URL' ? duplicateErrorId : null">
+          <li [attr.id]="error.code === 'DUPLICATE_EXTENSION_URL'
+              ? duplicateErrorId
+              : error.code === 'MANAGED_EXTENSION_URL' ? managedErrorId : null">
             <fa-icon
               [icon]="errorIcon"
               class="extension-url-error-icon text-danger me-1"
               [class.duplicate-extension-url-error-icon]="error.code === 'DUPLICATE_EXTENSION_URL'"
+              [class.managed-extension-url-error-icon]="error.code === 'MANAGED_EXTENSION_URL'"
               aria-hidden="true"
             ></fa-icon>
             <small class="text-danger form-text" role="alert">

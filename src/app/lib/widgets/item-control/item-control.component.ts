@@ -6,7 +6,12 @@ import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
-import { EXTENSION_URL_ITEM_CONTROL } from '../../constants/constants';
+import {
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
+  EXTENSION_URL_ITEM_CONTROL
+} from '../../constants/constants';
 import {SharedObjectService} from "../../../services/shared-object.service";
 import {FormsModule} from "@angular/forms";
 import {CommonModule, NgClass} from "@angular/common";
@@ -111,8 +116,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   init() {
     this.dataType = this.formProperty.searchProperty('/type').value;
     this.option = this.getItemControl(false);
+    this.syncItemControlProxyValue(this.option);
     this.isRepeat = !!this.formProperty.searchProperty('/repeats').value;
     this.answerMethod = this.formProperty.searchProperty('/__$answerOptionMethods').value;
+    this.answerList = !!this.formProperty.searchProperty('/__$isAnswerList')?.value;
 
     this.hasCodeSystemItemControl = (this.formProperty?.schema?.oneOf && this.formProperty.schema.oneOf.length > 0);
     if (this.hasCodeSystemItemControl) {
@@ -146,14 +153,23 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         return;
       }
 
-      const changed = !(this.dataType === type);
       this.dataType = type;
-      // If type is not coding, cleanup the extension.
-      if (type !== 'coding' && type !== 'group' && type !== 'display') {
-        this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
-      } else {
-        this.option = this.getItemControl(changed);
+      if (type === 'group' || type === 'display') {
+        // Group and display have their own valid item controls, so keep their
+        // existing initialization behavior while clearing answer-list layout below.
+        this.option = this.getItemControl(true);
         this.updateItemControlExt(this.option);
+      }
+      else if (!this.supportsAnswerList(type)) {
+        this.clearExtensionItemControlSelection(false);
+      }
+      else if(this.option && !this.getItemControlOptions().some((option) => option.enum[0] === this.option)) {
+        // Preserve answer-list settings across compatible types, but clear an item control
+        // that is not available for the destination type (for example, autocomplete on string).
+        this.clearExtensionItemControlSelection(false);
+      }
+      if(!this.supportsAnswerList(type)) {
+        this.clearAnswerListLayoutSelections();
       }
       this.cdr.markForCheck();
     })
@@ -177,6 +193,16 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       }
 
       this.answerList = answerList;
+      if(!answerList) {
+        const answerListItemControl = this.formProperty.searchProperty('/__$itemControl');
+        if(answerListItemControl.value) {
+          this.clearExtensionItemControlSelection(false);
+          if(answerListItemControl !== this.formProperty) {
+            answerListItemControl.setValue('', false);
+          }
+        }
+        this.removeAnswerListLayoutExtensions();
+      }
     })
     this.subscriptions.push(sub);
 
@@ -202,34 +228,33 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    * @param option - Selected option (angular event).
    */
   updateItemControlExt(option: string) {
-    this.clearExtensionItemControlSelection();
-
     if(this.answerMethod === 'answer-option' && option === 'autocomplete') {
       this.option = 'drop-down';
     }
-    else if(this.isRepeat && this.option === 'radio-button') {
+    else if(this.isRepeat && option === 'radio-button') {
       this.option = 'check-box';
     }
-    else if(!this.isRepeat && this.option === 'check-box') {
+    else if(!this.isRepeat && option === 'check-box') {
       this.option = 'radio-button';
     }
     else {
       this.option = option;
     }
+    this.syncItemControlProxyValue(this.option);
 
-    const ext = this.getItemControlExtension();
-    if (option) {
-      this.isItemControlDeprecated = this.checkDeprecatedItemControl(option);
+    if (this.option) {
+      this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
 
       this.extensionsService.resetExtension(
         ItemControlComponent.itemControlUrl,
-        this.createExtension(option),
+        this.createExtension(this.option),
         'valueCodeableConcept',
         false
       );
     }
     else {
-      this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl)
+      this.clearExtensionItemControlSelection(false);
+      return;
     }
   }
 
@@ -333,14 +358,18 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   /**
    * Clear extension for the 'Item Control' radio button.
+   * @param announce - Whether to announce a user-initiated clear action.
    */
-  clearExtensionItemControlSelection() {
+  clearExtensionItemControlSelection(announce = true) {
     this.option = '';
+    this.syncItemControlProxyValue(this.option);
     this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
 
-    const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-    this.liveAnnouncer.announce(`${type} item control selection has been cleared.`);
+    if(announce) {
+      const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      this.liveAnnouncer.announce(`${type} item control selection has been cleared.`);
+    }
   }
 
   /**
@@ -353,5 +382,46 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       return deprecatedNote.replace('${deprecatedItemControl}', optionDisplay);
     }
     return '';
+  }
+
+  /**
+   * Keep the internal item-control proxy field aligned so dependent visibleIf
+   * rules can react to custom item-control UI changes.
+   * @param option - The selected item-control option.
+   */
+  private syncItemControlProxyValue(option: string): void {
+    if(this.formProperty.value !== option) {
+      this.formProperty.setValue(option || '', false);
+    }
+  }
+
+  /**
+   * Determine whether a data type supports configuring an answer list.
+   * @param type - The Questionnaire item data type.
+   */
+  private supportsAnswerList(type: string): boolean {
+    return ['integer', 'date', 'time', 'string', 'text', 'coding'].includes(type);
+  }
+
+  /**
+   * Clear retained answer-list layout values after an incompatible data-type change.
+   */
+  private clearAnswerListLayoutSelections(): void {
+    for (const path of ['/__$choiceOrientation', '/__$columnCount']) {
+      const property = this.formProperty.searchProperty(path);
+      if(property?.value !== '' && property?.value !== null && property?.value !== undefined) {
+        property.setValue('', false);
+      }
+    }
+    this.removeAnswerListLayoutExtensions();
+  }
+
+  /**
+   * Remove extensions that are only applicable while the item has an answer list.
+   */
+  private removeAnswerListLayoutExtensions(): void {
+    this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_CHOICE_ORIENTATION);
+    this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT);
+    this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT_LEGACY);
   }
 }

@@ -1213,6 +1213,32 @@ test.describe('enableWhen condition and enableWhenExpression', () => {
     expect(q.item[3].extension).toHaveLength(3);
     expect(q.item[3].extension).toEqual(fileJson.item[3].extension);
   });
+
+  test('should render preview after switching the selected item from enableWhenExpression to enableWhen', async ({ page }) => {
+    const schemaErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      if (error.message.includes("Cannot read properties of undefined (reading 'schema')")) {
+        schemaErrors.push(error.message);
+      }
+    });
+    page.on('console', (message) => {
+      if (message.type() === 'error' && message.text().includes("Cannot read properties of undefined (reading 'schema')")) {
+        schemaErrors.push(message.text());
+      }
+    });
+
+    await PWUtils.clickTreeNode(page, 'Item 0');
+    await PWUtils.expandAdvancedFields(page);
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen expression');
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen condition and behavior');
+    await PWUtils.clickMenuBarButton(page, 'Preview');
+
+    const preview = page.locator('lfb-preview-dlg');
+    await expect(preview).toBeVisible();
+    await expect(preview.locator('lhc-item-question span.question').first()).toHaveText('Item 0');
+    expect(schemaErrors).toEqual([]);
+  });
 });
 
 test.describe('enableWhen answerCoding', () => {
