@@ -26,6 +26,8 @@
           { "field": "__$pickInitial", "col": 12 },
           { "field": "__$initialCalculatedExpression", "col": 12 },
           { "field": "__$itemControl", "col": 12 },
+          { "field": "__$choiceOrientation", "col": 12 },
+          { "field": "__$columnCount", "col": 12 },
           { "field": "__$itemControlQuestion", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
           { "field": "__$itemControlDisplay", "col": 12 },
@@ -52,6 +54,7 @@
       {
         "showFields": [
           { "field": "linkId", "col": 12 },
+          { "field": "__$hidden", "col": 12 },
           { "field": "__$enableWhenMethod", "col": 12 },
           { "field": "enableWhen", "col": 12 },
           { "field": "enableBehavior", "col": 12 },

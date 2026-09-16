@@ -1,0 +1,41 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "Questionnaire hidden sample",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "hidden-parent",
+      "text": "Hidden parent",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "item": [
+        {
+          "linkId": "hidden-child",
+          "text": "Hidden child",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "explicitly-visible",
+      "text": "Explicitly visible item",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": false
+        }
+      ]
+    }
+  ]
+}

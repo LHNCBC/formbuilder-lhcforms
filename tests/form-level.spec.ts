@@ -162,7 +162,9 @@ test.describe('Home page accept Terms of Use notices', () => {
 
     await page.locator('input[type="radio"][value="scratch"]').click();
     await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.locator('.spinner-border')).toHaveCount(0);
     await page.getByRole('button', { name: 'Create questions' }).first().click();
+    await expect(page.locator('.spinner-border')).toHaveCount(0);
 
     await PWUtils.selectDataType(page, 'coding');
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
@@ -187,6 +189,7 @@ test.describe('Home page accept Terms of Use notices', () => {
 
     await page.locator('input[type="radio"][value="scratch"]').click();
     await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.locator('.spinner-border')).toHaveCount(0);
     await page.getByRole('button', { name: 'Create questions' }).first().click();
     await expect(page.locator('.spinner-border')).toHaveCount(0);
 

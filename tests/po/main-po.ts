@@ -83,9 +83,10 @@ export class MainPO {
    */
   async assertLFormsLoaded() {
     await this.mockSnomedEditions();
-    // await this._page.goto('/');
-    const lforms = await this._page.evaluateHandle('window.LForms');
-    expect(lforms).toBeDefined();
+    await expect.poll(
+      () => this._page.evaluate(() => (window as any).LForms?.lformsVersion),
+      {message: 'LForms should finish loading'}
+    ).toMatch(/^\d+\.\d+\.\d+$/);
   }
 
 

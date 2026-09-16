@@ -12,8 +12,13 @@ import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LfbArrayComponent} from "../lfb-array/lfb-array.component";
 import {
-  EXTENSION_URL_CHOICE_ORIENTATION,
-  EXTENSION_URL_ENTRY_FORMAT
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_MIME_TYPE,
+  EXTENSION_URL_RENDERING_STYLE,
+  EXTENSION_URL_RENDERING_XHTML,
+  EXTENSION_URL_VARIABLE
 } from '../../constants/constants';
 import {
   ExtensionCardinalityCandidate,
@@ -65,13 +70,18 @@ describe('ExtensionDlgComponent', () => {
    * @param extensions - Extensions used to populate the parent array property.
    * @param rowIndex - Existing row to edit, or a negative value for a new row.
    */
-  async function createDialog(extensions: fhir.Extension[], rowIndex = 0) {
+  async function createDialog(
+    extensions: fhir.Extension[],
+    rowIndex = 0,
+    extensionEditorScope: 'form' | 'item' = 'form'
+  ) {
     const rootProperty = formPropertyFactory.createProperty(extSchema) as ArrayProperty;
     arrayProperty = formPropertyFactory.createProperty(extSchema.properties.extension, rootProperty, 'extension') as ArrayProperty;
     arrayProperty.setValue(extensions.map((ext) => extensionsService.updateExtension(ext)), false);
     data = {
       arrayProperty,
       rowIndex,
+      extensionEditorScope
     } as DialogData;
     fixture = TestBed.createComponent(ExtensionDlgComponent);
     component = fixture.componentInstance;
@@ -131,6 +141,115 @@ describe('ExtensionDlgComponent', () => {
     expect(urlWidget.querySelector('.extension-url-error-icon')).not.toBeNull();
     expect(urlWidget.querySelector('.duplicate-extension-url-error-icon')).toBeNull();
     expect(urlWidget.textContent).toContain('Spaces and other whitespace characters are not allowed');
+  });
+
+  it('should reject every extension registered in the central managed URL set', async () => {
+    await createDialog([], -1);
+
+    for (const url of extensionsService.extensionsEditedInWidgets) {
+      component.onChange({url, valueString: 'managed value'});
+
+      expect(component.managedUrlError()).withContext(url).not.toBeNull();
+      expect(component.disableSave()).withContext(url).toBeTrue();
+    }
+    expect(resolveCardinalitySpy).not.toHaveBeenCalled();
+  });
+
+  it('should reject an extension owned by a dedicated widget in the current schema', async () => {
+    extSchema = formService.getItemSchema();
+    await createDialog([], -1, 'item');
+
+    component.onChange({url: EXTENSION_URL_COLUMN_COUNT, valueInteger: 2});
+
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Column count” field instead.'
+    );
+    expect(component.disableSave()).toBeTrue();
+    expect(resolveCardinalitySpy).not.toHaveBeenCalled();
+  });
+
+  it('should not reject a schema-scoped extension when the current schema does not own it', async () => {
+    await createDialog([], -1, 'form');
+
+    component.onChange({url: EXTENSION_URL_COLUMN_COUNT, valueInteger: 2});
+
+    expect(component.managedUrlError()).toBeNull();
+  });
+
+  it('should reject questionnaire-hidden when it is registered in the central managed URL set', async () => {
+    const hiddenUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-hidden';
+    extensionsService.extensionsEditedInWidgets.add(hiddenUrl);
+    await createDialog([], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = `  ${hiddenUrl}  `;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const urlWidget: HTMLElement = urlInput.closest('lfb-extension-url');
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Hide this item from users?” field on a questionnaire item instead.'
+    );
+    expect(component.disableSave()).toBeTrue();
+    expect(resolveCardinalitySpy).not.toHaveBeenCalled();
+    expect(urlInput.classList).toContain('invalid');
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+    expect(urlWidget.querySelector('.managed-extension-url-error-icon')).not.toBeNull();
+    expect(urlWidget.textContent).toContain('Use the dedicated “Hide this item from users?” field');
+  });
+
+  it('should use the item-level field label for a managed variable extension', async () => {
+    await createDialog([], -1, 'item');
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = EXTENSION_URL_VARIABLE;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Item variables” field instead.'
+    );
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('should show how to reach the Variable Type field for custom variable metadata', async () => {
+    await createDialog([], -1, 'item');
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = EXTENSION_URL_CUSTOM_VARIABLE_TYPE;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.managedUrlError()).toBe(
+      'This extension cannot be added here. Use the dedicated “Variable Type” field in the '
+      + '“Create/edit variables” dialog opened from the “Item variables” section instead.'
+    );
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('should reject changing an editable extension URL to an existing managed URL', async () => {
+    await createDialog(inputExt, 0);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = EXTENSION_URL_ENTRY_FORMAT;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.managedUrlError()).not.toBeNull();
+    expect(component.disableSave()).toBeTrue();
+    expect(fixture.nativeElement.textContent).toContain('Use the dedicated “Entry format” field');
+
+    urlInput.value = 'http://example.org/unmanaged';
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.managedUrlError()).toBeNull();
+    expect(component.disableSave()).toBeFalse();
   });
 
   it('should allow a duplicate unknown extension URL without warning when definition metadata is unavailable', async () => {
@@ -615,10 +734,10 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should display a duplicate error with an icon and invalid styling under the URL field', async () => {
-    await createDialog([{url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'first'}], -1);
+    await createDialog([{url: EXTENSION_URL_RENDERING_STYLE, valueString: 'first'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
-    urlInput.value = EXTENSION_URL_ENTRY_FORMAT;
+    urlInput.value = EXTENSION_URL_RENDERING_STYLE;
     urlInput.dispatchEvent(new InputEvent('input'));
     urlInput.dispatchEvent(new Event('blur'));
     await fixture.whenStable();
@@ -645,8 +764,8 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should retain the duplicate error when changing directly between duplicate URLs', async () => {
-    const duplicateUrlA = EXTENSION_URL_ENTRY_FORMAT;
-    const duplicateUrlB = EXTENSION_URL_CHOICE_ORIENTATION;
+    const duplicateUrlA = EXTENSION_URL_RENDERING_STYLE;
+    const duplicateUrlB = EXTENSION_URL_RENDERING_XHTML;
     await createDialog([
       {url: duplicateUrlA, valueString: 'first value'},
       {url: duplicateUrlB, valueString: 'second value'}
@@ -681,8 +800,8 @@ describe('ExtensionDlgComponent', () => {
 
   it('should display a duplicate error when only the value of an imported duplicate is edited', async () => {
     await createDialog([
-      {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'first value'},
-      {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'second value'}
+      {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'first value'},
+      {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'second value'}
     ], 1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
     const valueInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="valueString"]');
@@ -716,26 +835,30 @@ describe('ExtensionDlgComponent', () => {
     expect(component.duplicateUrlError()).toBeNull();
   });
 
-  it('should allow multiple MIME type extensions', async () => {
-    const mimeTypeUrl = 'http://hl7.org/fhir/StructureDefinition/mimeType';
-    await createDialog([{url: mimeTypeUrl, valueCode: 'image/png'}], -1);
+  it('should reject MIME type before checking whether multiple occurrences are allowed', async () => {
+    await createDialog([{url: EXTENSION_URL_MIME_TYPE, valueCode: 'image/png'}], -1);
 
-    component.onChange({url: mimeTypeUrl, valueCode: 'application/pdf'});
+    component.onChange({url: EXTENSION_URL_MIME_TYPE, valueCode: 'application/pdf'});
 
     expect(component.duplicateUrlError()).toBeNull();
+    expect(component.managedUrlError()).toContain(
+      'Use the dedicated “Restrictions” field on a questionnaire item instead.'
+    );
+    expect(component.disableSave()).toBeTrue();
+    expect(resolveCardinalitySpy).not.toHaveBeenCalled();
   });
 
   it('should reject duplicates for a known single-occurrence extension', async () => {
-    await createDialog([{url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'MM/DD/YYYY'}], -1);
+    await createDialog([{url: EXTENSION_URL_RENDERING_STYLE, valueString: 'bold'}], -1);
 
-    component.onChange({url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'YYYY-MM-DD'});
+    component.onChange({url: EXTENSION_URL_RENDERING_STYLE, valueString: 'italic'});
 
     expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();
   });
 
   it('should not treat the current extension as a duplicate when editing', async () => {
-    const extension = {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'format'};
+    const extension = {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'bold'};
     await createDialog([extension], 0);
 
     component.onChange({...extension, valueString: 'changed value'});
@@ -744,9 +867,9 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should reject changing an extension URL to another single-occurrence URL in the same scope', async () => {
-    await createDialog([...inputExt, {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'other value'}], 0);
+    await createDialog([...inputExt, {url: EXTENSION_URL_RENDERING_STYLE, valueString: 'other value'}], 0);
 
-    component.onChange({url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'changed value'});
+    component.onChange({url: EXTENSION_URL_RENDERING_STYLE, valueString: 'changed value'});
 
     expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();

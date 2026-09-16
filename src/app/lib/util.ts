@@ -17,6 +17,7 @@ import {
   TYPE_DECIMAL, TYPE_INTEGER, TYPE_STRING, TYPE_TEXT, TYPE_QUANTITY, TYPE_CODING, TYPE_GROUP, TYPE_URL, TYPE_DISPLAY,
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
   EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  EXTENSION_URL_CHOICE_ORIENTATION, EXTENSION_URL_COLUMN_COUNT, EXTENSION_URL_COLUMN_COUNT_LEGACY,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from './constants/constants';
 import { HttpClient } from '@angular/common/http';
@@ -1026,6 +1027,44 @@ export class Util {
       }
       ret = resp.data;
     }
+    return ret;
+  }
+
+  /**
+   * Remove choice-layout extensions from items whose types do not support
+   * them in the target FHIR version.
+   * Returns a copy so version-specific export cleanup does not modify the R5 form.
+   *
+   * @param questionnaire - Converted R4/STU3 Questionnaire.
+   * @param version - Target FHIR version.
+   * @returns Questionnaire copy with incompatible choice-layout extensions removed.
+   */
+  static removeInvalidChoiceLayoutExtensions(
+    questionnaire: fhir.Questionnaire,
+    version: 'R4' | 'STU3'
+  ): fhir.Questionnaire {
+    const ret = copy(questionnaire);
+    const incompatibleUrls = new Set([EXTENSION_URL_CHOICE_ORIENTATION]);
+    if(version === 'STU3') {
+      incompatibleUrls.add(EXTENSION_URL_COLUMN_COUNT);
+      incompatibleUrls.add(EXTENSION_URL_COLUMN_COUNT_LEGACY);
+    }
+
+    const removeFromItems = (items: fhir.QuestionnaireItem[] = []): void => {
+      items.forEach((item) => {
+        if(!['choice', 'open-choice'].includes(item.type) && item.extension?.length) {
+          item.extension = item.extension.filter((extension) =>
+            !incompatibleUrls.has(extension.url)
+          );
+          if(!item.extension.length) {
+            delete item.extension;
+          }
+        }
+        removeFromItems(item.item);
+      });
+    };
+
+    removeFromItems(ret.item);
     return ret;
   }
 

@@ -149,6 +149,54 @@ describe('Util', () => {
     });
   });
 
+  it('should apply R4/STU3 choice-layout compatibility without changing the source', () => {
+    const choiceOrientation = {
+      url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation',
+      valueCode: 'horizontal'
+    };
+    const columnCount = {
+      url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount',
+      valuePositiveInt: 3
+    };
+    const legacyColumnCount = {
+      url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount',
+      valuePositiveInt: 2
+    };
+    const questionnaire: any = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      item: [
+        {
+          linkId: 'choice',
+          type: 'choice',
+          extension: [choiceOrientation, columnCount]
+        },
+        {
+          linkId: 'string',
+          type: 'string',
+          extension: [choiceOrientation, columnCount, legacyColumnCount],
+          item: [{
+            linkId: 'nested-integer',
+            type: 'integer',
+            extension: [choiceOrientation]
+          }]
+        }
+      ]
+    };
+
+    const cleanedR4 = Util.removeInvalidChoiceLayoutExtensions(questionnaire, 'R4');
+    const cleanedStu3 = Util.removeInvalidChoiceLayoutExtensions(questionnaire, 'STU3');
+
+    expect(cleanedR4.item[0].extension).toEqual([choiceOrientation, columnCount]);
+    expect(cleanedR4.item[1].extension).toEqual([columnCount, legacyColumnCount]);
+    expect(cleanedR4.item[1].item[0].extension).toBeUndefined();
+    expect(cleanedStu3.item[0].extension).toEqual([choiceOrientation, columnCount]);
+    expect(cleanedStu3.item[1].extension).toBeUndefined();
+    expect(cleanedStu3.item[1].item[0].extension).toBeUndefined();
+    expect(questionnaire.item[1].extension).toEqual([choiceOrientation, columnCount, legacyColumnCount]);
+    expect(questionnaire.item[1].item[0].extension).toEqual([choiceOrientation]);
+  });
+
   it('should check for empty answer options', () => {
 
     const answerOption = [
@@ -609,5 +657,3 @@ describe('Util', () => {
     });
   });
 });
-
-
