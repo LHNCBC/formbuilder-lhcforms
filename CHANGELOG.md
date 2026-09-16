@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.6.0] 2026-09-16
+### Added
+- Added support for repeatable SDC `templateExtract` extensions on Questionnaires
+  and Questionnaire items, including FHIRPath expressions for extracted resource
+  IDs and Bundle entry request fields.
+
 ## [12.5.0] 2026-09-14
 ### Added
 - Support choice orientation and column count for Questionnaire items.
