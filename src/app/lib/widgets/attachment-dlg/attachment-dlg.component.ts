@@ -519,9 +519,9 @@ export class AttachmentDlgComponent {
   }
 
   /**
-   * Remove embedded data from an input method's state. Size and hash are
-   * retained when a URL remains because they also describe and verify the
-   * remotely available content.
+   * Remove embedded data and its primitive metadata from an input method's state.
+   * Size, hash, and their metadata are retained when a URL remains because they
+   * also describe and verify the remotely available content.
    * @param state - The input method state to clear.
    * @param incrementRevision - Whether to invalidate in-flight metadata calculations.
    */
@@ -529,10 +529,9 @@ export class AttachmentDlgComponent {
     if(incrementRevision) {
       state.dataRevision++;
     }
-    delete state.attachment.data;
+    this.clearAttachmentFields(state.attachment, ['data']);
     if(!state.attachment.url) {
-      delete state.attachment.size;
-      delete state.attachment.hash;
+      this.clearAttachmentFields(state.attachment, ['size', 'hash']);
     }
     state.dataError = '';
     state.fileError = '';

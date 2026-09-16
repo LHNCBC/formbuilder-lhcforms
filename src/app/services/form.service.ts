@@ -155,6 +155,10 @@ export class FormService {
   constructor() {
   }
 
+  /**
+   * Load and prepare editor schemas, layouts, and the LHC-Forms library.
+   * @returns Whether all editor resources were initialized successfully.
+   */
   async initialize(): Promise<boolean> {
     try {
       // Load configuration files
@@ -216,6 +220,7 @@ export class FormService {
           obj.schema.definitions = {};
         }
         obj.schema.definitions = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions));
+        this.schemaService.addAttachmentPrimitiveMetadata(obj.schema);
         obj.schema.formLayout = obj.layout.formLayout;
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);

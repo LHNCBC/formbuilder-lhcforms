@@ -281,7 +281,7 @@ export class AttachmentUtil {
    * R5 integer64 values are JSON strings; earlier releases use a JSON number and do not
    * contain the media-specific fields introduced in R5.
    * @param questionnaire - The Questionnaire-like object to normalize in place.
-   * @param version - The target FHIR release, such as R4 or R5.
+   * @param version - The target FHIR release, such as STU3, R4, or R5.
    * @returns The same Questionnaire-like object after normalization.
    */
   static normalizeQuestionnaireAttachments<T>(questionnaire: T, version: string): T {
@@ -320,7 +320,8 @@ export class AttachmentUtil {
   }
 
   /**
-   * Visit valueAttachment/answerAttachment properties at any Questionnaire nesting level.
+   * Visit valueAttachment, answerAttachment, and STU3 initialAttachment properties
+   * at any Questionnaire nesting level.
    * @param value - The value whose nested Attachment properties are traversed.
    * @param visitor - The callback invoked for every Attachment object.
    */
@@ -334,7 +335,8 @@ export class AttachmentUtil {
     }
 
     Object.entries(value).forEach(([key, child]) => {
-      if((key === 'valueAttachment' || key === 'answerAttachment') && child && typeof child === 'object') {
+      if((key === 'valueAttachment' || key === 'answerAttachment' || key === 'initialAttachment') &&
+        child && typeof child === 'object') {
         visitor(child as Record<string, any>);
       }
       AttachmentUtil.visitAttachmentValues(child, visitor);

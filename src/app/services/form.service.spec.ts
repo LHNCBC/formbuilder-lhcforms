@@ -8,6 +8,7 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {ISchema, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
 
 describe('FormService', () => {
   let service: FormService;
@@ -139,7 +140,71 @@ describe('FormService', () => {
       .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
   });
 
-  ['R5', 'R4'].forEach((version) => {
+  it('should normalize root and nested initial attachments after STU3 conversion without changing the R5 form', () => {
+    const sizeMetadata: fhir.Element = {id: 'size-note'};
+    const url = 'https://example.org/image.png';
+    const questionnaire: fhir.Questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      item: [{
+        linkId: 'attachment',
+        type: 'attachment',
+        initial: [{valueAttachment: {url, size: 5}}]
+      }, {
+        linkId: 'group',
+        type: 'group',
+        item: [{
+          linkId: 'nested-attachment',
+          type: 'attachment',
+          initial: [{valueAttachment: {url, size: 2147483647}}]
+        }]
+      }]
+    };
+    const imported = service.convertToR5(questionnaire);
+    const rootItem = imported.item[0];
+    const nestedItem = imported.item[1].item[0];
+    for(const item of [rootItem, nestedItem]) {
+      const attachment = {
+        ...item.initial[0].valueAttachment,
+        _size: sizeMetadata,
+        height: 480,
+        _height: {id: 'height-note'},
+        width: 640,
+        _width: {id: 'width-note'},
+        frames: 2,
+        _frames: {id: 'frames-note'},
+        duration: 1.5,
+        _duration: {id: 'duration-note'},
+        pages: 3,
+        _pages: {id: 'pages-note'}
+      };
+      item.initial[0].valueAttachment = attachment;
+    }
+    expect(rootItem.initial[0].valueAttachment).toEqual(jasmine.objectContaining({size: '5'}));
+    expect(nestedItem.initial[0].valueAttachment).toEqual(jasmine.objectContaining({size: '2147483647'}));
+    const originalR5 = JSON.stringify(imported);
+
+    const exported = service.convertFromR5(imported, 'STU3');
+
+    expect(exported).toEqual(jasmine.objectContaining({
+      item: [{
+        linkId: 'attachment',
+        type: 'attachment',
+        initialAttachment: {url, size: 5, _size: sizeMetadata}
+      }, {
+        linkId: 'group',
+        type: 'group',
+        item: [{
+          linkId: 'nested-attachment',
+          type: 'attachment',
+          initialAttachment: {url, size: 2147483647, _size: sizeMetadata}
+        }]
+      }]
+    }));
+    expect(JSON.stringify(imported)).toBe(originalR5);
+  });
+
+  ['R5', 'R4', 'STU3'].forEach((version) => {
     it(`should preserve extension-only Attachment.size metadata through import and ${version} export`, () => {
       const sizeMetadata: fhir.Element = {
         id: 'size-note',
@@ -169,9 +234,60 @@ describe('FormService', () => {
       expect(imported.item[0].initial[0].valueAttachment.size).toBeUndefined();
 
       const exported = service.convertFromR5(imported, version);
-      expect(exported.item[0].initial[0].valueAttachment).toEqual(expectedAttachment);
-      expect(exported.item[0].initial[0].valueAttachment.size).toBeUndefined();
+      if(version === 'STU3') {
+        expect(exported).toEqual(jasmine.objectContaining({
+          item: [{
+            linkId: 'attachment',
+            type: 'attachment',
+            initialAttachment: expectedAttachment
+          }]
+        }));
+      }
+      else {
+        expect(exported.item[0].initial[0].valueAttachment).toEqual(expectedAttachment);
+        expect(exported.item[0].initial[0].valueAttachment.size).toBeUndefined();
+      }
     });
+  });
+
+  it('should retain primitive metadata in inline and referenced Attachment schema-form models', () => {
+    const extensionSchema = service.getExtensionSchema();
+    const attachment = {
+      url: 'https://example.org/report',
+      _url: {id: 'url-note'},
+      _data: {
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason',
+          valueCode: 'unknown'
+        }]
+      },
+      _contentType: {
+        id: 'content-type-note',
+        extension: [{
+          url: 'https://example.org/StructureDefinition/note',
+          valueString: 'Preserve this note'
+        }]
+      }
+    };
+    for(const referenced of [false, true]) {
+      const schema: ISchema = JSON.parse(JSON.stringify(extensionSchema));
+      if(referenced) {
+        schema.properties.valueAttachment = {$ref: '#/definitions/Attachment'};
+      }
+      SchemaPreprocessor.preprocess(schema);
+      const property = CommonTestingModule.createProperty(schema, {
+        url: 'https://example.org/StructureDefinition/attachment',
+        __$isValueX: true,
+        __$valueType: 'valueAttachment',
+        __$valueTypeCategory: '__$valueGeneralPurposeDatatype',
+        __$valueGeneralPurposeDatatype: 'valueAttachment',
+        valueAttachment: attachment
+      });
+
+      expect(property.value.valueAttachment._url.id).toBe('url-note');
+      expect(property.value.valueAttachment._data.extension).toEqual(attachment._data.extension);
+      expect(property.value.valueAttachment._contentType).toEqual(attachment._contentType);
+    }
   });
 
   it('should report an incompatible opener notification without repeating the dialog', () => {

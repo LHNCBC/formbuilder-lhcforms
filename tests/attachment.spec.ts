@@ -551,6 +551,149 @@ test.describe('attachment data type', () => {
     }
   });
 
+  for(const {label, embedded, remote} of [
+    {label: 'URL', embedded: false, remote: true},
+    {label: 'embedded', embedded: true, remote: true},
+    {label: 'embedded without URL', embedded: true, remote: false}
+  ]) {
+    test(`should preserve Attachment primitive metadata through ${label} editing and export`, async ({ page }) => {
+      const primitiveMetadata = Object.fromEntries([
+        'contentType', 'language', 'data', 'url', 'size', 'hash', 'title', 'creation',
+        'height', 'width', 'frames', 'duration', 'pages'
+      ].map((field) => [`_${field}`, {
+        id: `${field}-note`,
+        extension: [{
+          url: 'https://example.org/StructureDefinition/primitive-note',
+          valueString: `Preserve ${field}`
+        }]
+      }]));
+      const attachment = {
+        ...primitiveMetadata,
+        contentType: 'text/plain',
+        ...(remote ? {url: 'https://example.org/hello.txt'} : {}),
+        title: 'Primitive metadata',
+        language: 'en',
+        height: 480,
+        pages: 2,
+        ...(embedded ? {
+          data: 'SGVsbG8=',
+          size: '5',
+          hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A='
+        } : {})
+      };
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        item: [{
+          linkId: 'primitive-metadata',
+          text: 'Attachment primitive metadata',
+          type: 'attachment',
+          initial: [{valueAttachment: attachment}]
+        }]
+      };
+
+      /**
+       * Check the complete exported Attachment, including metadata without scalar values.
+       * @param expectedAttachment - Expected R5 Attachment before release-specific conversion.
+       */
+      async function expectExportedAttachment(expectedAttachment: Record<string, unknown>): Promise<void> {
+        for(const version of ['R5', 'R4', 'STU3']) {
+          const exported = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+          const expected = {...expectedAttachment};
+          if(version !== 'R5') {
+            if(expected.size !== undefined) {
+              expected.size = Number(expected.size);
+            }
+            for(const field of ['height', 'width', 'frames', 'duration', 'pages']) {
+              delete expected[field];
+              delete expected[`_${field}`];
+            }
+          }
+          const actual = version === 'STU3'
+            ? exported.item[0].initialAttachment
+            : exported.item[0].initial[0].valueAttachment;
+          expect(actual, version).toEqual(expected);
+        }
+      }
+
+      const chooserPromise = page.waitForEvent('filechooser');
+      await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+      const chooser = await chooserPromise;
+      await chooser.setFiles({
+        name: 'attachment-primitive-metadata.json',
+        mimeType: 'application/fhir+json',
+        buffer: Buffer.from(JSON.stringify(questionnaire))
+      });
+      await expect(page.getByRole('dialog', {name: 'Replace existing form?'})).toBeVisible();
+      await page.getByRole('button', {name: 'Continue', exact: true}).click();
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+      await PWUtils.clickTreeNode(page, 'Attachment primitive metadata');
+      await expectExportedAttachment(attachment);
+
+      const row = page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr').first();
+      const dialog = page.locator('lfb-attachment-dlg');
+      await row.getByLabel('Edit this row').click();
+      const title = dialog.getByRole('textbox', {name: /^Title/});
+      await title.fill('Discard this title');
+      await title.press('Tab');
+      await dialog.getByRole('button', {name: 'Discard changes', exact: true}).click();
+      await page.getByRole('button', {name: 'Discard changes', exact: true}).last().click();
+      await expect(dialog).not.toBeVisible();
+      await expectExportedAttachment(attachment);
+
+      await row.getByLabel('Edit this row').click();
+      await title.fill('Edited title');
+      await title.press('Tab');
+      const save = dialog.getByRole('button', {name: 'Save and close'});
+      await expect(save).toBeEnabled();
+      await save.click();
+      await expect(dialog).not.toBeVisible();
+      const edited = {...attachment, title: 'Edited title'};
+      await expectExportedAttachment(edited);
+
+      if(embedded) {
+        await row.getByLabel('Edit this row').click();
+        const data = dialog.getByRole('textbox', {name: 'Data', exact: true});
+        await data.fill('JVBERg==');
+        await data.press('Tab');
+        await expect(dialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('');
+        await data.fill('SGVsbG8=');
+        await data.press('Tab');
+        await expect(save).toBeEnabled();
+        await save.click();
+        await expect(dialog).not.toBeVisible();
+        await expectExportedAttachment(edited);
+
+        await row.getByLabel('Edit this row').click();
+        await dialog.getByRole('button', {name: 'Clear data', exact: true}).click();
+        await expect(dialog.getByRole('radio', {name: remote ? 'URL' : 'base64Binary', exact: true}))
+          .toBeChecked();
+        await expect(save).toBeEnabled();
+        await save.click();
+        await expect(dialog).not.toBeVisible();
+        const clearedData: Record<string, unknown> = {...edited};
+        delete clearedData.data;
+        delete clearedData._data;
+        if(!remote) {
+          delete clearedData.size;
+          delete clearedData._size;
+          delete clearedData.hash;
+          delete clearedData._hash;
+        }
+        await expectExportedAttachment(clearedData);
+      }
+
+      await row.getByLabel('Edit this row').click();
+      await dialog.getByRole('button', {name: 'Clear all fields'}).click();
+      await dialog.getByRole('radio', {name: 'URL', exact: true}).check();
+      await dialog.getByRole('textbox', {name: 'URL'}).fill('https://example.org/replacement');
+      await expect(save).toBeEnabled();
+      await save.click();
+      await expect(dialog).not.toBeVisible();
+      await expectExportedAttachment({url: 'https://example.org/replacement'});
+    });
+  }
+
   test('should preserve URL metadata and restore base64 metadata when content is edited', async ({ page }) => {
     await PWUtils.uploadFile(page, 'attachment-revert-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');

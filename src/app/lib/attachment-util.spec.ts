@@ -151,6 +151,43 @@ describe('AttachmentUtil', () => {
     expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({size: 5});
   });
 
+  it('normalizes STU3 initialAttachment values at root and nested item levels', () => {
+    const sizeMetadata = {id: 'size-note'};
+    const mediaMetadata = {id: 'media-note'};
+    const url = 'https://example.org/image.png';
+    const attachments: Record<string, unknown>[] = ['0', '5', '2147483647', '2147483648']
+      .map((size) => ({
+        url,
+        size,
+        _size: sizeMetadata,
+        height: 480,
+        _height: mediaMetadata,
+        width: 640,
+        _width: mediaMetadata,
+        frames: 2,
+        _frames: mediaMetadata,
+        duration: 1.5,
+        _duration: mediaMetadata,
+        pages: 3,
+        _pages: mediaMetadata
+      }));
+    const questionnaire = {
+      item: [{
+        initialAttachment: attachments[0],
+        item: attachments.slice(1).map((initialAttachment) => ({initialAttachment}))
+      }]
+    };
+
+    AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, 'STU3');
+
+    expect(attachments).toEqual([
+      {url, size: 0, _size: sizeMetadata},
+      {url, size: 5, _size: sizeMetadata},
+      {url, size: 2147483647, _size: sizeMetadata},
+      {url}
+    ]);
+  });
+
   ['R5', 'R4', 'STU3'].forEach((version) => {
     it(`preserves Attachment.size metadata without a scalar value for ${version}`, () => {
       const extension = [{
@@ -160,7 +197,11 @@ describe('AttachmentUtil', () => {
 
       [{id: 'size-note'}, {extension}, {id: 'size-note', extension}].forEach((metadata) => {
         const attachment = {url: 'https://example.org/report.pdf', _size: metadata};
-        const questionnaire = {item: [{initial: [{valueAttachment: attachment}]}]};
+        const questionnaire = {
+          item: [version === 'STU3'
+            ? {initialAttachment: attachment}
+            : {initial: [{valueAttachment: attachment}]}]
+        };
 
         AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, version);
 
@@ -172,7 +213,11 @@ describe('AttachmentUtil', () => {
       [null, '', 'invalid', '-1', '1.5', '9223372036854775808', -1, 1.5, NaN, Infinity]
         .forEach((size) => {
           const attachment = {size, _size: {id: 'invalid-size'}};
-          const questionnaire = {item: [{initial: [{valueAttachment: attachment}]}]};
+          const questionnaire = {
+            item: [version === 'STU3'
+              ? {initialAttachment: attachment}
+              : {initial: [{valueAttachment: attachment}]}]
+          };
 
           AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, version);
 
