@@ -1,0 +1,31 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Choice layout with legacy column count",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "linkId": "choice-layout",
+      "text": "Choose an option",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount",
+          "valueInteger": 2
+        }
+      ],
+      "answerOption": [
+        {
+          "valueString": "One"
+        },
+        {
+          "valueString": "Two"
+        }
+      ]
+    }
+  ]
+}

@@ -256,7 +256,7 @@ export class FormService {
       this.usageContextSchema.formLayout = usageContextLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.usageContextSchema, usageContextLayout);
       this.overrideFieldLabelsFromLayout(this.usageContextSchema, usageContextLayout);
-      
+
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
       delete this.valueSetSchema.definitions.ResourceList;
@@ -1505,6 +1505,9 @@ export class FormService {
       }
       ret = Util.convertQuestionnaire(fhirQ, version);
       AttachmentUtil.normalizeQuestionnaireAttachments(ret, version);
+      if(version === 'R4' || version === 'STU3') {
+        ret = Util.removeInvalidChoiceLayoutExtensions(ret, version);
+      }
       // Apply FHIR canonical field ordering after version conversion
       ret = Util.orderQuestionnaireFields(ret);
     }

@@ -75,8 +75,10 @@ import {
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
 import {InitialComponent} from "./widgets/initial/initial.component";
+import {ExtensionPrimitiveComponent} from "./widgets/extension-primitive/extension-primitive.component";
 import {MinMaxOccursComponent} from './widgets/min-max-occurs/min-max-occurs.component';
 import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
+import {QuestionnaireHiddenComponent} from './widgets/questionnaire-hidden/questionnaire-hidden.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -137,6 +139,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('initial-number', InitialNumberComponent);
     this.register('initial', InitialComponent);
     this.register('entry-format', EntryFormatComponent);
+    this.register('questionnaire-hidden', QuestionnaireHiddenComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
     this.register('extension', ExtensionComponent);
     this.register('extension-container', ExtensionContainerComponent);
@@ -148,8 +151,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
     this.register('enable-when-expression', EnableWhenExpressionComponent);
+    this.register('extension-primitive', ExtensionPrimitiveComponent);
     this.register('min-max-occurs', MinMaxOccursComponent);
-
     this.register('meta-profile', MetaProfileComponent);
     this.register('usage-context', UsageContextComponent);
     this.register('usage-context-code', UsageContextCodeComponent);

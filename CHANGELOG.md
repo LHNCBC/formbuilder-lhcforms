@@ -2,12 +2,24 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.5.0] 2026-09-14
+## [12.6.0] 2026-09-16
 ### Added
 - Added support for the `attachment` item data type. This includes the "Maximum size"
   restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the
   "Mime type" restriction, as well as an initial Attachment value (URL, file upload and
   base64Binary).
+
+## [12.5.0] 2026-09-14
+### Added
+- Support choice orientation and column count for Questionnaire items.
+- Added item-level support for the FHIR Questionnaire `questionnaire-hidden`
+  extension.
+
+### Fixed
+- Prevented extensions managed by dedicated fields from being added or reassigned
+  through the general Extensions editor. Inline validation now directs users to the
+  appropriate dedicated field and identifies when it is located on a questionnaire
+  item.
 
 ## [12.4.1] 2026-09-10
 ### Added

@@ -37,6 +37,11 @@ export const CONDITIONAL_METHOD_NONE = "none";
 // Extension URL
 // formerly ENTRY_FORMAT_URI
 export const EXTENSION_URL_ENTRY_FORMAT = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
+export const EXTENSION_URL_MIN_LENGTH = 'http://hl7.org/fhir/StructureDefinition/minLength';
+export const EXTENSION_URL_REGEX = 'http://hl7.org/fhir/StructureDefinition/regex';
+export const EXTENSION_URL_MIN_VALUE = 'http://hl7.org/fhir/StructureDefinition/minValue';
+export const EXTENSION_URL_MAX_VALUE = 'http://hl7.org/fhir/StructureDefinition/maxValue';
+export const EXTENSION_URL_MAX_SIZE = 'http://hl7.org/fhir/StructureDefinition/maxSize';
 export const EXTENSION_URL_MIME_TYPE = 'http://hl7.org/fhir/StructureDefinition/mimeType';
 // formerly VARIABLE
 export const EXTENSION_URL_VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
@@ -51,6 +56,7 @@ export const EXTENSION_URL_ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/Struc
 export const EXTENSION_URL_ENABLEWHEN_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
 export const EXTENSION_URL_CHOICE_ORIENTATION = 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation';
 export const EXTENSION_URL_COLUMN_COUNT = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount';
+export const EXTENSION_URL_COLUMN_COUNT_LEGACY = 'http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount';
 
 // Unit
 // formerly questionUnitExtUrl
@@ -62,6 +68,7 @@ export const EXTENSION_URL_UCUM_SYSTEM = 'http://unitsofmeasure.org'
 export const PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
 // formerly ITEM_CONTROL_EXT_URL
 export const EXTENSION_URL_ITEM_CONTROL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
+export const EXTENSION_URL_QUESTIONNAIRE_HIDDEN = 'http://hl7.org/fhir/StructureDefinition/questionnaire-hidden';
 // formerly RENDERING_STYLE_EXT_URL
 export const EXTENSION_URL_RENDERING_STYLE = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
 // formerly RENDERING_XHTML_EXT_URL

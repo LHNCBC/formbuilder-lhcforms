@@ -74,6 +74,68 @@
         "controlClasses": "col-10 p-0"
       }
     },
+    "__$choiceOrientation": {
+      "description": "Identifies the desired orientation when rendering a list of choices.",
+      "title": "Choice orientation",
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ],
+      "default": "",
+      "visibleIf": {
+        "allOf": [
+          {
+            "__$isAnswerList": [true]
+          },
+          {
+            "__$itemControl": ["$EXP$ target.value == 'radio-button' || target.value == 'check-box'"]
+          }
+        ]
+      },
+      "widget": {
+        "id": "extension-primitive",
+        "extensionUrl": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+        "valueX": "valueCode",
+        "buttonRadio": true,
+        "addEmptyOption": true,
+        "emptyOptionValue": "",
+        "emptyOptionLabel": "Unspecified",
+        "optionLabels": {
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0"
+      }
+    },
+    "__$columnCount": {
+      "description": "The number of columns to use when rendering a list of choices.",
+      "title": "Column count",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647,
+      "visibleIf": {
+        "allOf": [
+          {
+            "__$isAnswerList": [true]
+          },
+          {
+            "__$itemControl": ["$EXP$ target.value == 'radio-button' || target.value == 'check-box'"]
+          }
+        ]
+      },
+      "widget": {
+        "id": "extension-primitive",
+        "extensionUrl": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount",
+        "legacyExtensionUrls": ["http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount"],
+        "valueX": "valuePositiveInt",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0"
+      }
+    },
     "__$restrictions": {
       "description": "Choose to add value restrictions to the input.",
       "title": "Restrictions",
@@ -945,6 +1007,18 @@
       },
       "widget": {
         "id": "boolean-radio",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
+      }
+    },
+    "__$hidden": {
+      "description": "If enabled, this item is not displayed to the user. All descendant items are hidden as well. Descendants remain visible in Form Builder so they can still be edited.",
+      "title": "Hide this item from users?",
+      "type": "boolean",
+      "default": false,
+      "widget": {
+        "id": "questionnaire-hidden",
+        "optionLabels": [[false, "No"], [true, "Yes"]],
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
@@ -2853,6 +2927,17 @@
     },
     {
       "fields": [
+        "__$hidden"
+      ],
+      "showFields": [
+        {
+          "field": "__$hidden",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
         "__$minMaxOccurs"
       ],
       "showFields": [
@@ -3039,6 +3124,28 @@
       "showFields": [
         {
           "field": "__$entryFormat",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$choiceOrientation"
+      ],
+      "showFields": [
+        {
+          "field": "__$choiceOrientation",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$columnCount"
+      ],
+      "showFields": [
+        {
+          "field": "__$columnCount",
           "col": 12
         }
       ]

@@ -107,6 +107,7 @@ import { VariableComponent } from './lib/widgets/variable/variable.component';
 import { InitialNumberDirective } from './lib/directives/initial-number.directive';
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
+import { QuestionnaireHiddenComponent } from './lib/widgets/questionnaire-hidden/questionnaire-hidden.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
@@ -114,6 +115,7 @@ import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enab
 import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
 import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
+import { ExtensionPrimitiveComponent } from './lib/widgets/extension-primitive/extension-primitive.component';
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
 
@@ -226,10 +228,12 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     EnablewhenAnswerCodingComponent,
     EnableWhenSourceComponent,
     EntryFormatComponent,
+    ExtensionPrimitiveComponent,
     HelpTextComponent,
     ItemControlComponent,
     LabelRadioComponent,
     PickAnswerComponent,
+    QuestionnaireHiddenComponent,
     SfFormWrapperComponent,
     VariableComponent,
   ],
