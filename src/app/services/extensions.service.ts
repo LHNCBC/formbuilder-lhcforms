@@ -60,20 +60,6 @@ interface DedicatedExtensionDefinition {
 export class ExtensionsService {
   static __ID = 0;
 
-  extensionsEditedInWidgets: Set<string> = new Set([
-    EXTENSION_URL_ENTRY_FORMAT,
-    EXTENSION_URL_VARIABLE,
-    EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
-    EXTENSION_URL_INITIAL_EXPRESSION,
-    EXTENSION_URL_CALCULATED_EXPRESSION,
-    EXTENSION_URL_ANSWER_EXPRESSION,
-    EXTENSION_URL_ENABLEWHEN_EXPRESSION,
-    EXTENSION_URL_ITEM_CONTROL,
-    EXTENSION_URL_TEMPLATE_EXTRACT,
-    PREFERRED_TERMINOLOGY_SERVER_URI,
-    ObservationLinkPeriodComponent.extUrl,
-    ObservationExtractComponent.extUrl
-  ]);
   /** URLs with dedicated fields only in schemas that declare their owning widgets. */
   private readonly schemaScopedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
     {url: EXTENSION_URL_CHOICE_ORIENTATION, fieldName: 'Choice orientation', fieldScope: 'item'},
@@ -152,6 +138,10 @@ export class ExtensionsService {
   private readonly dedicatedExtensionFields: ReadonlyMap<string, DedicatedExtensionDefinition> = new Map(
     [...this.dedicatedExtensionDefinitions, ...this.schemaScopedExtensionDefinitions]
       .map((definition) => [definition.url, definition] as const)
+  );
+
+  extensionsEditedInWidgets: Set<string> = new Set(
+    this.dedicatedExtensionDefinitions.map(({url}) => url)
   );
 
   _id = 'extensionServiceInstance_';
