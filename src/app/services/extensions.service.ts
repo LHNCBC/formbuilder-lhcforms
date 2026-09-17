@@ -69,7 +69,7 @@ export class ExtensionsService {
 
   /** URLs, labels, and locations for extensions managed outside the general editor. */
   private readonly dedicatedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
-    {url: EXTENSION_URL_TEMPLATE_EXTRACT, fieldName: 'Template extract', fieldScope: 'both'},
+    {url: EXTENSION_URL_TEMPLATE_EXTRACT, fieldName: 'Template-based extraction', fieldScope: 'both'},
     {url: EXTENSION_URL_ENTRY_FORMAT, fieldName: 'Entry format', fieldScope: 'item'},
     {
       url: EXTENSION_URL_VARIABLE,

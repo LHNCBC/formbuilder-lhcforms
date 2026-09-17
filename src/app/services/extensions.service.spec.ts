@@ -34,6 +34,7 @@ import {
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   EXTENSION_URL_REGEX,
+  EXTENSION_URL_TEMPLATE_EXTRACT,
   EXTENSION_URL_VARIABLE,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
@@ -63,6 +64,10 @@ const advancedItemLocation = ' under a questionnaire item’s Advanced fields';
  * adding a managed URL requires explicitly choosing and testing its exact UI label.
  */
 const dedicatedExtensionMessageExpectations: ReadonlyArray<DedicatedExtensionMessageExpectation> = [
+  {
+    urls: [EXTENSION_URL_TEMPLATE_EXTRACT],
+    fieldReference: 'the dedicated “Template-based extraction” field'
+  },
   {
     urls: [EXTENSION_URL_ENTRY_FORMAT],
     fieldReference: 'the dedicated “Entry format” field',
