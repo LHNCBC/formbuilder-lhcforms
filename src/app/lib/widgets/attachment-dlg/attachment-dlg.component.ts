@@ -14,7 +14,7 @@ import {RestrictionsValueComponent} from '../restrictions-value/restrictions-val
 import {ISchema, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 
-export type AttachmentInputMethod = 'file' | 'url' | 'base64Binary';
+export type AttachmentInputMethod = 'file' | 'url';
 
 interface AttachmentMethodState {
   attachment: fhir.Attachment;
@@ -43,7 +43,6 @@ interface AttachmentMethodState {
     .attachment-dlg-container { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
     .dlg-content { flex: 1 1 auto; max-height: none; min-height: 0; }
     .close-button { float: right; }
-    textarea { min-height: 8rem; font-family: monospace; }
     .attachment-field-row {
       border-bottom: lightgrey solid 1px;
       padding: 2px 0;
@@ -68,9 +67,6 @@ export class AttachmentDlgComponent {
   private static readonly CONTENT_METADATA_FIELDS: readonly string[] = [
     'contentType', 'language', 'size', 'hash', 'creation',
     'height', 'width', 'frames', 'duration', 'pages'
-  ];
-  private static readonly DATA_INVALIDATED_FIELDS: readonly string[] = [
-    ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS, 'url', '_url', '_data'
   ];
 
   data = inject<DialogData>(MAT_DIALOG_DATA);
@@ -105,19 +101,18 @@ export class AttachmentDlgComponent {
   };
   private readonly methodStates: Record<AttachmentInputMethod, AttachmentMethodState> = {
     file: this.createMethodState(),
-    url: this.createMethodState(),
-    base64Binary: this.createMethodState()
+    url: this.createMethodState()
   };
-  private readonly dataMetadataSnapshots = new Map<string, fhir.Attachment>();
 
-  /** Initialize the editor state from the selected Attachment row. */
+  /** Initialize the selected Attachment row using its saved method or content. */
   constructor() {
     const rowValue = this.data.rowIndex >= 0
       ? this.data.arrayProperty.properties[this.data.rowIndex]?.value
       : null;
     const attachment = rowValue?.valueAttachment || {};
-    this.inputMethod = rowValue?.__$attachmentInputMethod ||
-      (attachment.data ? 'base64Binary' : attachment.url ? 'url' : 'file');
+    const savedMethod = rowValue?.__$attachmentInputMethod;
+    this.inputMethod = savedMethod === 'file' || savedMethod === 'url' ? savedMethod :
+      (attachment.data ? 'file' : attachment.url ? 'url' : 'file');
     this.draft = JSON.parse(JSON.stringify(attachment));
     this.attachmentSchema = this.createAttachmentSchema();
     if(attachment.data) {
@@ -335,80 +330,6 @@ export class AttachmentDlgComponent {
   }
 
   /**
-   * Validate changed base64 data and asynchronously refresh its size and hash.
-   * @param value - Plain base64 data or a base64 data URI.
-   */
-  async onDataChange(value: string): Promise<void> {
-    const state = this.activeState;
-    const revision = ++state.dataRevision;
-    const previousData = AttachmentUtil.parseBase64(state.attachment.data || '')?.data;
-    if(previousData !== undefined) {
-      this.rememberAttachmentFields(
-        this.dataMetadataSnapshots,
-        previousData,
-        state.attachment,
-        AttachmentDlgComponent.DATA_INVALIDATED_FIELDS
-      );
-    }
-    let transitionedToUrl = false;
-    state.calculatingDataMetadata = false;
-    state.attachment.data = value;
-    state.dataError = '';
-    state.fileError = '';
-    if(value?.trim()) {
-      const parsed = AttachmentUtil.parseBase64(value);
-      if(!parsed) {
-        state.dataError = 'Enter valid base64Binary data.';
-        delete state.attachment.size;
-        delete state.attachment.hash;
-      }
-      else {
-        if(parsed.data !== previousData) {
-          this.restoreAttachmentFields(
-            state.attachment,
-            AttachmentDlgComponent.DATA_INVALIDATED_FIELDS,
-            this.dataMetadataSnapshots.get(parsed.data)
-          );
-        }
-        state.attachment.data = parsed.data;
-        state.attachment.size = parsed.size;
-        if(parsed.contentType) {
-          state.attachment.contentType = parsed.contentType;
-        }
-        state.calculatingDataMetadata = true;
-        try {
-          const hash = await AttachmentUtil.sha1Base64(parsed.data);
-          if(revision === state.dataRevision) {
-            state.attachment.hash = hash;
-          }
-        }
-        catch {
-          if(revision === state.dataRevision) {
-            state.dataError = 'Attachment metadata could not be calculated.';
-            delete state.attachment.hash;
-          }
-        }
-        finally {
-          if(revision === state.dataRevision) {
-            state.calculatingDataMetadata = false;
-          }
-        }
-      }
-    }
-    else {
-      this.clearEmbeddedData(state, false);
-      transitionedToUrl = this.activateRetainedUrl(state);
-    }
-    // Shared schema-form widgets receive their model by reference. Replace the
-    // attachment after derived metadata changes so sibling widgets refresh.
-    state.attachment = {...state.attachment};
-    if(state === this.activeState || transitionedToUrl) {
-      this.attachmentSchema = this.createAttachmentSchema();
-    }
-    this.markDirty();
-  }
-
-  /**
    * Load the first file selected by the file input.
    * @param event - The file-input change event.
    */
@@ -420,27 +341,6 @@ export class AttachmentDlgComponent {
     }
     await this.loadFile(file);
     input.value = '';
-  }
-
-  /**
-   * Load pasted file data, or fall back to pasted base64 text.
-   * @param event - The clipboard paste event.
-   */
-  async onPaste(event: ClipboardEvent): Promise<void> {
-    const file = event.clipboardData?.files?.[0] ||
-      Array.from(event.clipboardData?.items || [])
-        .find((item) => item.kind === 'file')?.getAsFile();
-    if(file) {
-      event.preventDefault();
-      await this.loadFile(file);
-      return;
-    }
-
-    const text = event.clipboardData?.getData('text/plain');
-    if(text) {
-      event.preventDefault();
-      this.onDataChange(text);
-    }
   }
 
   /**
@@ -480,15 +380,6 @@ export class AttachmentDlgComponent {
     }
   }
 
-  /** Remove embedded data, retaining URL metadata when remote content remains available. */
-  clearData(): void {
-    const state = this.activeState;
-    this.clearEmbeddedData(state);
-    this.activateRetainedUrl(state);
-    this.attachmentSchema = this.createAttachmentSchema();
-    this.markDirty();
-  }
-
   /** Clear every field and validation state in the selected input method's draft. */
   clearAllFields(): void {
     const state = this.activeState;
@@ -498,9 +389,6 @@ export class AttachmentDlgComponent {
     state.fileError = '';
     state.calculatingDataMetadata = false;
     state.formValid = true;
-    if(this.inputMethod === 'base64Binary') {
-      this.dataMetadataSnapshots.clear();
-    }
     this.attachmentSchema = this.createAttachmentSchema();
     this.markDirty();
   }
@@ -519,60 +407,6 @@ export class AttachmentDlgComponent {
   }
 
   /**
-   * Remove embedded data and its primitive metadata from an input method's state.
-   * Size, hash, and their metadata are retained when a URL remains because they
-   * also describe and verify the remotely available content.
-   * @param state - The input method state to clear.
-   * @param incrementRevision - Whether to invalidate in-flight metadata calculations.
-   */
-  private clearEmbeddedData(state: AttachmentMethodState, incrementRevision = true): void {
-    if(incrementRevision) {
-      state.dataRevision++;
-    }
-    this.clearAttachmentFields(state.attachment, ['data']);
-    if(!state.attachment.url) {
-      this.clearAttachmentFields(state.attachment, ['size', 'hash']);
-    }
-    state.dataError = '';
-    state.fileError = '';
-    state.calculatingDataMetadata = false;
-  }
-
-  /**
-   * Move a draft that became URL-only into URL mode so its retained URL is
-   * immediately visible and remains editable when the row is reopened.
-   * @param state - The state from which embedded data was removed.
-   * @returns Whether the active input method changed to URL.
-   */
-  private activateRetainedUrl(state: AttachmentMethodState): boolean {
-    if(!state.attachment.url || this.inputMethod === 'url') {
-      return false;
-    }
-
-    const urlState = this.methodStates.url;
-    if(Object.keys(AttachmentUtil.withoutEmptyFields(urlState.attachment)).length === 0) {
-      urlState.dataRevision++;
-      urlState.attachment = {...state.attachment};
-      urlState.dataError = '';
-      urlState.fileError = '';
-      urlState.calculatingDataMetadata = false;
-      urlState.formValid = state.formValid;
-    }
-
-    // The URL-only draft has moved to its matching input method. Reset the
-    // former state so switching back cannot save the same URL under a hidden,
-    // incompatible base64/file input-method marker.
-    state.dataRevision++;
-    state.attachment = {};
-    state.dataError = '';
-    state.fileError = '';
-    state.calculatingDataMetadata = false;
-    state.formValid = true;
-    this.inputMethod = 'url';
-    return true;
-  }
-
-  /**
    * Remove Attachment fields and any explicitly named primitive-extension siblings.
    * @param attachment - The Attachment from which fields are removed.
    * @param fields - The field names to remove.
@@ -586,50 +420,6 @@ export class AttachmentDlgComponent {
     });
   }
 
-  /**
-   * Save the fields associated with a content source so reverting to that source
-   * can restore its metadata.
-   * @param snapshots - Snapshot map indexed by normalized URL or base64 data.
-   * @param key - The normalized source value associated with the metadata.
-   * @param attachment - The Attachment containing the fields to remember.
-   * @param fields - The fields invalidated when the source changes.
-   */
-  private rememberAttachmentFields(
-    snapshots: Map<string, fhir.Attachment>,
-    key: string,
-    attachment: fhir.Attachment,
-    fields: readonly string[]
-  ): void {
-    const snapshot: fhir.Attachment = {};
-    fields.forEach((field) => {
-      const fieldNames = field.startsWith('_') ? [field] : [field, `_${field}`];
-      fieldNames.forEach((fieldName) => {
-        if(Object.prototype.hasOwnProperty.call(attachment, fieldName) &&
-          (attachment as any)[fieldName] !== undefined) {
-          (snapshot as any)[fieldName] = JSON.parse(JSON.stringify((attachment as any)[fieldName]));
-        }
-      });
-    });
-    snapshots.set(key, snapshot);
-  }
-
-  /**
-   * Replace content-derived fields with a previously remembered snapshot, or
-   * leave them cleared when the source has not been seen before.
-   * @param attachment - The Attachment whose content-derived fields should change.
-   * @param fields - The fields invalidated when the content source changes.
-   * @param snapshot - Previously remembered fields for the active source.
-   */
-  private restoreAttachmentFields(
-    attachment: fhir.Attachment,
-    fields: readonly string[],
-    snapshot: fhir.Attachment | undefined
-  ): void {
-    this.clearAttachmentFields(attachment, fields);
-    Object.keys(snapshot || {}).forEach((field) => {
-      (attachment as any)[field] = JSON.parse(JSON.stringify((snapshot as any)[field]));
-    });
-  }
 
   /**
    * Normalize existing base64 data and initialize its size and hash metadata.

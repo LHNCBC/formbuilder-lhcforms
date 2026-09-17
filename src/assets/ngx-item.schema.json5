@@ -1725,7 +1725,7 @@
           "__$attachmentInputMethod": {
             "description": "Attachment input method used by the initial-value editor.",
             "type": "string",
-            "enum": ["file", "url", "base64Binary"],
+            "enum": ["file", "url"],
             "visibleIf": {
               "/type": ["attachment"]
             },
