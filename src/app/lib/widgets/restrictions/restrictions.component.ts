@@ -1,4 +1,9 @@
+import {CommonModule} from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {TableComponent} from '../table/table.component';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
@@ -6,6 +11,11 @@ import {RestrictionOperatorService} from '../../../services/restriction-operator
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
+import {IsDisabledPipe} from '../../pipes/is-disabled.pipe';
+import {BooleanControlledComponent} from '../boolean-controlled/boolean-controlled.component';
+import {AppFormElementComponent} from '../form-element/form-element.component';
+import {LabelComponent} from '../label/label.component';
+import {TitleComponent} from '../title/title.component';
 import {
   EXTENSION_URL_MAX_SIZE,
   EXTENSION_URL_MAX_VALUE,
@@ -20,8 +30,19 @@ import {
  * Combines maxLength field which is part of standard FHIR with SDC extensions.
  */
 @Component({
-  standalone: false,
   selector: 'lfb-restrictions',
+  imports: [
+    AppFormElementComponent,
+    BooleanControlledComponent,
+    CommonModule,
+    FontAwesomeModule,
+    FormsModule,
+    IsDisabledPipe,
+    LabelComponent,
+    MatTooltipModule,
+    NgbModule,
+    TitleComponent
+  ],
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -99,6 +120,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   /**
    * Get list of optionsDef objects for list of options.
    * @param optKeys - List of keys as defined in this.optionsDef.
+   * @returns The restriction option definitions for the requested keys.
    */
   static getOptions(optKeys: string[]) {
     return optKeys.map((opt) => {
@@ -106,7 +128,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     });
   }
 
-
+  /** Initialize restriction options and synchronize form values with item extensions. */
   ngOnInit(): void {
     super.ngOnInit();
     let sub = this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
@@ -148,11 +170,43 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
 
     // Watch changes in operator to reject unwanted selections.
     sub = this.restrictionOperatorService.subscribe((change: AcceptChange) => {
-      if(this.selectedOptions.has(change.newValue)) {
+      if(this.selectedOptions.has(change.newValue) && !this.isRepeatableOption(change.newValue)) {
         change.reject = true;
       }
     });
     this.subscriptions.push(sub);
+  }
+
+  /**
+   * MIME type is the only repeatable restriction for an attachment item.
+   * Its extension cardinality is independent of whether the item allows
+   * repeating answers.
+   * @param option - The restriction operator to inspect.
+   * @returns True when the operator may be repeated for the current item type.
+   */
+  isRepeatableOption(option: string): boolean {
+    const root = this.formProperty.root;
+    return option === 'mimeType' &&
+      root.getProperty('type').value === 'attachment';
+  }
+
+  /**
+   * Enforce the FHIR extension cardinalities represented by this widget.
+   * @param restrictions - The restrictions to normalize.
+   * @returns The restrictions with duplicate singular operators removed.
+   */
+  normalizeRestrictionCardinality(restrictions: any[]): any[] {
+    const seenOptions = new Set<string>();
+    return (restrictions || []).filter((restriction) => {
+      if(this.isRepeatableOption(restriction.operator)) {
+        return true;
+      }
+      if(seenOptions.has(restriction.operator)) {
+        return false;
+      }
+      seenOptions.add(restriction.operator);
+      return true;
+    });
   }
 
   /**
@@ -172,7 +226,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    */
   onBooleanControlledChange(event: boolean) {
     super.onBooleanControlledChange(event);
-    if(this.booleanControlledOption) {
+    if(!event) {
       this.formProperty.reset(null, false);
     }
   }
@@ -181,6 +235,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * Get list of restrictions reading the fhir extensions and maxLength.
    * @param rootProperty - Root form property which represents an item level data.
    * @param appliedOptions - The options that are applicable to selected data type.
+   * @returns The restrictions represented by the item's fields and extensions.
    */
   getRestrictions(rootProperty: PropertyGroup, appliedOptions: any []): any [] {
     const ret = [];
@@ -198,29 +253,10 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     });
     extensionsFound?.forEach((ext) => {
       const restriction = this.getRestrictionValue(ext);
-      if(restriction) {
+      if(restriction &&
+        (this.isRepeatableOption(restriction.operator) || !this.selectedOptions.has(restriction.operator))) {
         ret.push(restriction);
         this.selectedOptions.add(restriction.operator);
-      }
-    });
-    return ret;
-  }
-
-  /**
-   * Return object with relevant extension url as key and extension's index in array as value
-   * @param extensions - Full array of fhir extensions belonging to the item.
-   */
-  getRelevantExtensionIndices(extensions: fhir.Extension []): any [] {
-    let ret: any = null;
-    Object.keys(RestrictionsComponent.optionsDef).forEach((opt) => {
-      const index = extensions?.findIndex((ext) => {
-        return ext.url === RestrictionsComponent.optionsDef[opt].extUrl;
-      });
-      if(index >= 0) {
-        if(!ret) {
-          ret = {};
-        }
-        ret[extensions[index].url] = index;
       }
     });
     return ret;
@@ -238,48 +274,81 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   /**
    * Update item level fhir extensions array with relevant restrictions.
    * @param extensions - Array of item level extensions.
-   * @param restrictions - Arary of internally defined restriction objects.
+   * @param restrictions - Array of internally defined restriction objects.
+   * @returns True when the extensions were changed.
    */
   updateRelevantExtensions(extensions: fhir.Extension [], restrictions: any []) {
     let ret = false; // Return true if extensions are changed.
-    const indices = this.getRelevantExtensionIndices(extensions);
     Object.keys(RestrictionsComponent.optionsDef).forEach((opt) => {
-      let ext: fhir.Extension;
-      const extUrl = RestrictionsComponent.optionsDef[opt].extUrl;
-      const restriction = restrictions.find((r) => r.operator === opt);
+      const optionRestrictions = (restrictions || []).filter((restriction) => {
+        return restriction.operator === opt &&
+          restriction.value !== null &&
+          restriction.value !== undefined &&
+          `${restriction.value}` !== '';
+      });
       if(opt === 'maxLength') {
-        this.updateMaxLength(restriction?.value || null);
+        this.updateMaxLength(optionRestrictions[0]?.value || null);
       }
-      else if(restriction?.value) {
-        if(indices && indices[extUrl] !== undefined && indices[extUrl] !== null) {
-          // Update
-          ext = extensions[indices[extUrl]];
-          for(const key in ext) {
-            if(/^value/.test(key)) delete ext[key];
-          }
-        }
-        else {
-          // new
-          ext = {url: extUrl};
-          extensions.push(ext);
-        }
-        const fieldInfo = this.getValueFieldName(opt, this.dataType);
-        ext[fieldInfo.fieldName] = this.getValue(restriction.value, fieldInfo.fieldType);
-        ret = true;
-      }
-      else if(indices && indices[extUrl] !== undefined && indices[extUrl] !== null) {
-        // delete
-        extensions.splice(indices[extUrl], 1);
-        ret = true;
+      else {
+        const allowedRestrictions = this.isRepeatableOption(opt) ?
+          optionRestrictions : optionRestrictions.slice(0, 1);
+        ret = this.updateOptionExtensions(extensions, opt, allowedRestrictions) || ret;
       }
     });
     return ret;
   }
 
   /**
+   * Synchronize all extensions for one restriction operator. This deliberately
+   * handles every matching extension rather than only the first, so singular
+   * restrictions cannot leave duplicate extensions behind.
+   * @param extensions - The item-level extensions to synchronize in place.
+   * @param option - The restriction operator whose extensions are synchronized.
+   * @param restrictions - The normalized restrictions for the operator.
+   * @returns True when an extension was added, updated, or removed.
+   */
+  updateOptionExtensions(extensions: fhir.Extension[], option: string, restrictions: any[]): boolean {
+    const extUrl = RestrictionsComponent.optionsDef[option].extUrl;
+    const fieldInfo = this.getValueFieldName(option, this.dataType);
+    const extensionIndices = extensions.reduce((indices, extension, index) => {
+      if(extension.url === extUrl) {
+        indices.push(index);
+      }
+      return indices;
+    }, [] as number[]);
+    let changed = false;
+
+    restrictions.forEach((restriction, index) => {
+      const value = this.getValue(restriction.value, fieldInfo.fieldType);
+      if(index < extensionIndices.length) {
+        const extension = extensions[extensionIndices[index]];
+        const valueFields = Object.keys(extension).filter((key) => /^value/.test(key));
+        if(valueFields.length !== 1 || valueFields[0] !== fieldInfo.fieldName ||
+          extension[fieldInfo.fieldName] !== value) {
+          valueFields.forEach((key) => delete extension[key]);
+          extension[fieldInfo.fieldName] = value;
+          changed = true;
+        }
+      }
+      else {
+        extensions.push({url: extUrl, [fieldInfo.fieldName]: value} as fhir.Extension);
+        changed = true;
+      }
+    });
+
+    for(let index = extensionIndices.length - 1; index >= restrictions.length; index--) {
+      extensions.splice(extensionIndices[index], 1);
+      changed = true;
+    }
+
+    return changed;
+  }
+
+  /**
    * Convert to string representation of value to appropriate value
    * @param value - String representation of value.
    * @param valueType - fhir data type of the value.
+   * @returns The value converted to the requested FHIR primitive type.
    */
   getValue(value: string, valueType: string): number | string {
     let ret: number | string = value;
@@ -302,6 +371,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   /**
    * Given a fhir extension, convert to restriction object.
    * @param ext - fhir extension representing a restriction.
+   * @returns The internal restriction object, or null for an unsupported extension.
    */
   getRestrictionValue(ext: fhir.Extension) {
     let ret = null;
@@ -318,14 +388,19 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * Return value[x] field based on option and data type.
    * @param option - 'maxLength'|'minLength'|'maxSize'|'minValue'|'maxValue'|'mimeType'|'regex'
    * @param type - one of the fhir data types.
+   * @returns The value field name and primitive type for the restriction.
    */
   getValueFieldName(option: string, type: string): any {
     const ret = {fieldName: '', fieldType: ''};
     switch (option) {
       case 'minLength':
-      case 'maxSize':
         ret.fieldName = 'valueInteger';
         ret.fieldType = 'integer';
+        break;
+
+      case 'maxSize':
+        ret.fieldName = 'valueDecimal';
+        ret.fieldType = 'decimal';
         break;
 
       case 'regex':

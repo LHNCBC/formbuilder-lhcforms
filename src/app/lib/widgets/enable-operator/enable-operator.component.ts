@@ -45,7 +45,7 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
    */
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
-    this.formProperty.valueChanges.subscribe((val) => {
+    this.subscriptions.push(this.formProperty.valueChanges.subscribe((val) => {
       // this.formProperty represents operator from schema.
       const answerBool = this.formProperty.searchProperty('answerBoolean');
       if (val === 'exists' && answerBool.value === false) {
@@ -53,21 +53,54 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
       } else {
         this.myModel = val;
       }
-    });
+    }));
 
-    this.formProperty.searchProperty('__$answerType').valueChanges.subscribe((val) => {
+    const answerTypeProperty = this.formProperty.searchProperty('__$answerType');
+    const answerBoolean = this.formProperty.searchProperty('answerBoolean')?.value;
+    this.myModel = this.formProperty.value === 'exists' && answerBoolean === false
+      ? 'notexists'
+      : this.formProperty.value;
+    this.answerType = answerTypeProperty?.value;
+    this.refreshOptionList(false);
+    this.syncOperator();
+
+    this.subscriptions.push(answerTypeProperty.valueChanges.subscribe((val) => {
       this.answerType = val;
-      if(this.answerType) {
-        this.selectOptionList = this.formService.getEnableWhenOperatorListByAnswerType(this.answerType);
-        this.myModel = !this.myModel ? this.selectOptionList[0].option : this.myModel;
-        setTimeout(() => {
-          this.onModelChange(this.myModel);
-        });
-      }
-      else {
-        this.selectOptionList = [];
-      }
-    });
+      this.refreshOptionList(this.answerType === 'attachment');
+      this.syncOperator();
+    }));
+  }
+
+  /**
+   * Refresh the operators allowed for the current answer type.
+   * @param coerceInvalid - Whether to replace an unsupported current operator.
+   */
+  private refreshOptionList(coerceInvalid: boolean): void {
+    if(!this.answerType) {
+      this.selectOptionList = [];
+      return;
+    }
+
+    this.selectOptionList = this.formService.getEnableWhenOperatorListByAnswerType(this.answerType);
+
+    if(!this.selectOptionList?.length) {
+      return;
+    }
+
+    const currentOption = this.selectOptionList.some((option) => option.option === this.myModel);
+    if(!this.myModel) {
+      this.myModel = this.selectOptionList[0].option;
+    }
+    else if(coerceInvalid && !currentOption) {
+      this.myModel = this.selectOptionList[0].option;
+    }
+  }
+
+  /** Commit the currently selected operator after the form controls settle. */
+  private syncOperator(): void {
+    if(this.myModel) {
+      setTimeout(() => this.onModelChange(this.myModel));
+    }
   }
 
 

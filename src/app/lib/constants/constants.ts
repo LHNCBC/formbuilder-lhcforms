@@ -9,6 +9,7 @@ export const TYPE_STRING = "string";
 export const TYPE_TEXT = "text";
 export const TYPE_URL = "url";
 export const TYPE_CODING = "coding";
+export const TYPE_ATTACHMENT = "attachment";
 export const TYPE_QUANTITY = "quantity";
 export const TYPE_GROUP = "group";
 export const TYPE_DISPLAY = "display";

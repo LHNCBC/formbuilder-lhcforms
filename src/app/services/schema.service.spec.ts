@@ -67,4 +67,129 @@ describe('SchemaService', () => {
     expect(flSchema.properties.effectivePeriod.widget.id).toBe('date-range');
     expect(flSchema.definitions.Period.widget.id).toBe('date-range');
   });
+
+  it('should prepare every Attachment primitive while preserving existing schemas and widgets', () => {
+    const scalar: ISchema = {type: 'string', widget: {id: 'custom-url'}};
+    const companion: ISchema = {
+      $ref: '#/definitions/Element',
+      title: 'URL metadata',
+      widget: {id: 'custom-metadata'}
+    };
+    const existingSize: ISchema = {$ref: '#/definitions/Element'};
+    const attachment: ISchema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        id: {type: 'string'},
+        extension: {type: 'array'},
+        contentType: {type: 'string'},
+        language: {type: 'string'},
+        data: {type: 'string'},
+        url: scalar,
+        _url: companion,
+        size: {type: 'string'},
+        _size: existingSize,
+        hash: {type: 'string'},
+        title: {type: 'string'},
+        creation: {type: 'string'},
+        height: {type: 'integer'},
+        width: {type: 'integer'},
+        frames: {type: 'integer'},
+        duration: {type: 'number'},
+        pages: {type: 'integer'},
+        __$summary: {type: 'string'}
+      }
+    };
+    const schema: ISchema = {properties: {valueAttachment: attachment}};
+
+    schemaService.addAttachmentPrimitiveMetadata(schema);
+    const prepared = JSON.stringify(schema);
+    schemaService.addAttachmentPrimitiveMetadata(schema);
+
+    expect(JSON.stringify(schema)).toBe(prepared);
+    expect(attachment.additionalProperties).toBeFalse();
+    expect(attachment.properties.url).toBe(scalar);
+    expect(scalar.widget).toEqual({id: 'custom-url'});
+    expect(attachment.properties._url).toBe(companion);
+    expect(companion).toEqual({
+      $ref: '#/definitions/Element',
+      title: 'URL metadata',
+      widget: {id: 'custom-metadata'}
+    });
+    expect(attachment.properties._size).toBe(existingSize);
+    expect(existingSize.widget).toBeUndefined();
+    for(const field of [
+      'contentType', 'language', 'data', 'hash', 'title', 'creation',
+      'height', 'width', 'frames', 'duration', 'pages'
+    ]) {
+      expect(attachment.properties[`_${field}`]).withContext(field).toEqual({
+        $ref: '#/definitions/Element', widget: {id: 'hidden'}
+      });
+    }
+    expect(attachment.properties._id).toBeUndefined();
+    expect(attachment.properties._extension).toBeUndefined();
+    expect(attachment.properties.___$summary).toBeUndefined();
+    expect(attachment.properties._data).not.toBe(attachment.properties._hash);
+    expect(attachment.properties._data.widget).not.toBe(attachment.properties._hash.widget);
+  });
+
+  it('should handle shared references and nested Attachment properties without modifying other types', () => {
+    const reference: ISchema = {$ref: '#/definitions/Attachment'};
+    const unrelated: ISchema = {
+      properties: {url: {type: 'string'}, size: {type: 'number'}},
+      additionalProperties: false
+    };
+    const originalUnrelated = JSON.stringify(unrelated);
+    const schema: ISchema = {
+      definitions: {
+        Attachment: {properties: {url: {type: 'string'}}},
+        Other: unrelated
+      },
+      properties: {
+        valueAttachment: reference,
+        item: {
+          type: 'array',
+          items: {
+            properties: {
+              initialAttachment: {properties: {size: {type: 'number'}}},
+              answerAttachment: {properties: {data: {type: 'string'}}},
+              other: unrelated
+            }
+          }
+        }
+      }
+    };
+
+    schemaService.addAttachmentPrimitiveMetadata(schema);
+
+    expect(schema.definitions.Attachment.properties._url.widget.id).toBe('hidden');
+    expect(schema.definitions.Attachment.properties._pages).toBeUndefined();
+    expect(reference).toEqual({$ref: '#/definitions/Attachment'});
+    const nested = schema.properties.item.items.properties;
+    expect(nested.initialAttachment.properties._size.widget.id).toBe('hidden');
+    expect(nested.answerAttachment.properties._data.widget.id).toBe('hidden');
+    expect(JSON.stringify(unrelated)).toBe(originalUnrelated);
+  });
+
+  it('should prepare Attachment schemas on every initialized editor surface', () => {
+    const itemSchema = formService.getItemSchema();
+    const initialAttachment = itemSchema.properties.initial.items.properties.valueAttachment;
+    expect(initialAttachment.properties.url.widget.id).toBe('url');
+    expect(initialAttachment.properties._size.widget.id).toBe('hidden');
+    expect(initialAttachment.properties._pages.widget.id).toBe('hidden');
+
+    for(const schema of [
+      itemSchema, flSchema, extSchema,
+      formService.getResourceSchema('ValueSet'), formService.getResourceSchema('Binary')
+    ]) {
+      expect(schema.definitions.Attachment.properties._url).toEqual({
+        $ref: '#/definitions/Element', widget: {id: 'hidden'}
+      });
+      expect(schema.definitions.Extension.properties.valueAttachment.properties._data.widget.id)
+        .toBe('hidden');
+    }
+    expect(extSchema.properties.valueAttachment.properties._url.widget.id).toBe('hidden');
+    expect(itemSchema.properties._type).toBeUndefined();
+    expect(extSchema.properties._valueString).toBeUndefined();
+  });
 });

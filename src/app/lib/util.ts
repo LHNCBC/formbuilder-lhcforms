@@ -80,6 +80,7 @@ export class Util {
     string: 'answerString',
     text: 'answerString',
     coding: 'answerCoding',
+    attachment: 'answerBoolean',
     quantity: 'answerQuantity',
     reference: 'answerReference'
   };
@@ -94,6 +95,7 @@ export class Util {
     string: 'valueString',
     text: 'valueString',
     coding: 'valueCoding',
+    attachment: 'valueAttachment',
     quantity: 'valueQuantity',
     reference: 'valueReference',
     url: 'valueUri'
@@ -222,8 +224,7 @@ export class Util {
     'answerCoding',
     'answerQuantity',
     'answerReference',
-    'answerUri',
-    'answerAttachment'
+    'answerUri'
   ];
 
   /**

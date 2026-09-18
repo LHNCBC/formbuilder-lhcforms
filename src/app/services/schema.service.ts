@@ -36,6 +36,11 @@ export const patternToFHIRPrimitiveType = {
   providedIn: 'root'
 })
 export class SchemaService {
+  private static readonly ATTACHMENT_PRIMITIVE_FIELDS = [
+    'contentType', 'language', 'data', 'url', 'size', 'hash', 'title', 'creation',
+    'height', 'width', 'frames', 'duration', 'pages'
+  ] as const;
+
   _valueXCategoryMap: {};
   private primitiveFHIRTypeConstraints = {
     positiveInt: {minimum: 1},
@@ -79,6 +84,32 @@ export class SchemaService {
 
   get valueXCategoryMap(): {} {
     return this._valueXCategoryMap;
+  }
+
+  /**
+   * Add missing primitive metadata companions to inline and shared Attachment schemas.
+   * Run before schema-form preprocessing so imported metadata becomes part of the model.
+   * Existing scalar and companion definitions, including their widgets, are unchanged.
+   * @param schema - Editor schema containing Attachment properties or definitions.
+   */
+  addAttachmentPrimitiveMetadata(schema: ISchema): void {
+    jsonTraverse(schema).forEach(function (node: ISchema) {
+      const isAttachment = (this.parent?.key === 'definitions' && this.key === 'Attachment') ||
+        (this.parent?.key === 'properties' &&
+          ['valueAttachment', 'answerAttachment', 'initialAttachment'].includes(this.key));
+      if(isAttachment && node?.properties) {
+        SchemaService.ATTACHMENT_PRIMITIVE_FIELDS.forEach((field) => {
+          const companion = `_${field}`;
+          if(Object.prototype.hasOwnProperty.call(node.properties, field) &&
+            !Object.prototype.hasOwnProperty.call(node.properties, companion)) {
+            node.properties[companion] = {
+              $ref: '#/definitions/Element',
+              widget: {id: 'hidden'}
+            };
+          }
+        });
+      }
+    });
   }
 
   /**

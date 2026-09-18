@@ -1,0 +1,33 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Attachment preservation test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "attachment-preservation",
+      "text": "Attachments with retained metadata",
+      "type": "attachment",
+      "repeats": true,
+      "initial": [
+        {
+          "valueAttachment": {
+            "contentType": "text/plain",
+            "data": "SGVsbG8=",
+            "url": "https://example.org/hello.txt",
+            "size": 5,
+            "hash": "9/+ei3uy4Jtwk1pdeF4MxdnQq/A=",
+            "title": "Embedded and remote"
+          }
+        },
+        {
+          "valueAttachment": {
+            "contentType": "application/pdf",
+            "url": "https://example.org/remote.pdf",
+            "hash": "ObbXPv82STugZ05IJVqdgXJLRSE=",
+            "title": "Remote only"
+          }
+        }
+      ]
+    }
+  ]
+}

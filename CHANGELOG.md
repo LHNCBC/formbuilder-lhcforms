@@ -2,11 +2,17 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.6.0] 2026-09-16
+## [12.7.0] 2026-09-18
 ### Added
 - Added support for repeatable SDC `templateExtract` extensions on Questionnaires
   and Questionnaire items, including FHIRPath expressions for extracted resource
   IDs and Bundle entry request fields.
+
+## [12.6.0] 2026-09-16
+### Added
+- Added support for the `attachment` item data type. This includes the "Maximum size"
+  restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the
+  "Mime type" restriction, as well as an initial Attachment value (URL and file upload).
 
 ## [12.5.0] 2026-09-14
 ### Added

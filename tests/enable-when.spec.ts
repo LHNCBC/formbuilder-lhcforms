@@ -931,9 +931,10 @@ test.describe('enableWhen condition and behavior', () => {
       await page.locator('ngb-typeahead-window button', { hasText: 'text answerOptions' }).first().click();
 
       await expect(sourceQuestionInput).toHaveValue(/text answerOptions/);
+      await expect(sourceAnswerInput).toHaveValue('');
       await expect(sourceError).toBeVisible();
       await expect(sourceError.locator('small'))
-        .toContainText(enableWhenErrorMsg('text answerOptions', '174788656639'));
+        .toContainText("Answer field is required when you choose an operator other than 'Not empty' or 'Empty'.");
 
       await sourceAnswerInput.click();
       const options = page.locator('#completionOptions > ul > li');
