@@ -1,7 +1,69 @@
-import {expect, test} from '@playwright/test';
+import {expect, Page, test} from '@playwright/test';
+import fhir from 'fhir/r4';
 import {MainPO} from './po/main-po';
 import {PWUtils} from './pw-utils';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../src/app/lib/constants/constants';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_VARIABLE} from '../src/app/lib/constants/constants';
+
+/**
+ * Import same-template occurrences at both scopes with distinct allocated-ID environments.
+ * @param page - Browser page displaying a new questionnaire.
+ */
+async function importRepeatedExtractionQuestionnaire(page: Page): Promise<void> {
+  const allocateIdUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extractAllocateId';
+
+  /** Create a scope containing unrelated extensions and two occurrences of the same template. */
+  function scopeExtensions(scope: string): fhir.Extension[] {
+    return [
+      {url: allocateIdUrl, valueString: `${scope}Id`},
+      {
+        url: EXTENSION_URL_VARIABLE,
+        valueExpression: {name: `${scope}Variable`, language: 'text/fhirpath', expression: '1'}
+      },
+      ...['first', 'second'].map(occurrence => ({
+        url: EXTENSION_URL_TEMPLATE_EXTRACT,
+        extension: [
+          {url: 'template', valueReference: {reference: '#patient-template'}},
+          {url: 'fullUrl', valueString: `'${scope}-${occurrence}'`}
+        ]
+      }))
+    ];
+  }
+
+  const questionnaire: fhir.Questionnaire = {
+    resourceType: 'Questionnaire',
+    meta: {profile: ['http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire']},
+    status: 'draft',
+    title: 'Repeated template extraction expressions',
+    contained: [{resourceType: 'ValueSet', id: 'patient-template', status: 'draft'}],
+    extension: scopeExtensions('root'),
+    item: [{
+      linkId: 'parent',
+      text: 'Parent',
+      type: 'group',
+      extension: [{url: allocateIdUrl, valueString: 'ancestorId'}],
+      item: [{
+        linkId: 'measurement',
+        text: 'Measurement',
+        type: 'decimal',
+        extension: scopeExtensions('item')
+      }]
+    }, {
+      linkId: '__formbuilder_template_extract_expression__',
+      text: 'Existing sibling',
+      type: 'group',
+      extension: scopeExtensions('sibling')
+    }]
+  };
+  const chooserPromise = page.waitForEvent('filechooser');
+  await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+  await (await chooserPromise).setFiles({
+    name: 'repeated-template-extract.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(questionnaire))
+  });
+  await PWUtils.expandAdvancedFields(page);
+  await expect(page.locator('lfb-form-fields lfb-template-extract tbody > tr')).toHaveCount(2);
+}
 
 test.describe('Template-based extraction', () => {
   test.beforeEach(async ({page}) => {
@@ -45,7 +107,7 @@ test.describe('Template-based extraction', () => {
     await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
     await expect(referencedResourceRow).toHaveCount(1);
 
-    await formWidget.getByRole('button', {name: 'Add new template'}).click();
+    await formWidget.getByRole('button', {name: 'Add new template extraction', exact: true}).click();
     templateDialog = page.getByRole('dialog', {name: 'Add template extraction'});
     await templateDialog.getByLabel('Contained resource template').selectOption('#observation-template');
     const bundleFieldsToggle = templateDialog.getByRole('button', {name: 'Bundle entry fields'});
@@ -74,6 +136,7 @@ test.describe('Template-based extraction', () => {
     await PWUtils.expandAdvancedFields(page);
 
     const itemWidget = page.locator('lfb-sf-form-wrapper lfb-template-extract');
+    await expect(itemWidget.getByRole('button', {name: 'Add new template extraction', exact: true})).toBeVisible();
     await expect(itemWidget.locator('tbody > tr')).toHaveCount(1);
     await expect(itemWidget.locator('tbody > tr')).toContainText('ValueSet #observation-template');
     await expect(itemWidget.locator('tbody > tr')).toContainText("ifNoneExist: 'identifier=measurement'");
@@ -89,5 +152,94 @@ test.describe('Template-based extraction', () => {
       url: 'template',
       valueReference: {reference: '#patient-template'}
     });
+  });
+
+  for(const scope of ['form', 'item'] as const) {
+    test(`edits only the selected ${scope} occurrence using its extraction variable scope`, async ({page}) => {
+      await importRepeatedExtractionQuestionnaire(page);
+      if(scope === 'item') {
+        await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+        await expect(page.locator('.spinner-border')).not.toBeVisible();
+        await PWUtils.clickAndToggleTreeNode(page, 'Parent');
+        await PWUtils.clickTreeNode(page, 'Measurement');
+      }
+      await PWUtils.expandAdvancedFields(page);
+      const widget = page.locator(scope === 'form'
+        ? 'lfb-form-fields lfb-template-extract'
+        : 'lfb-sf-form-wrapper lfb-template-extract');
+      await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
+      const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+      const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      const expectedExpression = scope === 'form' ? '%rootId' : '%itemId';
+      const originalExpression = scope === 'form' ? "'root-second'" : "'item-second'";
+
+      for(const field of ['fullUrl', 'resourceId']) {
+        await dialog.getByRole('button', {name: `Create or edit ${field} FHIRPath expression`}).click();
+        const editor = page.locator('lhc-expression-editor');
+        await expect(editor.locator('#final-expression')).toHaveValue(field === 'fullUrl' ? originalExpression : '');
+        await expect(editor.locator('#variables-section')).toHaveCount(0);
+        const allocations = editor.locator('#uneditable-variables-section');
+        await expect(allocations).toContainText('rootId');
+        if(scope === 'item') {
+          await expect(allocations).toContainText('ancestorId');
+          await expect(allocations).toContainText('itemId');
+        }
+        else {
+          await expect(allocations).not.toContainText('ancestorId');
+          await expect(allocations).not.toContainText('itemId');
+        }
+        for(const excluded of ['rootVariable', 'itemVariable', 'siblingId']) {
+          await expect(allocations).not.toContainText(excluded);
+        }
+        await editor.locator('#final-expression').fill(expectedExpression);
+        await editor.locator('#export').click();
+        await expect(editor).toHaveCount(0);
+        await expect(dialog.getByRole('textbox', {name: `${field} FHIRPath expression`}))
+          .toHaveValue(expectedExpression);
+        expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
+      }
+
+      await dialog.getByRole('button', {name: 'Save and close'}).click();
+      await expect(dialog).toBeHidden();
+      await expect(widget.locator('tbody > tr').nth(1)).toContainText(expectedExpression);
+      const expected = structuredClone(original);
+      const extensions = scope === 'form' ? expected.extension : expected.item[0].item[0].extension;
+      extensions[3].extension = [
+        {url: 'template', valueReference: {reference: '#patient-template'}},
+        {url: 'fullUrl', valueString: expectedExpression},
+        {url: 'resourceId', valueString: expectedExpression}
+      ];
+      expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(expected);
+    });
+  }
+
+  test('keeps a cleared expression unsaved and discards draft edits without changing the questionnaire', async ({page}) => {
+    await importRepeatedExtractionQuestionnaire(page);
+    await PWUtils.expandAdvancedFields(page);
+    const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    await dialog.getByRole('button', {name: 'Create or edit fullUrl FHIRPath expression'}).click();
+    const editor = page.locator('lhc-expression-editor');
+    await expect(editor.locator('#final-expression')).toHaveValue("'root-second'");
+
+    await editor.locator('#final-expression').fill('');
+    await editor.locator('#export').click();
+
+    await expect(editor.locator('#expression-error')).toContainText('Expression is required.');
+    await expect(editor.locator('#export')).toHaveClass(/disabled/);
+    await expect(page.locator('lfb-template-extract-dlg #template-extract-fullUrl')).toHaveValue("'root-second'");
+    expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
+
+    await editor.locator('#final-expression').fill("'unsaved draft'");
+    await editor.locator('#export').click();
+    await expect(editor).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'unsaved draft'");
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await expect(dialog).toBeHidden();
+    expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
+    await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'root-second'");
   });
 });

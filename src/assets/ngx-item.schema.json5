@@ -2466,7 +2466,7 @@
         "id": "template-extract",
         "addEditAction": true,
         "addDefaultItemIfEmpty": false,
-        "addButtonLabel": "Add new template",
+        "addButtonLabel": "Add new template extraction",
         "addButtonTitle": "A contained resource is required before adding a template extraction.",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",

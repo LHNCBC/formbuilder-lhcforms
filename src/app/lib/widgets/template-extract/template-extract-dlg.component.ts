@@ -12,11 +12,11 @@ import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
 import {NgbCollapseModule, NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-bootstrap';
-import copy from 'fast-copy';
 import fhir from 'fhir/r4';
 import {ArrayProperty} from '@lhncbc/ngx-schema-form';
 import {SharedObjectService} from '../../../services/shared-object.service';
 import {Util} from '../../util';
+import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {ExpressionEditorDlgComponent} from '../expression-editor-dlg/expression-editor-dlg.component';
 import {
   buildTemplateExtractExtension,
@@ -38,6 +38,12 @@ interface TemplateExtractExpressionField {
   description: string;
 }
 
+interface TemplateExtractExpressionContext {
+  questionnaire: fhir.Questionnaire;
+  linkId: string;
+  expressionParentIndex: number;
+}
+
 const EXPRESSION_FIELDS: TemplateExtractExpressionField[] = [
   {id: 'fullUrl', label: 'fullUrl', description: 'FHIRPath used to populate Bundle.entry.fullUrl.'},
   {id: 'resourceId', label: 'resourceId', description: 'FHIRPath used to populate the extracted resource id.'},
@@ -46,9 +52,6 @@ const EXPRESSION_FIELDS: TemplateExtractExpressionField[] = [
   {id: 'ifMatch', label: 'ifMatch', description: 'FHIRPath used to populate Bundle.entry.request.ifMatch.'},
   {id: 'ifNoneExist', label: 'ifNoneExist', description: 'FHIRPath used to populate Bundle.entry.request.ifNoneExist.'}
 ];
-
-const TEMP_EXPRESSION_URI_PREFIX = 'urn:formbuilder:template-extract-expression:';
-const ROOT_EDITOR_LINK_ID = '__formbuilder_template_extract_expression__';
 
 /** Dialog for creating or editing one complex SDC templateExtract extension. */
 @Component({
@@ -129,15 +132,15 @@ export class TemplateExtractDlgComponent implements OnInit {
    */
   editExpression(field: TemplateExtractExpressionUrl): void {
     const expressionField = this.expressionFields.find(candidate => candidate.id === field);
-    const expressionUri = `${TEMP_EXPRESSION_URI_PREFIX}${field}`;
-    const editorQuestionnaire = this.createEditorQuestionnaire(expressionUri, this.model[field]);
-    const editorLinkId = this.getEditorLinkId();
+    const context = this.createEditorContext();
     const modalConfig: NgbModalOptions = {size: 'lg', fullscreen: 'lg'};
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
 
-    modalRef.componentInstance.linkId = editorLinkId;
-    modalRef.componentInstance.expressionUri = expressionUri;
-    modalRef.componentInstance.questionnaire = editorQuestionnaire;
+    modalRef.componentInstance.linkId = context.linkId;
+    modalRef.componentInstance.expressionUri = field;
+    modalRef.componentInstance.expressionValueType = 'valueString';
+    modalRef.componentInstance.expressionParentIndex = context.expressionParentIndex;
+    modalRef.componentInstance.questionnaire = context.questionnaire;
     modalRef.componentInstance.expressionLabel = `${expressionField?.label || field} FHIRPath expression`;
     modalRef.componentInstance.display = {
       titleSection: true,
@@ -146,12 +149,12 @@ export class TemplateExtractDlgComponent implements OnInit {
       outputExpressionSection: true
     };
 
-    modalRef.result.then(result => {
+    modalRef.closed.subscribe((result: fhir.Questionnaire | false) => {
       if(result) {
-        this.model[field] = this.extractEditedExpression(result, expressionUri);
+        this.model[field] = this.extractEditedExpression(result, context, field);
         this.cdr.detectChanges();
       }
-    }).catch(() => undefined);
+    });
   }
 
   /**
@@ -191,43 +194,32 @@ export class TemplateExtractDlgComponent implements OnInit {
   }
 
   /**
-   * Return the current item linkId, or a synthetic item id for form-level editing.
-   * @returns Item linkId used as the expression-editor context.
+   * Seed the current draft occurrence in a clean Questionnaire for native valueString editing.
+   * An empty linkId selects Questionnaire.extension rather than an item's extensions.
+   * @returns Isolated Questionnaire, target linkId, and owning extension index.
+   * @throws Error when the current item or existing occurrence cannot be found.
    */
-  private getEditorLinkId(): string {
-    return this.data.arrayProperty?.findRoot()?.getProperty('linkId')?.value || ROOT_EDITOR_LINK_ID;
-  }
-
-  /**
-   * Seed a copied Questionnaire with the valueExpression format required by the editor.
-   * @param expressionUri - Temporary extension URL unique to the edited field.
-   * @param expression - Existing FHIRPath string.
-   * @returns Questionnaire copy used only inside the expression-editor modal.
-   */
-  private createEditorQuestionnaire(expressionUri: string, expression: string): fhir.Questionnaire {
-    const questionnaire = copy(this.getQuestionnaire());
-    const editorLinkId = this.getEditorLinkId();
-    let item = this.findItem(questionnaire.item, editorLinkId);
-    if(!item) {
-      item = {
-        linkId: ROOT_EDITOR_LINK_ID,
-        text: 'Template extraction expression',
-        type: 'group'
-      };
-      questionnaire.item = [...(questionnaire.item || []), item];
+  private createEditorContext(): TemplateExtractExpressionContext {
+    const questionnaire = this.getQuestionnaire();
+    const linkId: string = this.data.arrayProperty.findRoot().getProperty('linkId')?.value || '';
+    const target = linkId ? this.findItem(questionnaire.item, linkId) : questionnaire;
+    if(!target) {
+      throw new Error(`Cannot edit template extraction: item "${linkId}" was not found.`);
     }
 
-    item.extension = (item.extension || []).filter(extension => extension.url !== expressionUri);
-    if(expression) {
-      item.extension.push({
-        url: expressionUri,
-        valueExpression: {
-          language: 'text/fhirpath',
-          expression
-        }
-      });
+    target.extension = target.extension || [];
+    let expressionParentIndex = target.extension.length;
+    if(!this.isNew) {
+      let occurrenceIndex = -1;
+      expressionParentIndex = target.extension.findIndex(extension =>
+        extension.url === EXTENSION_URL_TEMPLATE_EXTRACT && ++occurrenceIndex === this.data.rowIndex
+      );
+      if(expressionParentIndex < 0) {
+        throw new Error('Cannot edit template extraction: the selected occurrence was not found.');
+      }
     }
-    return questionnaire;
+    target.extension[expressionParentIndex] = buildTemplateExtractExtension(this.model);
+    return {questionnaire, linkId, expressionParentIndex};
   }
 
   /**
@@ -250,46 +242,23 @@ export class TemplateExtractDlgComponent implements OnInit {
   }
 
   /**
-   * Read the editor's valueExpression result back into a templateExtract valueString.
+   * Read only the selected field from the exact Questionnaire or item occurrence sent to the editor.
    * @param questionnaire - Questionnaire returned by the expression editor.
-   * @param expressionUri - Temporary extension URL.
+   * @param context - Target linkId (empty for Questionnaire scope) and owning extension index.
+   * @param field - templateExtract child slice being edited.
    * @returns Saved FHIRPath string, or an empty string when removed in the editor.
+   * @throws Error when the editor result is missing the selected occurrence.
    */
   private extractEditedExpression(
     questionnaire: fhir.Questionnaire,
-    expressionUri: string
+    context: TemplateExtractExpressionContext,
+    field: TemplateExtractExpressionUrl
   ): string {
-    const rootExpression = [...(questionnaire.extension || [])].reverse()
-      .find(extension => extension.url === expressionUri)
-      ?.valueExpression?.expression;
-    if(rootExpression) {
-      return rootExpression;
+    const target = context.linkId ? this.findItem(questionnaire.item, context.linkId) : questionnaire;
+    const parent = target?.extension?.[context.expressionParentIndex];
+    if(parent?.url !== EXTENSION_URL_TEMPLATE_EXTRACT) {
+      throw new Error('Cannot read template extraction expression: the selected occurrence was not returned.');
     }
-    return this.findExpressionInItems(questionnaire.item, expressionUri);
-  }
-
-  /**
-   * Find the temporary expression extension recursively without assuming where the editor reinserted it.
-   * @param items - Questionnaire items to search.
-   * @param expressionUri - Temporary extension URL.
-   * @returns FHIRPath string, or an empty string when absent.
-   */
-  private findExpressionInItems(
-    items: fhir.QuestionnaireItem[] = [],
-    expressionUri: string
-  ): string {
-    for(const item of items) {
-      const expression = [...(item.extension || [])].reverse()
-        .find(extension => extension.url === expressionUri)
-        ?.valueExpression?.expression;
-      if(expression) {
-        return expression;
-      }
-      const nestedExpression = this.findExpressionInItems(item.item, expressionUri);
-      if(nestedExpression) {
-        return nestedExpression;
-      }
-    }
-    return '';
+    return parent.extension?.find(extension => extension.url === field)?.valueString ?? '';
   }
 }
