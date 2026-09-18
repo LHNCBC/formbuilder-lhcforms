@@ -6,8 +6,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added
 - Added support for the `attachment` item data type. This includes the "Maximum size"
   restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the
-  "Mime type" restriction, as well as an initial Attachment value (URL, file upload and
-  base64Binary).
+  "Mime type" restriction, as well as an initial Attachment value (URL and file upload).
 
 ## [12.5.0] 2026-09-14
 ### Added
