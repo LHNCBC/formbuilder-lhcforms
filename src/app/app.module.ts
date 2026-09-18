@@ -72,6 +72,7 @@ import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.co
 import { StringWithCssComponent } from './lib/widgets/string-with-css/string-with-css.component';
 import { RestrictionsComponent } from './lib/widgets/restrictions/restrictions.component';
 import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operator/restrictions-operator.component';
+import { RestrictionsValueComponent } from './lib/widgets/restrictions-value/restrictions-value.component';
 import { ObservationLinkPeriodComponent } from './lib/widgets/observation-link-period/observation-link-period.component';
 import { LfbDisableControlDirective } from './lib/directives/lfb-disable-control.directive';
 import { LfbSpinnerComponent } from './lib/widgets/lfb-spinner/lfb-spinner.component';
@@ -113,8 +114,8 @@ import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-disp
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
 import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
 import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
+import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { ExtensionPrimitiveComponent } from './lib/widgets/extension-primitive/extension-primitive.component';
-
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
 
@@ -147,7 +148,6 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     FhirExportDlgComponent,
     LoincNoticeComponent,
     StringWithCssComponent,
-    RestrictionsComponent,
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
     QuantityUnitComponent,
@@ -172,6 +172,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     DatetimeComponent,
     DateRangeComponent,
     InstantComponent,
+    InitialComponent,
     ElementChooserComponent,
     EnableWhenComponent,
     EwValidateDirective,
@@ -203,6 +204,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     PositiveIntegerComponent,
     UnsignedIntegerComponent,
     PreviewDlgComponent,
+    RestrictionsComponent,
+    RestrictionsValueComponent,
     SchemaFormModule.forRoot(),
     StringComponent,
     TitleComponent,

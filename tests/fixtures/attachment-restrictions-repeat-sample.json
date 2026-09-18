@@ -1,0 +1,27 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Attachment Restrictions Cardinality Test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "attachment-repeat-1",
+      "text": "Upload one file",
+      "type": "attachment",
+      "repeats": false,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxSize",
+          "valueDecimal": 5242880
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/mimeType",
+          "valueCode": "application/pdf"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/mimeType",
+          "valueCode": "image/png"
+        }
+      ]
+    }
+  ]
+}

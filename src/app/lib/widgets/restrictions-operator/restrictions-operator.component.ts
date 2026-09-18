@@ -39,12 +39,29 @@ export class RestrictionsOperatorComponent extends SelectComponent implements On
     // Set model based on the property value.
     this.formProperty.valueChanges.subscribe((opt) => {
       this.model = opt;
+      this.clearUnavailableModel();
     });
 
     // Select options list based on type.
     this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
       this.options = RestrictionsComponent.typeToOptions[type];
+      this.clearUnavailableModel();
     });
+  }
+
+  /**
+   * Clear an operator that is not offered for the current item type. Array rows
+   * can receive the schema enum's first value after the type subscription runs,
+   * so validation is required from both subscriptions.
+   */
+  private clearUnavailableModel(): void {
+    const modelIsAvailable = this.options?.some((option) => {
+      return this.getOption(option.extUrl) === this.model;
+    });
+    if(this.model && this.options && !modelIsAvailable) {
+      this.model = null;
+      this.formProperty.setValue(null, false);
+    }
   }
 
   /**

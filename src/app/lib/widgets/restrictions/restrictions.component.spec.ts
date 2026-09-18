@@ -8,7 +8,7 @@ xdescribe('RestrictionsComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ RestrictionsComponent ]
+      imports: [ RestrictionsComponent ]
     })
     .compileComponents();
   });
