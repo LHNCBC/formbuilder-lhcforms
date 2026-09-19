@@ -38,3 +38,16 @@
   border: 1px solid black;
   border-radius: 4px;
 }
+
+lfb-preview-dlg .extraction-preview .CodeMirror {
+  max-height: 35vh;
+}
+
+lfb-preview-dlg .extraction-error {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+lfb-preview-dlg .extraction-toolbar > span {
+  overflow-wrap: anywhere;
+}

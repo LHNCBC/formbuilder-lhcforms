@@ -38,6 +38,7 @@ import {
   ContainedResourceService,
   ContainedResourceVersionRecord
 } from '../../../services/contained-resource.service';
+import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 declare var LForms: any;
 
 /**
@@ -86,10 +87,24 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
+  @ViewChild('extractionFormContainer', {read: ElementRef}) extractionFormContainer: ElementRef<HTMLElement>;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
   activeTopLevelTabIndex = 0;
   activeJsonTabIndex: number = FHIR_VERSIONS.R4;
+  readonly extractionFHIRVersion = 'R5';
+  activeExtractionViewIndex = 0;
+  formReady = false;
+  extractionInProgress = false;
+  hasTemplateExtraction = false;
+  extractionStatus = 'Waiting for the rendered form to be ready.';
+  extractionError = '';
+  extractionUnavailable = '';
+  extractionNotice = '';
+  extractedResourcesJSON = '';
+  questionnaireResponseJSON = '';
+  private extractionTimer: ReturnType<typeof setTimeout>;
+  private downloadObjectUrl: string;
   lformsErrors: string;
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
@@ -162,9 +177,11 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     LForms.Util.setFHIRContext(this.fhirService.getSmartClient());
   }
 
+  /** Initialize the preview and discover extraction settings at all questionnaire scopes. */
   ngOnInit() {
     this.activeTopLevelTabIndex = 0;
     this.activeJsonTabIndex = FHIR_VERSIONS.R4;
+    this.hasTemplateExtraction = this.hasExtractionTemplate(this.data.questionnaire);
     this.missingTerminologyServerLinkIds = Util.getItemsMissingPreferredTerminologyServer(this.data.questionnaire);
     this.preferredTerminologyServerMsg = this.buildPreferredTerminologyServerMsg(this.missingTerminologyServerLinkIds);
     this.renderedFormCompatibilityWarning = this.containedResourceService.getCompatibilityWarning(
@@ -237,11 +254,181 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle errors from <wc-lhc-form>
-   * @param event - event object emitted by wc-lhc-form.
+   * Handle errors from <wc-lhc-form> and discard unavailable extraction snapshots.
+   * @param event - Event object emitted by wc-lhc-form.
    */
   handleLFormsError(event) {
     this.lformsErrors = event.detail;
+    this.formReady = false;
+    clearTimeout(this.extractionTimer);
+    this.extractionInProgress = false;
+    this.extractedResourcesJSON = '';
+    this.questionnaireResponseJSON = '';
+    this.extractionError = `The rendered form is unavailable: ${event.detail}`;
+    this.extractionStatus = 'Extraction is unavailable.';
+  }
+
+  /** Return the JSON snapshot selected in the extraction preview. */
+  get extractionJSON(): string {
+    return this.activeExtractionViewIndex === 0 ? this.extractedResourcesJSON : this.questionnaireResponseJSON;
+  }
+
+  /** Return the accessible name of the selected extraction snapshot. */
+  get extractionViewLabel(): string {
+    return this.activeExtractionViewIndex === 0 ? 'extracted resources' : 'QuestionnaireResponse';
+  }
+
+  /**
+   * Look for template extraction on the questionnaire or any nested item.
+   * @param scope - Questionnaire or item whose extensions and children should be inspected.
+   * @returns Whether a template extraction setting exists in this scope or its descendants.
+   */
+  private hasExtractionTemplate(scope: fhir.Questionnaire | fhir.QuestionnaireItem): boolean {
+    return !!scope && (!!scope.extension?.some(extension =>
+      extension.url === EXTENSION_URL_TEMPLATE_EXTRACT ||
+      extension.url === `${EXTENSION_URL_TEMPLATE_EXTRACT}Bundle`
+    ) || !!scope.item?.some(item => this.hasExtractionTemplate(item)));
+  }
+
+  /**
+   * Generate a fresh snapshot whenever the extraction tab is entered.
+   * @param index - Selected top-level tab index.
+   */
+  onPreviewTabSelected(index: number): void {
+    this.activeTopLevelTabIndex = index;
+    if(index === 2) {
+      this.refreshExtraction();
+    }
+  }
+
+  /** Allow extraction only after the widget has finished its initial processing and rendering. */
+  handleFormReady(): void {
+    this.formReady = true;
+    this.lformsErrors = '';
+    if(this.activeTopLevelTabIndex === 2) {
+      this.refreshExtraction();
+    }
+  }
+
+  /** Mark an existing snapshot stale without running extraction on every input change. */
+  handleFormChange(): void {
+    if(this.questionnaireResponseJSON && !this.extractionInProgress) {
+      this.extractionStatus = 'Form answers changed. Refresh or reopen this tab to update the preview.';
+    }
+  }
+
+  /** Schedule extraction after allowing the busy state and pending input changes to render. */
+  refreshExtraction(): void {
+    if(!this.formReady || this.extractionInProgress) {
+      return;
+    }
+    this.extractionInProgress = true;
+    this.extractionStatus = 'Generating extraction preview...';
+    this.extractionError = '';
+    this.extractionUnavailable = '';
+    this.extractionNotice = '';
+    this.extractedResourcesJSON = '';
+    this.questionnaireResponseJSON = '';
+    this.extractionTimer = setTimeout(() => this.generateExtraction(), 0);
+  }
+
+  /**
+   * Export one response and its extracted resources from the preserved widget.
+   * Older runtimes can still export a response, but must not silently omit templates.
+   */
+  private generateExtraction(): void {
+    const container = this.extractionFormContainer?.nativeElement;
+    try {
+      if(!container || typeof LForms.Util.getFormFHIRData !== 'function') {
+        throw new Error('The LForms response export API is unavailable.');
+      }
+      const version = this.formService.lformsVersion || '';
+      const match = /^(\d+)\.(\d+)\./.exec(version);
+      const supportsTemplates = match && (+match[1] > 38 || (+match[1] === 38 && +match[2] >= 7));
+      if(!supportsTemplates) {
+        this.extractionUnavailable = `Template extraction requires LForms 38.7.0 or later. Loaded version: ${version || 'unknown'}. Only the QuestionnaireResponse is available.`;
+      }
+
+      const result = LForms.Util.getFormFHIRData(
+        'QuestionnaireResponse', this.extractionFHIRVersion,
+        container, {extract: !!supportsTemplates}
+      );
+      const resources = Array.isArray(result) ? result : [result];
+      const response = resources[0];
+      if(response?.resourceType !== 'QuestionnaireResponse') {
+        throw new Error('LForms did not return a QuestionnaireResponse.');
+      }
+      this.questionnaireResponseJSON = JSON.stringify(response, null, 2);
+      const extracted = resources.slice(1);
+      if(extracted.some(resource => !resource?.resourceType)) {
+        throw new Error('LForms returned an unexpected extraction result.');
+      }
+      if(extracted.length) {
+        // Older versions can return standalone Observations alongside the template Bundle.
+        this.extractedResourcesJSON = JSON.stringify(extracted.length === 1 ? extracted[0] : extracted, null, 2);
+        this.extractionStatus = 'Extraction preview updated.';
+      }
+      else if(supportsTemplates) {
+        this.extractionNotice = 'Extraction completed; no resources were produced.';
+        this.extractionStatus = this.extractionNotice;
+      }
+      else {
+        this.extractionStatus = 'QuestionnaireResponse updated; template extraction is unavailable.';
+      }
+    }
+    catch(error) {
+      this.extractedResourcesJSON = '';
+      this.extractionError = error instanceof Error ? error.message : String(error);
+      this.extractionStatus = 'Extraction failed. Correct the problem and select Refresh to retry.';
+      // Extraction can throw before returning its response. Export a separate diagnostic
+      // snapshot, explicitly labelled so it cannot be mistaken for successful engine input.
+      if(!this.questionnaireResponseJSON && container && typeof LForms.Util.getFormFHIRData === 'function') {
+        try {
+          const response = LForms.Util.getFormFHIRData(
+            'QuestionnaireResponse', this.extractionFHIRVersion, container
+          );
+          if(response?.resourceType !== 'QuestionnaireResponse') {
+            throw new Error('LForms did not return a QuestionnaireResponse.');
+          }
+          this.questionnaireResponseJSON = JSON.stringify(response, null, 2);
+          this.extractionNotice = 'The QuestionnaireResponse was exported separately for debugging after extraction failed; generated IDs may differ.';
+        }
+        catch(responseError) {
+          this.extractionError += ` Response export also failed: ${responseError instanceof Error ? responseError.message : String(responseError)}`;
+        }
+      }
+    }
+    finally {
+      this.extractionInProgress = false;
+    }
+  }
+
+  /** Download the selected snapshot without submitting it to a FHIR server. */
+  downloadExtractionJSON(): void {
+    if(!this.extractionJSON || this.extractionInProgress) {
+      return;
+    }
+    try {
+      if(this.downloadObjectUrl) {
+        URL.revokeObjectURL(this.downloadObjectUrl);
+      }
+      this.downloadObjectUrl = URL.createObjectURL(new Blob([this.extractionJSON], {type: 'application/json;charset=utf-8'}));
+      const anchor = document.createElement('a');
+      anchor.href = this.downloadObjectUrl;
+      anchor.download = `${this.activeExtractionViewIndex === 0 ? 'extracted-resources' : 'questionnaire-response'}.${this.extractionFHIRVersion}.json`;
+      anchor.dispatchEvent(new MouseEvent('click'));
+    }
+    catch(error) {
+      this.extractionError = `Download failed: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+
+  /**
+   * Announce clipboard results, including failures rather than silently ignoring them.
+   * @param copied - Whether the browser accepted the clipboard write.
+   */
+  onExtractionCopied(copied: boolean): void {
+    this.extractionStatus = copied ? `Copied ${this.extractionViewLabel} JSON.` : 'Copy failed. Try Download JSON instead.';
   }
 
   /**
@@ -302,9 +489,13 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clean up subscriptions.
+   * Clean up subscriptions, scheduled extraction, and download URLs.
    */
   ngOnDestroy() {
+    clearTimeout(this.extractionTimer);
+    if(this.downloadObjectUrl) {
+      URL.revokeObjectURL(this.downloadObjectUrl);
+    }
     this.subscriptions.forEach((subscription: Subscription) => {
       subscription?.unsubscribe();
     })

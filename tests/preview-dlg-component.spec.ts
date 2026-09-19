@@ -265,4 +265,129 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
     });
   });
+
+  test.describe('Extracted resources preview', () => {
+    test.beforeEach(async ({page}) => {
+      const mainPO = new MainPO(page);
+      await mainPO.mockSnomedEditions();
+      await page.goto('/');
+      await mainPO.loadHomePage();
+      await page.locator('input[type="radio"][value="existing"]').click();
+      await page.locator('input[type="radio"][value="local"]').click();
+      await PWUtils.importLocalFile(page, 'template-extract-preview.json');
+      await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
+        .toHaveValue('Extraction preview sample');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await expect(page.locator('wc-lhc-form input[id^="name/"]')).toBeVisible();
+    });
+
+    test('extracts live answers, preserves repeated groups across tabs, and exports matching snapshots', async ({page}) => {
+      const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      const dialog = page.locator('lfb-preview-dlg');
+      const form = dialog.locator('wc-lhc-form');
+      const measurements = form.locator('input[id^="measurement/"]');
+      await form.locator('input[id^="name/"]').fill('Preview Person');
+      await measurements.first().fill('12.5');
+      await form.locator('[id^="add-measurements/"]').first().click();
+      await expect(measurements).toHaveCount(2);
+      await measurements.nth(1).fill('7.5');
+      await measurements.nth(1).press('Tab');
+      await form.evaluate(element => { window['previewWidget'] = element; });
+
+      await dialog.getByRole('tab', {name: 'View/Validate Questionnaire JSON', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'STU3 Version', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'View Extracted Resources', exact: true}).click();
+      const extractedCopy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      await expect(extractedCopy).toBeEnabled();
+      await expect(dialog.locator('.extraction-toolbar')).toContainText('FHIR R5');
+      await extractedCopy.click();
+      const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(bundle.resourceType).toBe('Bundle');
+      expect(bundle.type).toBe('transaction');
+      expect(bundle.entry).toHaveLength(3);
+      expect(bundle.entry[0].resource.name[0].text).toBe('Preview Person');
+      expect(bundle.entry.slice(1).map(entry => entry.resource.valueQuantity.value)).toEqual([12.5, 7.5]);
+      expect(bundle.entry[1].request).toEqual({method: 'POST', url: 'Observation'});
+
+      const bundleDownloadEvent = page.waitForEvent('download');
+      await dialog.getByRole('button', {name: 'Download extracted resources JSON', exact: true}).click();
+      const bundleDownload = await bundleDownloadEvent;
+      expect(bundleDownload.suggestedFilename()).toBe('extracted-resources.R5.json');
+      const bundleStream = await bundleDownload.createReadStream();
+      const bundleChunks = [];
+      for await (const chunk of bundleStream) {
+        bundleChunks.push(chunk);
+      }
+      expect(JSON.parse(Buffer.concat(bundleChunks).toString())).toEqual(bundle);
+
+      await dialog.getByRole('tab', {name: 'QuestionnaireResponse', exact: true}).click();
+      await dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true}).click();
+      const response = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(response.resourceType).toBe('QuestionnaireResponse');
+      expect(response.item.find(item => item.linkId === 'name').answer[0].valueString).toBe('Preview Person');
+      for (const entry of bundle.entry.slice(1)) {
+        expect(entry.resource.derivedFrom[0].reference).toBe(`QuestionnaireResponse/${response.id}`);
+      }
+      const responseDownloadEvent = page.waitForEvent('download');
+      await dialog.getByRole('button', {name: 'Download QuestionnaireResponse JSON', exact: true}).click();
+      const responseDownload = await responseDownloadEvent;
+      expect(responseDownload.suggestedFilename()).toBe('questionnaire-response.R5.json');
+      const responseStream = await responseDownload.createReadStream();
+      const responseChunks = [];
+      for await (const chunk of responseStream) {
+        responseChunks.push(chunk);
+      }
+      expect(JSON.parse(Buffer.concat(responseChunks).toString())).toEqual(response);
+
+      await dialog.getByRole('tab', {name: 'View Rendered Form', exact: true}).click();
+      expect(await form.evaluate(element => element === window['previewWidget'])).toBe(true);
+      await expect(form.locator('input[id^="name/"]')).toHaveValue('Preview Person');
+      await expect(measurements).toHaveCount(2);
+      await expect(measurements.nth(1)).toHaveValue('7.5');
+      await measurements.first().fill('22');
+      await measurements.first().press('Tab');
+      await dialog.getByRole('tab', {name: 'View Extracted Resources', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources', exact: true}).click();
+      await expect(extractedCopy).toBeEnabled();
+      await extractedCopy.click();
+      const updated = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(updated.entry[1].resource.valueQuantity.value).toBe(22);
+      await dialog.getByRole('button', {name: 'Refresh', exact: true}).click();
+      await expect(extractedCopy).toBeEnabled();
+      await extractedCopy.click();
+      expect(JSON.parse(await PWUtils.getClipboardContent(page)).entry[1].resource.valueQuantity.value).toBe(22);
+      expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(questionnaire);
+    });
+
+    test('shows extraction errors without stale output and allows retry with response diagnostics', async ({page}) => {
+      const dialog = page.locator('lfb-preview-dlg');
+      await dialog.getByRole('tab', {name: 'View Extracted Resources', exact: true}).click();
+      const copy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      await expect(copy).toBeEnabled();
+      await page.evaluate(() => {
+        const util = window['LForms'].Util;
+        window['originalPreviewExport'] = util.getFormFHIRData;
+        /** Fail extraction only, preserving the public response export for diagnostics. */
+        util.getFormFHIRData = function(resourceType, version, source, options) {
+          if(options?.extract) {
+            throw new Error('Test template expression failed');
+          }
+          return window['originalPreviewExport'].call(this, resourceType, version, source, options);
+        };
+      });
+      await dialog.getByRole('button', {name: 'Refresh', exact: true}).click();
+      await expect(dialog.locator('.extraction-error')).toContainText('Test template expression failed');
+      await expect(copy).toBeDisabled();
+      await dialog.getByRole('tab', {name: 'QuestionnaireResponse', exact: true}).click();
+      await expect(dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true})).toBeEnabled();
+      await expect(dialog.getByText(/exported separately for debugging/)).toBeVisible();
+      await page.evaluate(() => {
+        window['LForms'].Util.getFormFHIRData = window['originalPreviewExport'];
+      });
+      await dialog.getByRole('button', {name: 'Refresh', exact: true}).click();
+      await expect(dialog.locator('.extraction-error')).toHaveCount(0);
+      await dialog.getByRole('tab', {name: 'Extracted Resources', exact: true}).click();
+      await expect(copy).toBeEnabled();
+    });
+  });
 });

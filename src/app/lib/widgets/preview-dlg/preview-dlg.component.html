@@ -4,7 +4,7 @@
   </button>
 </h2>
 <mat-dialog-content #dlgContent class="lfb-mat-tab-content">
-  <mat-tab-group [mat-stretch-tabs]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="activeTopLevelTabIndex=$event">
+  <mat-tab-group [mat-stretch-tabs]="true" [preserveContent]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="onPreviewTabSelected($event)">
     <mat-tab label="View Rendered Form">
       <ng-template matTabContent>
         <div>
@@ -17,24 +17,28 @@
           <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
           <div>&nbsp;</div> <!-- Needed to float the above div -->
         </div>
-        @if (missingTerminologyServerLinkIds.length) {
-          <ngb-alert type="warning" class="mb-2 preferred-terminology-server-warning" [dismissible]="false">
-            {{preferredTerminologyServerMsg}}
-          </ngb-alert>
-        }
-        @if (renderedFormCompatibilityWarning) {
-          <ngb-alert type="warning" class="mb-2 contained-resource-version-warning" [dismissible]="false">
-            <span [innerHTML]="renderedFormCompatibilityWarning"></span>
-          </ngb-alert>
-        }
-        @if (lformsErrors) {
-          <div class="card bg-danger-subtle text-center">
-            <div class="lforms-validation">{{lformsErrors}}</div>
-            <div class="fhir-validation-msg">{{fhirValidationMsg}}</div>
-          </div>
-          <ng-container *ngTemplateOutlet="validations"></ng-container>
-        }
-        <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options" (onError)="handleLFormsError($event)"></wc-lhc-form>
+        <div #extractionFormContainer>
+          @if (missingTerminologyServerLinkIds.length) {
+            <ngb-alert type="warning" class="mb-2 preferred-terminology-server-warning" [dismissible]="false">
+              {{preferredTerminologyServerMsg}}
+            </ngb-alert>
+          }
+          @if (renderedFormCompatibilityWarning) {
+            <ngb-alert type="warning" class="mb-2 contained-resource-version-warning" [dismissible]="false">
+              <span [innerHTML]="renderedFormCompatibilityWarning"></span>
+            </ngb-alert>
+          }
+          @if (lformsErrors) {
+            <div class="card bg-danger-subtle text-center">
+              <div class="lforms-validation">{{lformsErrors}}</div>
+              <div class="fhir-validation-msg">{{fhirValidationMsg}}</div>
+            </div>
+            <ng-container *ngTemplateOutlet="validations"></ng-container>
+          }
+          <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData?.options"
+            [fhirVersion]="extractionFHIRVersion" (onError)="handleLFormsError($event)"
+            (onFormReady)="handleFormReady()" (onFormChange)="handleFormChange()"></wc-lhc-form>
+        </div>
       </ng-template>
     </mat-tab>
     <mat-tab>
@@ -74,6 +78,64 @@
         </mat-tab-group>
       </ng-template>
     </mat-tab>
+    <mat-tab label="View Extracted Resources">
+      <ng-template matTabContent>
+        <section class="extraction-preview" aria-label="Extraction preview" [attr.aria-busy]="extractionInProgress">
+          <p class="mt-2 mb-2">Preview resources extracted from the current answers. Refresh or reopen this tab after changing answers.
+            Resources are not submitted to a FHIR server.</p>
+          <div class="extraction-toolbar d-flex flex-wrap align-items-center gap-2 mb-2">
+            <button type="button" class="btn btn-sm btn-primary" (click)="refreshExtraction()"
+              [disabled]="!formReady || extractionInProgress">Refresh</button>
+            <span>FHIR {{extractionFHIRVersion}} | LForms {{formService.lformsVersion}}</span>
+            <button type="button" class="btn btn-sm btn-outline-primary ms-sm-auto"
+              [disabled]="!extractionJSON || extractionInProgress" [cdkCopyToClipboard]="extractionJSON"
+              (cdkCopyToClipboardCopied)="onExtractionCopied($event)"
+              [attr.aria-label]="'Copy ' + extractionViewLabel + ' JSON'">Copy JSON</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="downloadExtractionJSON()"
+              [disabled]="!extractionJSON || extractionInProgress"
+              [attr.aria-label]="'Download ' + extractionViewLabel + ' JSON'">Download JSON</button>
+          </div>
+          <p class="extraction-status mb-2" role="status" aria-live="polite" aria-atomic="true">
+            @if(extractionInProgress) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+            }
+            {{extractionStatus}}
+          </p>
+          @if(!hasTemplateExtraction) {
+            <ngb-alert type="info" [dismissible]="false">
+              No template extraction is configured. Add a template extraction setting at questionnaire or item level
+              to preview template results. Any configured observation-based extraction is still included.
+            </ngb-alert>
+          }
+          @if(renderedFormCompatibilityWarning) {
+            <ngb-alert type="warning" [dismissible]="false">
+              <span [innerHTML]="renderedFormCompatibilityWarning"></span>
+            </ngb-alert>
+          }
+          @if(extractionUnavailable) {
+            <ngb-alert type="warning" [dismissible]="false">{{extractionUnavailable}}</ngb-alert>
+          }
+          @if(extractionError) {
+            <ngb-alert type="danger" [dismissible]="false"><span class="extraction-error">{{extractionError}}</span></ngb-alert>
+          }
+          @if(extractionNotice) {
+            <ngb-alert type="info" [dismissible]="false">{{extractionNotice}}</ngb-alert>
+          }
+          <mat-tab-group [mat-stretch-tabs]="false" [(selectedIndex)]="activeExtractionViewIndex">
+            <mat-tab label="Extracted Resources">
+              <ng-template matTabContent>
+                <ng-container *ngTemplateOutlet="extractionSnapshot; context: {$implicit: extractedResourcesJSON, label: 'Extracted resources JSON'}"></ng-container>
+              </ng-template>
+            </mat-tab>
+            <mat-tab label="QuestionnaireResponse">
+              <ng-template matTabContent>
+                <ng-container *ngTemplateOutlet="extractionSnapshot; context: {$implicit: questionnaireResponseJSON, label: 'QuestionnaireResponse JSON'}"></ng-container>
+              </ng-template>
+            </mat-tab>
+          </mat-tab-group>
+        </section>
+      </ng-template>
+    </mat-tab>
   </mat-tab-group>
   <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
 </mat-dialog-content>
@@ -81,6 +143,25 @@
   <button class="btn btn-primary" (click)="close()">Close</button>
 </mat-dialog-actions>
 
+<ng-template #extractionSnapshot let-json let-label="label">
+  @if(json) {
+    <div role="region" [attr.aria-label]="label">
+      <ngx-codemirror [ngModel]="json" (codeMirrorLoaded)="codeMirrorLoaded($event)"
+        [options]="{
+          lineNumbers: true,
+          theme: 'idea code-editor',
+          mode: {name: 'application/ld+json'},
+          readOnly: true,
+          lineWrapping: true,
+          foldGutter: true,
+          gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+        }"></ngx-codemirror>
+    </div>
+  }
+  @else {
+    <p class="m-2">No JSON snapshot available.</p>
+  }
+</ng-template>
 <ng-template #validations let-fhirVersion>
   @if(validationErrors[fhirVersion]?.length > 0) {
     <div ngbAccordion>

@@ -2,6 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Added a "View Extracted Resources" preview tab for FHIR R5 resources produced by
+  template- and observation-based extraction from the current form answers, with
+  a QuestionnaireResponse view, refresh, and JSON copy/download controls.
+
+### Changed
+- Preserved entered answers and repeated groups when switching preview tabs.
+
 ## [12.7.0] 2026-09-18
 ### Added
 - Added support for repeatable SDC `templateExtract` extensions on Questionnaires
