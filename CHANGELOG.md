@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.7.0] 2026-09-19
+### Added
+- Added form-level support for Questionnaire `jurisdiction` in the advanced fields,
+  including multiple jurisdictions with text and multiple codings per jurisdiction.
+
 ## [12.6.0] 2026-09-16
 ### Added
 - Added support for the `attachment` item data type. This includes the "Maximum size"
