@@ -1,0 +1,38 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Legal item control sample form",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "type": "string",
+      "linkId": "question-with-legal",
+      "text": "Question with legal information",
+      "item": [
+        {
+          "type": "display",
+          "linkId": "legal-text",
+          "text": "Initial legal text",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "legal",
+                    "display": "Legal-Button"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

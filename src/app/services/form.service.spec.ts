@@ -93,6 +93,19 @@ describe('FormService', () => {
     expect(usageContextSchema.properties.code.widget.id).toBe('usage-context-code');
   });
 
+  it('should configure question and help text as multiline string-with-css fields', () => {
+    expect(service.itemSchema.properties.text.widget).toEqual(jasmine.objectContaining({
+      id: 'string-with-css',
+      rows: 1
+    }));
+    expect(service.itemSchema.properties.__$helpText.properties.text.widget).toEqual(jasmine.objectContaining({
+      id: 'string-with-css',
+      rows: 1
+    }));
+    expect(service.itemSchema.properties.prefix.widget.id).toBe('string-with-css');
+    expect(service.itemSchema.properties.prefix.widget.rows).toBeUndefined();
+  });
+
   it('should preserve the R5 ad Quantity comparator and reject older-version conversion', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',

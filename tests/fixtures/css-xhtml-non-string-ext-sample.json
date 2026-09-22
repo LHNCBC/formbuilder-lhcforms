@@ -1,0 +1,72 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "status": "draft",
+  "title": "CSS styles and XHTML with non-string primitive extension sample",
+  "item": [
+    {
+      "type": "string",
+      "linkId": "1",
+      "prefix": "Prefix: plain text",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "https://example.org/prefix-count",
+            "valueInteger": 7
+          }
+        ]
+      },
+      "text": "Question text: plain text",
+      "_text": {
+        "extension": [
+          {
+            "url": "https://example.org/flag",
+            "valueBoolean": true
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "color: red; /*Question text: CSS*/"
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+            "valueString": "Question text: <b>XHTML</b>"
+          }
+        ]
+      },
+      "item": [
+        {
+          "type": "display",
+          "linkId": "1-helpText",
+          "text": "Help text: plain text",
+          "_text": {
+            "extension": [
+              {
+                "url": "https://example.org/help-flag",
+                "valueBoolean": true
+              }
+            ]
+          },
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "text": "Help-Button",
+                "coding": [
+                  {
+                    "code": "help",
+                    "display": "Help-Button",
+                    "system": "http://hl7.org/fhir/questionnaire-item-control"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

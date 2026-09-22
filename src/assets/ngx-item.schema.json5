@@ -417,6 +417,7 @@
       "type": "string",
       "widget": {
         "id": "string-with-css",
+        "rows": 1,
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col p-0"
@@ -2796,6 +2797,7 @@
           "type": "string",
           "widget": {
             "id": "string-with-css",
+            "rows": 1,
             "labelPosition": "left",
             "labelClasses": "col-sm-2 p-0 pe-1",
             "controlClasses": "col p-0",
