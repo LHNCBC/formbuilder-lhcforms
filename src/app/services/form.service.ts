@@ -20,6 +20,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {ImportQuestionnaireService} from "./import.questionnaire.service";
 import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
+import {AttachmentUtil} from '../lib/attachment-util';
 
 declare var LForms: any;
 
@@ -128,6 +129,11 @@ export class FormService {
     );
   });
 
+  // Attachment enableWhen conditions only test whether an answer exists.
+  attachmentOperatorOptions: any [] = this.operatorOptions.filter((e) => {
+    return e.option === 'exists' || e.option === 'notexists';
+  });
+
   // Operators based on type.
   enableWhenOperatorOptions = {
     decimal: this.operatorOptions,
@@ -141,7 +147,7 @@ export class FormService {
     url: this.operatorOptions2,
     boolean: this.operatorOptions2,
     coding: this.operatorOptions2,
-    attachment: this.operatorOptions2,
+    attachment: this.attachmentOperatorOptions,
     reference: this.operatorOptions2
   };
   private importService = inject(ImportQuestionnaireService);
@@ -149,6 +155,10 @@ export class FormService {
   constructor() {
   }
 
+  /**
+   * Load and prepare editor schemas, layouts, and the LHC-Forms library.
+   * @returns Whether all editor resources were initialized successfully.
+   */
   async initialize(): Promise<boolean> {
     try {
       // Load configuration files
@@ -210,6 +220,7 @@ export class FormService {
           obj.schema.definitions = {};
         }
         obj.schema.definitions = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions));
+        this.schemaService.addAttachmentPrimitiveMetadata(obj.schema);
         obj.schema.formLayout = obj.layout.formLayout;
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
@@ -245,7 +256,7 @@ export class FormService {
       this.usageContextSchema.formLayout = usageContextLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.usageContextSchema, usageContextLayout);
       this.overrideFieldLabelsFromLayout(this.usageContextSchema, usageContextLayout);
-      
+
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
       delete this.valueSetSchema.definitions.ResourceList;
@@ -1474,7 +1485,7 @@ export class FormService {
     if(fhirVersion !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
-    return ret;
+    return AttachmentUtil.normalizeQuestionnaireAttachments(ret, 'R5');
   }
 
   /**
@@ -1493,6 +1504,7 @@ export class FormService {
         throw new Error(compatibilityError);
       }
       ret = Util.convertQuestionnaire(fhirQ, version);
+      AttachmentUtil.normalizeQuestionnaireAttachments(ret, version);
       if(version === 'R4' || version === 'STU3') {
         ret = Util.removeInvalidChoiceLayoutExtensions(ret, version);
       }

@@ -1,0 +1,31 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Attachment Round-trip Test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "attachment-1",
+      "text": "Upload your report",
+      "type": "attachment",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxSize",
+          "valueDecimal": 5242880
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/mimeType",
+          "valueCode": "application/pdf"
+        }
+      ],
+      "initial": [
+        {
+          "valueAttachment": {
+            "url": "http://example.org/report.pdf",
+            "title": "Report",
+            "contentType": "application/pdf"
+          }
+        }
+      ]
+    }
+  ]
+}

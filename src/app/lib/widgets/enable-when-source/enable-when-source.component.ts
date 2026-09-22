@@ -132,8 +132,14 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * @param $event - Source tree node object
    */
   onSelect($event): void {
+    const previousType = this.formProperty.searchProperty('__$answerType').value;
+    const nextType = $event.item.data.type;
+    if(previousType && previousType !== nextType) {
+      const previousAnswerField = Util.getAnswerFieldName(previousType);
+      this.formProperty.parent.getProperty(previousAnswerField)?.setValue(null, false);
+    }
     this.formProperty.setValue($event.item.data.linkId, false);
-    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, false);
+    this.formProperty.searchProperty('__$answerType').setValue(nextType, false);
   }
 
 

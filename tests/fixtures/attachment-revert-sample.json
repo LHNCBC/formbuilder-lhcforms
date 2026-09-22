@@ -1,0 +1,40 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Attachment metadata revert test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "attachment-revert",
+      "text": "Attachments with revertable metadata",
+      "type": "attachment",
+      "repeats": true,
+      "initial": [
+        {
+          "valueAttachment": {
+            "contentType": "text/plain",
+            "data": "SGVsbG8=",
+            "url": "https://example.org/hello.txt",
+            "size": 5,
+            "hash": "9/+ei3uy4Jtwk1pdeF4MxdnQq/A=",
+            "language": "en",
+            "height": 480,
+            "pages": 1,
+            "title": "Embedded and remote"
+          }
+        },
+        {
+          "valueAttachment": {
+            "contentType": "application/pdf",
+            "url": "https://example.org/remote.pdf",
+            "size": 4,
+            "hash": "ObbXPv82STugZ05IJVqdgXJLRSE=",
+            "language": "en",
+            "height": 720,
+            "pages": 2,
+            "title": "Remote only"
+          }
+        }
+      ]
+    }
+  ]
+}

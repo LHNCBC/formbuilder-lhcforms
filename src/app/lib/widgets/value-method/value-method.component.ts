@@ -114,7 +114,8 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       this.type = typeVal;
 
       if (typeVal === CONSTANTS.TYPE_DECIMAL || typeVal === CONSTANTS.TYPE_DATETIME || typeVal === CONSTANTS.TYPE_URL ||
-          typeVal === CONSTANTS.TYPE_QUANTITY || typeVal === CONSTANTS.TYPE_GROUP || typeVal === CONSTANTS.TYPE_DISPLAY) {
+          typeVal === CONSTANTS.TYPE_QUANTITY || typeVal === CONSTANTS.TYPE_ATTACHMENT ||
+          typeVal === CONSTANTS.TYPE_GROUP || typeVal === CONSTANTS.TYPE_DISPLAY) {
         this.isAnswerList = false;
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
       }

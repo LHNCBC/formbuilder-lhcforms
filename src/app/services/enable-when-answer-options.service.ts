@@ -131,13 +131,8 @@ export class EnableWhenAnswerOptionsService {
     } else {
       this.autoComp = new LForms.Def.Autocompleter.Prefetch(inputId, answerOptions, this.enableWhenAutocompleteOptions);
 
-      if (this.answerOptionsState.answerOptionType === 'integer') {
-        this.autoComp.setFieldVal(this.formProperty.value ? String(this.formProperty.value) : '', false);
-      } else if (typeof this.formProperty.value !== 'string') {
-        this.autoComp.setFieldVal(String(this.formProperty.value), false);
-      } else {
-        this.autoComp.setFieldVal(this.formProperty.value, false);
-      }
+      const fieldValue = this.formProperty.value == null ? '' : String(this.formProperty.value);
+      this.autoComp.setFieldVal(fieldValue, false);
     }
 
     this.listSelectionUnsubscribe = LForms.Def.Autocompleter.Event.observeListSelections(
@@ -299,7 +294,8 @@ export class EnableWhenAnswerOptionsService {
       this.formProperty.setValue(data.final_val, false);
 
       if (this.answerOptionsState.answerOptionType === 'integer' && data.final_val !== this.formProperty.value) {
-        this.autoComp.setFieldVal(this.formProperty.value ? String(this.formProperty.value) : '', false);
+        const fieldValue = this.formProperty.value == null ? '' : String(this.formProperty.value);
+        this.autoComp.setFieldVal(fieldValue, false);
       }
     }
 

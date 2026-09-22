@@ -28,6 +28,7 @@ import {AnswerOptionMethodsComponent} from './widgets/answer-option-methods/answ
 import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.component';
 import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
+import {RestrictionsValueComponent} from './widgets/restrictions-value/restrictions-value.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
 import {ObservationExtractComponent} from './widgets/observation-extract/observation-extract.component';
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
@@ -73,6 +74,7 @@ import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
+import {InitialComponent} from "./widgets/initial/initial.component";
 import {ExtensionPrimitiveComponent} from "./widgets/extension-primitive/extension-primitive.component";
 import {MinMaxOccursComponent} from './widgets/min-max-occurs/min-max-occurs.component';
 import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
@@ -120,6 +122,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('string-with-css', StringWithCssComponent);
     this.register('restrictions', RestrictionsComponent);
     this.register('restrictions-operator', RestrictionsOperatorComponent);
+    this.register('restrictions-value', RestrictionsValueComponent);
     this.register('observation-link-period', ObservationLinkPeriodComponent);
     this.register('observation-extract', ObservationExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
@@ -134,6 +137,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
     this.register('variable', VariableComponent);
     this.register('initial-number', InitialNumberComponent);
+    this.register('initial', InitialComponent);
     this.register('entry-format', EntryFormatComponent);
     this.register('questionnaire-hidden', QuestionnaireHiddenComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);

@@ -3,6 +3,7 @@ import Client from 'fhirclient/lib/Client';
 import * as fhirClient from 'fhirclient';
 import {defer, from, mergeMap, Observable, of, Subject, timeout, TimeoutError} from 'rxjs';
 import fhir from 'fhir/r4';
+import mimeDb from 'mime-db';
 import {fhirPrimitives} from '../fhir';
 import {FormService} from './form.service';
 import {FHIR_VERSION_TYPE, Util} from '../lib/util';
@@ -498,6 +499,57 @@ export class FhirService {
           return of(ret);
         })
       );
+  }
+
+  /**
+   * Validate that a string is a real, IANA-registered MIME type (media type) as required by FHIR.
+   *
+   * FHIR represents MIME types as `code` values with a required binding to BCP 13
+   * (`urn:ietf:bcp:13`), i.e. the IANA media type registry
+   * (see http://hl7.org/fhir/ValueSet/mimetypes). Validation is performed in two parts:
+   *
+   * 1. The base `type/subtype` (the "essence") is looked up directly in the canonical `mime-db`
+   *    database and must be registered with IANA (`source === 'iana'`). This validates both its
+   *    format and its registration in one step, so unregistered values such as `text/xxxx` or
+   *    `foo/bar` are rejected.
+   * 2. Any parameters (e.g. `; charset=utf-8`) must be syntactically well-formed per RFC 7231,
+   *    i.e. `token "=" ( token / quoted-string )`. mime-db is keyed only by the essence and so
+   *    cannot validate these; a value with a bare, value-less parameter such as
+   *    `text/plain; blahblah` is therefore rejected.
+   *
+   * Examples of valid values: `text/plain`, `application/fhir+json`, `image/png`,
+   * `text/plain; charset=utf-8`,
+   * `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`.
+   *
+   * @param mimeType - The string to validate.
+   * @return - true if the string is a real IANA-registered MIME type, otherwise false.
+   */
+  isValidMimeType(mimeType: string): boolean {
+    if(typeof mimeType !== 'string') {
+      return false;
+    }
+    const value = mimeType.trim();
+
+    // Separate the base `type/subtype` (the "essence") from any parameters. The essence is a
+    // `token "/" token` and can never contain ';', so the first ';' always delimits it.
+    const semicolon = value.indexOf(';');
+    const essence = (semicolon === -1 ? value : value.slice(0, semicolon)).trim().toLowerCase();
+
+    // The essence must be a real, IANA-registered media type (BCP 13). mime-db validates both its
+    // format and registration, so no separate essence format check is needed.
+    if(mimeDb[essence]?.source !== 'iana') {
+      return false;
+    }
+    if(semicolon === -1) {
+      return true; // No parameters to validate.
+    }
+
+    // Parameters are present. mime-db cannot validate these (it is keyed only by the essence), so
+    // check their syntax explicitly: 1*( OWS ";" OWS token "=" ( token / quoted-string ) ).
+    const token = "[A-Za-z0-9!#$%&'*+.^_`|~-]+";                 // RFC 7230 token: 1*tchar
+    const quotedString = '"(?:[^"\\\\]|\\\\.)*"';                // RFC 7230 quoted-string
+    const parameterList = new RegExp('^(?:\\s*;\\s*' + token + '=(?:' + token + '|' + quotedString + '))+$');
+    return parameterList.test(value.slice(semicolon));
   }
 
 }
