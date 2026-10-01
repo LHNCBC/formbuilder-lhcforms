@@ -181,3 +181,41 @@ fbWin.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbOri
 
 There is a working example in `/tests/window-open-test.html` on how to invoke
 the application and listen to the updates.
+
+### Embedding the form builder in an iframe
+Instead of a new window, the same `/window-open` URL can be loaded in an
+`<iframe>` of the parent page. The messages are the same as above, with these
+differences:
+
+* The form builder sends its messages to `window.parent`. In the handler, compare
+  `event.source` with `iframe.contentWindow` instead of the `window.open()`
+  handle, and post the `initialQuestionnaire` message to `iframe.contentWindow`.
+* `Save & Close` and `Cancel` send the `closed` and `canceled` messages, but the
+  form builder cannot close itself. The parent page should remove or hide the
+  iframe when it receives one of these messages.
+* The notice "This page is sending changes back to the page that opened it" is
+  not shown, because the form builder is displayed within the parent page.
+* The browser only displays the form builder in an iframe if its server allows
+  framing by the parent page (`X-Frame-Options` / `Content-Security-Policy:
+  frame-ancestors`). The public instance at `https://lhncbc.nlm.nih.gov/formbuilder`
+  only allows the same origin, so this mode requires hosting the form builder
+  yourself, e.g. on the same origin as the parent page.
+
+```
+const iframe = document.getElementById('formBuilderFrame');
+iframe.src = fbUrl + '/window-open?referrer=' + encodeURIComponent(window.location.href) + '&fhirVersion=R4';
+window.addEventListener('message', (event) => {
+  if(event.source !== iframe.contentWindow) {
+    return;
+  }
+  switch(event.data.type) {
+    case 'initialized':
+      iframe.contentWindow.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, event.origin);
+      break;
+    case 'closed':   // event.data.questionnaire is the final questionnaire
+    case 'canceled':
+      iframe.remove();
+      break;
+  }
+});
+```

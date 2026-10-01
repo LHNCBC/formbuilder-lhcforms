@@ -303,6 +303,47 @@ describe('FormService', () => {
     }
   });
 
+  describe('host window of the window-open API', () => {
+    afterEach(() => {
+      service.windowOpenerUrl = null;
+    });
+
+    it('should use the opener window if opened with window.open()', () => {
+      const opener = {postMessage: jasmine.createSpy('postMessage')};
+      const originalOpener = window.opener;
+      window.opener = opener;
+      try {
+        expect(service.getHostWindow()).toBe(opener as any);
+        expect(service.isEmbedded()).toBeFalse();
+      } finally {
+        window.opener = originalOpener;
+      }
+    });
+
+    it('should use the parent window if embedded in an iframe', () => {
+      // Karma runs the specs in an iframe, unless debug.html is used.
+      const embedded = window.parent !== window;
+      expect(service.isEmbedded()).toBe(embedded);
+      expect(service.getHostWindow()).toBe(embedded ? window.parent : null);
+    });
+
+    it('should post messages to the host window with the referrer as target origin', () => {
+      const host = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeTrue();
+      expect(host.postMessage).toHaveBeenCalledOnceWith({type: 'initialized'}, 'https://parent.example.com/app');
+    });
+
+    it('should not post messages without a host window', () => {
+      spyOn(service, 'getHostWindow').and.returnValue(null);
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeFalse();
+    });
+  });
+
   it('should report an incompatible opener notification without repeating the dialog', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',

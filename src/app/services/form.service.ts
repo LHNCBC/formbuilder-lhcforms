@@ -680,6 +680,24 @@ export class FormService {
   }
 
   /**
+   * Window of the application using the window-open API: window.opener if the form builder was opened
+   * with window.open(), or window.parent if it is embedded in an iframe. Null if there is none.
+   */
+  getHostWindow(): Window | null {
+    if(window.opener) {
+      return window.opener;
+    }
+    return this.isEmbedded() ? window.parent : null;
+  }
+
+  /**
+   * True if the form builder is embedded in an iframe (and not opened with window.open()).
+   */
+  isEmbedded(): boolean {
+    return !window.opener && window.parent !== window;
+  }
+
+  /**
    * Setter
    * Set if the input is a valid version, otherwise ignore.
    */
@@ -1557,12 +1575,13 @@ export class FormService {
 
 
   /**
-   * Send data to parent window (window that opened this page).
+   * Send data to parent window (window that opened this page, or the page embedding it in an iframe).
    *
    * @param data - Data to post.
    */
   notifyWindowOpener(data: any): boolean {
-    if(this._windowOpenerUrl) {
+    const hostWindow = this.getHostWindow();
+    if(this._windowOpenerUrl && hostWindow) {
       // Return the data in the requested format
       if(data.questionnaire) {
         try {
@@ -1586,7 +1605,7 @@ export class FormService {
         }
         this.windowOpenerNotificationError = '';
       }
-      window.opener.postMessage(data, this._windowOpenerUrl);
+      hostWindow.postMessage(data, this._windowOpenerUrl);
       return true;
     }
     return false;

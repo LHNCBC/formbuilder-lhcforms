@@ -170,7 +170,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
           });
     }
 
-    if(window.opener) {
+    if(this.formService.getHostWindow()) {
       this.parseOpenerUrl(window.location);
     }
     this.addWindowListeners();
@@ -203,6 +203,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
    */
   get openerUrl(): string {
     return this.formService.windowOpenerUrl;
+  }
+
+  /**
+   * True if embedded in an iframe of the host page. The notice about sending changes to the opener is not shown
+   * then, because the form builder is displayed within the host page.
+   */
+  get embedded(): boolean {
+    return this.formService.isEmbedded();
   }
 
   /**
@@ -245,17 +253,41 @@ export class BasePageComponent implements OnInit, OnDestroy {
         }
       }
       window.addEventListener('message', msgListener);
-      window.addEventListener('beforeunload', (event) => {
+      if(!this.formService.isEmbedded()) {
+        window.addEventListener('beforeunload', (event) => {
+          this.notifyHostClosing();
+        });
+      }
+    }
+  }
 
-        const messageObj: any = {};
-        if(this.canceledEvent) {
-          messageObj.type = 'canceled';
-        } else {
-          messageObj.type = 'closed';
-          messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
-        }
-        this.formService.notifyWindowOpener(messageObj);
-      });
+  /**
+   * Send 'canceled', or 'closed' with the current questionnaire, to the window using the window-open API.
+   */
+  private notifyHostClosing() {
+    const messageObj: any = {};
+    if(this.canceledEvent) {
+      messageObj.type = 'canceled';
+    } else {
+      messageObj.type = 'closed';
+      messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
+    }
+    this.formService.notifyWindowOpener(messageObj);
+  }
+
+  /**
+   * End the window-open API session. A window opened with window.open() is closed, which notifies the
+   * opener in the beforeunload handler. An embedded form builder (iframe) cannot close itself, so the
+   * embedding page is notified directly and is expected to remove the iframe.
+   *
+   * @param canceled - True for "Cancel", false for "Save & Close".
+   */
+  private closeHostSession(canceled: boolean) {
+    this.canceledEvent = canceled;
+    if(this.formService.isEmbedded()) {
+      this.notifyHostClosing();
+    } else {
+      window.close();
     }
   }
 
@@ -616,8 +648,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
    */
   close() {
     if(this.openerUrl) {
-      this.canceledEvent = false;
-      window.close();
+      this.closeHostSession(false);
     }
     else {
       this.setStep('home');
@@ -636,8 +667,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(this.openerUrl) {
       this.modalService.open(this.cancelDlg).result.then((result) => {
         if(result) {
-          this.canceledEvent = true;
-          window.close();
+          this.closeHostSession(true);
         }
       });
     }

@@ -129,4 +129,87 @@ describe('BasePageComponent', () => {
       expect(formService.windowOpenerUrl).toBeNull();
     });
   });
+
+  describe('notice about sending changes to the opener', () => {
+    let formService: FormService;
+    const noticeText = () => fixture.nativeElement.textContent as string;
+
+    beforeEach(() => {
+      formService = TestBed.inject(FormService);
+      formService.windowOpenerUrl = 'https://parent.example.com/app';
+    });
+
+    afterEach(() => {
+      formService.windowOpenerUrl = null;
+    });
+
+    it('should be shown when opened with window.open()', () => {
+      spyOn(formService, 'isEmbedded').and.returnValue(false);
+      fixture.detectChanges();
+      expect(noticeText()).toContain('This page is sending changes back to the page that opened it');
+    });
+
+    it('should not be shown when embedded in an iframe', () => {
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+      fixture.detectChanges();
+      expect(noticeText()).not.toContain('This page is sending changes back to the page that opened it');
+    });
+  });
+
+  describe('Save & Close and Cancel of the window-open API', () => {
+    let formService: FormService;
+    let notifySpy: jasmine.Spy;
+    let closeSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      formService = TestBed.inject(FormService);
+      formService.windowOpenerUrl = 'https://parent.example.com/app';
+      component.formValue = {resourceType: 'Questionnaire', status: 'draft', title: 'Edited'};
+      notifySpy = spyOn(formService, 'notifyWindowOpener').and.returnValue(true);
+      closeSpy = spyOn(window, 'close');
+    });
+
+    afterEach(() => {
+      formService.windowOpenerUrl = null;
+    });
+
+    const confirmCancelDialog = () =>
+      spyOn(component['modalService'], 'open').and.returnValue({result: Promise.resolve(true)} as any);
+
+    it('should notify the embedding page directly when embedded in an iframe', () => {
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+
+      component.close();
+
+      expect(notifySpy).toHaveBeenCalledOnceWith({
+        type: 'closed',
+        questionnaire: jasmine.objectContaining({resourceType: 'Questionnaire', title: 'Edited'})
+      });
+      expect(closeSpy).not.toHaveBeenCalled();
+    });
+
+    it('should send canceled to the embedding page when embedded in an iframe', async () => {
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+      confirmCancelDialog();
+
+      component.cancel();
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(notifySpy).toHaveBeenCalledOnceWith({type: 'canceled'});
+      expect(closeSpy).not.toHaveBeenCalled();
+    });
+
+    it('should close the window when opened with window.open()', async () => {
+      spyOn(formService, 'isEmbedded').and.returnValue(false);
+      confirmCancelDialog();
+
+      component.close();
+      component.cancel();
+      await new Promise((resolve) => setTimeout(resolve));
+
+      // The opener is notified in the beforeunload handler of the closing window.
+      expect(closeSpy).toHaveBeenCalledTimes(2);
+      expect(notifySpy).not.toHaveBeenCalled();
+    });
+  });
 });
