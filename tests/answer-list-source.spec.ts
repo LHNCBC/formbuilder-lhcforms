@@ -565,33 +565,36 @@ test.describe('Home page', () => {
     });
 
     test('should create answerOptions lookup', async ({ page }) => {
+      let loincLookupRequestCount = 0;
+      await page.route(/loinc_items\/v3\/search/, async (route) => {
+        loincLookupRequestCount++;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([0, [], null, []])
+        });
+      });
       await MainPO.mockAnswerOptionLookup(page);
 
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
 
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').click();
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').press('ArrowDown');
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').press('ArrowDown');
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').press('Enter');
+      await PWUtils.typeAndSelect(page.locator('[id^="answerOption.0.valueCoding.system"]'),
+                                  'http://loinc.org',
+                                  {arrowDownCount: 0});
       await expect(page.locator('[id^="answerOption.0.valueCoding.system"]')).toHaveValue('http://loinc.org');
+      await expect(page.locator('[id^="answerOption.0.valueCoding.display"]'))
+        .toHaveAttribute('placeholder', 'Type your own');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'Heart rate');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.code"]'), '18708-8');
 
-      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'heart');
       const options = page.locator('span#completionOptions > ul > li');
-      await expect.poll(async () => await options.count()).toBeGreaterThan(0);
-      const displayInput = page.locator('[id^="answerOption.0.valueCoding.display"]');
-      await displayInput.press('ArrowDown');
-      await displayInput.press('ArrowDown');
-      await displayInput.press('ArrowDown');
-      await displayInput.press('Enter');
-
       await PWUtils.expectValueCoding(page, 'answerOption', 0, 'http://loinc.org', 'Heart rate', '18708-8');
 
       await page.getByRole('button', { name: 'Add another answer' }).click();
 
       await page.locator('[id^="answerOption.1.valueCoding.system"]').click();
-      await page.locator('[id^="answerOption.1.valueCoding.system"]').press('ArrowDown');
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('ArrowDown');
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('ArrowDown');
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('Enter');
@@ -625,6 +628,7 @@ test.describe('Home page', () => {
       await page.locator('[id^="answerOption.3.valueCoding.display"]').press('Enter');
 
       await PWUtils.expectValueCoding(page, 'answerOption', 3, 'http://snomed.info/sct', 'Intersex', '32570691000036108');
+      expect(loincLookupRequestCount).toBe(0);
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].answerOption[0].valueCoding.system).toEqual('http://loinc.org');

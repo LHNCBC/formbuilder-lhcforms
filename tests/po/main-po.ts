@@ -215,13 +215,12 @@ export class MainPO {
   }
 
   /**
-   * Mock lookups used by answerOptions autocomplete (LOINC, UCUM, SNOMED).
+   * Mock lookups used by answerOptions autocomplete (UCUM and SNOMED).
    *
    * @param page - Playwright page used to register the route handler.
    * @returns Promise that resolves when the route handler is registered.
    */
   static async mockAnswerOptionLookup(page: Page): Promise<void> {
-    await MainPO.mockData(page, LOINC_SEARCH, 'terms', 'loinc');
     await MainPO.mockData(page, ANSWER_OPTION_UCUM_SEARCH, 'terms', 'ucum', { normalize: false });
     await MainPO.mockData(page, ANSWER_OPTION_SNOMED_SEARCH, 'filter', 'snomed', { normalize: false });
   }

@@ -472,6 +472,11 @@ describe('Home page', () => {
     });
 
     it('should create answerOptions lookup', () => {
+      let loincLookupRequestCount = 0;
+      cy.intercept('GET', /loinc_items\/v3\/search.*/, (req) => {
+        loincLookupRequestCount++;
+        req.reply([0, [], null, []]);
+      });
       CypressUtil.mockAnswerOptionLookup();
 
       cy.selectDataType('coding');
@@ -479,17 +484,13 @@ describe('Home page', () => {
 
       cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
 
-      // Select 'http://loinc.org'
-      cy.get('[id^="answerOption.0.valueCoding.system"]').click().type('{downarrow}{downarrow}{enter}');
+      // Enter LOINC manually; it must not activate the general LOINC item lookup.
+      cy.get('[id^="answerOption.0.valueCoding.system"]').click().type('http://loinc.org{enter}');
       cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
-      cy.get('[id^="answerOption.0.valueCoding.display"]').type('heart');
-
-      // Autocomplete should show options.
-      cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
-      // Select 'Heart rate'
       cy.get('[id^="answerOption.0.valueCoding.display"]')
-        .click()
-        .type('{downarrow}{downarrow}{downarrow}{enter}', { delay: 100 });
+        .should('have.attr', 'placeholder', 'Type your own')
+        .type('Heart rate');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').type('18708-8');
 
       // Verify that code and system are filled in.
       cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
@@ -501,7 +502,7 @@ describe('Home page', () => {
       cy.get('@addAnswerButton').click();
 
       // Select 'http://unitsofmeasure.org'
-      cy.get('[id^="answerOption.1.valueCoding.system"]').click().type('{downarrow}{downarrow}{downarrow}{enter}');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').click().type('{downarrow}{downarrow}{enter}');
       cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
       cy.get('[id^="answerOption.1.valueCoding.display"]').type('kat');
 
@@ -546,6 +547,7 @@ describe('Home page', () => {
       cy.get('[id^="answerOption.3.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
       cy.get('[id^="answerOption.3.valueCoding.display"]').should('have.value', 'Intersex');
       cy.get('[id^="answerOption.3.valueCoding.code"]').should('have.value', '32570691000036108');
+      cy.then(() => expect(loincLookupRequestCount).to.equal(0));
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption[0].valueCoding.system).to.equal('http://loinc.org');
@@ -1383,4 +1385,3 @@ function modifyReferencedData(type: string, enableWhenNodeName: string,
     .find('fa-icon#error')
     .should('exist');
 }
-
