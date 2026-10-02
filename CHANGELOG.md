@@ -4,8 +4,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [12.8.0] 2026-09-30
 ### Changed
-- Changed the form-level Description and Purpose fields to inline
-  textareas to support multiline text.
+- Changed the Questionnaire and contained ValueSet Description and Purpose
+  fields to inline textareas to support multiline text.
 
 ## [12.7.0] 2026-09-22
 ### Changed
