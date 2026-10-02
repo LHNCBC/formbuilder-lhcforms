@@ -586,11 +586,11 @@ test.describe('Home page', () => {
       await expect(page.locator('[id^="answerOption.0.valueCoding.system"]')).toHaveValue('http://loinc.org');
       await expect(page.locator('[id^="answerOption.0.valueCoding.display"]'))
         .toHaveAttribute('placeholder', 'Type your own');
-      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'Heart rate');
-      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.code"]'), '18708-8');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'Underwear or less');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.code"]'), 'LA11871-3');
 
       const options = page.locator('span#completionOptions > ul > li');
-      await PWUtils.expectValueCoding(page, 'answerOption', 0, 'http://loinc.org', 'Heart rate', '18708-8');
+      await PWUtils.expectValueCoding(page, 'answerOption', 0, 'http://loinc.org', 'Underwear or less', 'LA11871-3');
 
       await page.getByRole('button', { name: 'Add another answer' }).click();
 
@@ -632,8 +632,8 @@ test.describe('Home page', () => {
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].answerOption[0].valueCoding.system).toEqual('http://loinc.org');
-      expect(qJson.item[0].answerOption[0].valueCoding.display).toEqual('Heart rate');
-      expect(qJson.item[0].answerOption[0].valueCoding.code).toEqual('18708-8');
+      expect(qJson.item[0].answerOption[0].valueCoding.display).toEqual('Underwear or less');
+      expect(qJson.item[0].answerOption[0].valueCoding.code).toEqual('LA11871-3');
 
       expect(qJson.item[0].answerOption[1].valueCoding.system).toEqual('http://unitsofmeasure.org');
       expect(qJson.item[0].answerOption[1].valueCoding.display).toEqual('kat - katal');
