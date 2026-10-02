@@ -219,9 +219,15 @@ export class CypressUtil {
   }
 
   /**
-   * Mock lookups used by answerOptions autocomplete (UCUM and SNOMED).
+   * Mock lookups used by answerOptions autocomplete (LOINC, UCUM, SNOMED).
    */
   static mockAnswerOptionLookup() {
+    // LOINC item lookup (e.g., Heart rate)
+    cy.intercept('GET', /loinc_items\/v3\/search.*terms=.*/, (req) => {
+      const term = CypressUtil._getTermsParam(req);
+      CypressUtil._replyLookup(req, term, mockLoincLookupData, 'loinc');
+    }).as('loincSearch');
+
     // UCUM ValueSet lookup (e.g., katal)
     cy.intercept('GET', /ucum\/v3\/search\?terms=.*/, (req) => {
       const term = CypressUtil._getTermsParam(req);
