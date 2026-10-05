@@ -10,7 +10,8 @@
     </div>
     <hr>
       <div>
-        <input id="useSnomed" type="checkbox" class="form-check-inline" [(ngModel)]="useSnomed" aria-controls="snomedContent">
+        <input id="useSnomed" type="checkbox" class="form-check-inline" [ngModel]="useSnomed"
+               (ngModelChange)="onUseSnomedChange($event)" aria-controls="snomedContent">
         <label for="useSnomed" class="form-check-label pb-3 align-top">Optionally, enable SNOMED CT terminology support.
           <br><small role="note" class="pb-3">Currently the support is limited to creating answer lists for questions.</small>
         </label>

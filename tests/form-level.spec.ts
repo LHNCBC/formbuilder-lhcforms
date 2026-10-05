@@ -175,6 +175,19 @@ test.describe('Home page accept Terms of Use notices', () => {
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).not.toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).not.toBeChecked();
+
+    await MainPO.mockAnswerOptionLookup(page);
+    const systemInput = page.locator('[id^="answerOption.0.valueCoding.system"]');
+    await expect(systemInput).toHaveAttribute('placeholder', 'Select a system or type your own.');
+    await systemInput.click();
+    await systemInput.press('ArrowDown');
+    await systemInput.press('Enter');
+    await expect(systemInput).toHaveValue('http://snomed.info/sct');
+
+    const displayInput = page.locator('[id^="answerOption.0.valueCoding.display"]');
+    await expect(displayInput).toHaveAttribute('placeholder', 'Search or type your own');
+    await PWUtils.typeSequentially(displayInput, 'intersex');
+    await expect.poll(async () => page.locator('span#completionOptions > ul > li').count()).toBeGreaterThan(0);
   });
 
   test('should not find SNOMED CT functionality after accepting only LOINC terms of use', async ({ page }) => {
@@ -201,6 +214,25 @@ test.describe('Home page accept Terms of Use notices', () => {
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).not.toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).toHaveCount(0);
+
+    const systemInput = page.locator('[id^="answerOption.0.valueCoding.system"]');
+    await expect(systemInput).toHaveAttribute('placeholder', 'Select a system or type your own.');
+    await systemInput.click();
+    await systemInput.press('ArrowDown');
+    await systemInput.press('Enter');
+    await expect(systemInput).toHaveValue('http://unitsofmeasure.org');
+
+    await systemInput.fill('');
+    await PWUtils.typeAndSelect(systemInput, 'http://loinc.org', {arrowDownCount: 0});
+    await expect(systemInput).toHaveValue('http://loinc.org');
+    await expect(page.locator('[id^="answerOption.0.valueCoding.display"]'))
+      .toHaveAttribute('placeholder', 'Type your own');
+
+    await systemInput.fill('');
+    await PWUtils.typeAndSelect(systemInput, 'http://snomed.info/sct', {arrowDownCount: 0});
+    await expect(systemInput).toHaveValue('http://snomed.info/sct');
+    await expect(page.locator('[id^="answerOption.0.valueCoding.display"]'))
+      .toHaveAttribute('placeholder', 'Type your own');
   });
 });
 

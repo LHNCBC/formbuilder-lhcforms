@@ -1234,14 +1234,13 @@
                 }
               },
               "system": {
-                "description": "The identification of the code system that defines the meaning of the symbol in the code.",
+                "description": "The identification of the code system that defines the meaning of the symbol in the code. Select a system or type your own.",
                 "pattern": "^\\S*$",
                 "type": "string",
                 "widget": {
                   "id": "coding-system",
                   "systemLookups": [
                     {"systemUrl": "http://snomed.info/sct", "lookupUrl": "https://snomedbrowser.org/fhir/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs"},
-                    {"systemUrl": "http://loinc.org", "lookupUrl": "https://clinicaltables.nlm.nih.gov/api/loinc_items/v3/search"},
                     {"systemUrl": "http://unitsofmeasure.org", "lookupUrl": "https://clinicaltables.nlm.nih.gov/api/ucum/v3/search"}
                   ]
                 }

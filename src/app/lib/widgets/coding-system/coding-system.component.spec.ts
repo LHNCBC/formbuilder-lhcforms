@@ -45,4 +45,9 @@ describe('CodingSystemComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should explain that a suggested or custom system can be entered', () => {
+    const input = fixture.nativeElement.querySelector('input');
+    expect(input.placeholder).toBe('Select a system or type your own.');
+  });
 });
