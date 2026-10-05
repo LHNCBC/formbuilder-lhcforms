@@ -62,8 +62,8 @@
       "title": "Title - Contained Value Set Two",
       "version": "2.0.0",
       "name": "Name - Contained Value Set Two",
-      "description": "Some description2",
-      "purpose": "Some purpose2",
+      "description": "Some description2\nwith a second line",
+      "purpose": "Some purpose2\nwith a second line",
       "publisher": "Some publisher2",
       "copyright": "Some copyright2",
       "expansion": {
