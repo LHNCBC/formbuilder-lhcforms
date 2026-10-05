@@ -72,6 +72,13 @@
       labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
       controlClasses: 'col-sm-10 m-0 p-0'
     },
+    formInlineTextareaField: {
+      id: 'textarea',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
+      controlClasses: 'col-sm-10 m-0 p-0',
+      rows: 1
+    },
     formInstantField: {
       id: 'instant',
       labelPosition: 'left',

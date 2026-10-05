@@ -455,6 +455,29 @@ test.describe('Home page', () => {
       await expect(titleField).toHaveValue('Dummy title');
     });
 
+    test('should use multiline fields for description and purpose', async ({ page }) => {
+      const descriptionField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Description');
+      const purposeField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Purpose');
+
+      await expect(descriptionField).toHaveJSProperty('tagName', 'TEXTAREA');
+      await expect(purposeField).toHaveJSProperty('tagName', 'TEXTAREA');
+      await expect(descriptionField).toHaveAttribute('rows', '1');
+      await expect(purposeField).toHaveAttribute('rows', '1');
+
+      const description = 'Questionnaire description\nwith a second line';
+      const purpose = 'Questionnaire purpose\nwith a second line';
+      await descriptionField.fill(description);
+      await purposeField.fill(purpose);
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      expect(qJson.description).toBe(description);
+      expect(qJson.purpose).toBe(purpose);
+
+      await PWUtils.expandAdvancedFields(page);
+      await expect(await PWUtils.getByLabel(page, 'lfb-form-fields', 'Implicit rules'))
+        .toHaveJSProperty('tagName', 'INPUT');
+    });
+
     test('should display default title', async ({ page }) => {
       const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
       await expect(titleField).toHaveValue('New Form');
@@ -723,6 +746,8 @@ test.describe('Home page', () => {
             { field: 'name', title: 'Questionnaire name' },
             { field: 'date', title: 'Revision date' },
             { field: 'publisher', title: 'Publisher' },
+            { field: 'description', title: 'Description' },
+            { field: 'purpose', title: 'Purpose' },
             { field: 'copyright', title: 'Copyright' },
             { field: 'approvalDate', title: 'Approval date' },
             { field: 'lastReviewDate', title: 'Last review date' }

@@ -2,7 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.7.1] 2026-10-01
+## [12.8.0] 2026-10-01
+### Changed
+- Changed the Questionnaire and contained ValueSet Description and Purpose
+  fields to inline textareas to support multiline text.
+
 ### Fixed
 - Removed LOINC from the Answer Choices System suggestions while preserving
   manually entered and imported LOINC-coded answers.

@@ -48,8 +48,14 @@ test.describe('Contained resources table in form level page', () => {
 
     await dialog.getByLabel('Version', {exact: true}).fill('A version');
     await dialog.getByLabel('Name', {exact: true}).fill('A name');
-    await dialog.getByLabel('Description', {exact: true}).fill('A description');
-    await dialog.getByLabel('Purpose', {exact: true}).fill('A purpose');
+    const descriptionField = dialog.getByLabel('Description', {exact: true});
+    const purposeField = dialog.getByLabel('Purpose', {exact: true});
+    await expect(descriptionField).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(purposeField).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(descriptionField).toHaveAttribute('rows', '1');
+    await expect(purposeField).toHaveAttribute('rows', '1');
+    await descriptionField.fill('A description\nwith a second line');
+    await purposeField.fill('A purpose\nwith a second line');
 
     await dialog.getByLabel('Publisher', {exact: true}).fill('A publisher');
     await dialog.getByLabel('Copyright', {exact: true}).fill('A copyright');
@@ -74,8 +80,8 @@ test.describe('Contained resources table in form level page', () => {
     expect(vs.status).toBe('active');
     expect(vs.version).toBe('A version');
     expect(vs.name).toBe('A name');
-    expect(vs.description).toBe('A description');
-    expect(vs.purpose).toBe('A purpose');
+    expect(vs.description).toBe('A description\nwith a second line');
+    expect(vs.purpose).toBe('A purpose\nwith a second line');
     expect(vs.publisher).toBe('A publisher');
     expect(vs.copyright).toBe('A copyright');
     expect(vs.expansion.contains).toStrictEqual([{
@@ -143,8 +149,8 @@ test.describe(() => {
 
     await expect(dialog.getByLabel('Version', {exact: true})).toHaveValue('2.0.0');
     await expect(dialog.getByLabel('Name', {exact: true})).toHaveValue('Name - Contained Value Set Two');
-    await expect(dialog.getByLabel('Description', {exact: true})).toHaveValue('Some description2');
-    await expect(dialog.getByLabel('Purpose', {exact: true})).toHaveValue('Some purpose2');
+    await expect(dialog.getByLabel('Description', {exact: true})).toHaveValue('Some description2\nwith a second line');
+    await expect(dialog.getByLabel('Purpose', {exact: true})).toHaveValue('Some purpose2\nwith a second line');
 
     const metaTags = PWUtils.getTableByFieldLabel(dialog, 'Tags');
     await expect(PWUtils.getTableCellInput(metaTags, 1, 1)).toHaveValue('Example tag21');
