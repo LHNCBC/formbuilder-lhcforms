@@ -106,6 +106,32 @@ describe('FormService', () => {
     expect(service.itemSchema.properties.prefix.widget.rows).toBeUndefined();
   });
 
+  it('should configure questionnaire description and purpose as multiline fields', () => {
+    expect(service.flSchema.properties.description.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.flSchema.properties.purpose.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.flSchema.properties.implicitRules.widget.id).toBe('string');
+    expect(service.flSchema.properties.copyright.widget.rows).toBeUndefined();
+  });
+
+  it('should configure ValueSet description and purpose as multiline fields', () => {
+    expect(service.valueSetSchema.properties.description.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.valueSetSchema.properties.purpose.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.valueSetSchema.properties.implicitRules.widget.id).toBe('string');
+    expect(service.valueSetSchema.properties.copyright.widget.rows).toBeUndefined();
+  });
+
   it('should preserve the R5 ad Quantity comparator and reject older-version conversion', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',

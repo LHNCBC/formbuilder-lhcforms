@@ -2,6 +2,20 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.8.0] 2026-10-01
+### Changed
+- Changed the Questionnaire and contained ValueSet Description and Purpose
+  fields to inline textareas to support multiline text.
+
+### Fixed
+- Removed LOINC from the Answer Choices System suggestions while preserving
+  manually entered and imported LOINC-coded answers.
+- Limited SNOMED System suggestions and answer lookup to users who enabled
+  SNOMED support and accepted the SNOMED International Browser License Agreement.
+- Updated the Answer Choices System field guidance to clarify that users can
+  select a suggested system or enter their own.
+- Cleared SNOMED license acceptance when SNOMED terminology support is disabled.
+
 ## [12.7.0] 2026-09-22
 ### Changed
 - Changed the item-level Question text and Help text fields to inline textareas

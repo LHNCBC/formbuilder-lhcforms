@@ -1383,4 +1383,3 @@ function modifyReferencedData(type: string, enableWhenNodeName: string,
     .find('fa-icon#error')
     .should('exist');
 }
-
