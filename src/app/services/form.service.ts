@@ -1577,9 +1577,15 @@ export class FormService {
   /**
    * Send data to parent window (window that opened this page, or the page embedding it in an iframe).
    *
+   * If the questionnaire cannot be converted to the requested FHIR version, nothing is sent and an error
+   * dialog is shown. The dialog is not repeated for the same error, unless alwaysReportError is true.
+   *
    * @param data - Data to post.
+   * @param alwaysReportError - Show the error dialog even if the same error was already reported. Use it when
+   *   the user explicitly requested the notification, e.g. with "Save & Close".
+   * @returns True if the data was posted, false otherwise.
    */
-  notifyWindowOpener(data: any): boolean {
+  notifyWindowOpener(data: any, alwaysReportError = false): boolean {
     const hostWindow = this.getHostWindow();
     if(this._windowOpenerUrl && hostWindow) {
       // Return the data in the requested format
@@ -1593,7 +1599,7 @@ export class FormService {
         catch(error) {
           console.error('Unable to send the questionnaire to the opener window.', error);
           const errorMessage = error instanceof Error ? error.message : String(error);
-          if(this.windowOpenerNotificationError !== errorMessage) {
+          if(alwaysReportError || this.windowOpenerNotificationError !== errorMessage) {
             this.windowOpenerNotificationError = errorMessage;
             this.showMessage(
               'Questionnaire update not sent',

@@ -67,6 +67,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   // Accepted terms in localstorage expires in a week.
   weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
   canceledEvent = false;
+  // Set when "Save & Close" or "Cancel" has already notified the host window.
+  hostNotifiedOfClosing = false;
   titleAriaLabel: string;
   editMenuTargetStep = 'item-editor';
   formFieldsRefreshToken = 0;
@@ -218,7 +220,10 @@ export class BasePageComponent implements OnInit, OnDestroy {
    */
   addWindowListeners() {
     if (this.openerUrl) {
-      const msgListener = (event) => {
+      const msgListener = (event: MessageEvent) => {
+        if(!this.isFromHostWindow(event)) {
+          return;
+        }
         let message = null;
         try {
           message = JSON.parse(JSON.stringify(event.data)); // Sanitize input.
@@ -227,9 +232,6 @@ export class BasePageComponent implements OnInit, OnDestroy {
           return;
         }
         const parentUrl = this.formService.windowOpenerUrl;
-        if(!parentUrl.startsWith(event.origin)) {
-          return;
-        }
         switch (message?.type) {
           case 'initialQuestionnaire':
             try {
@@ -254,17 +256,41 @@ export class BasePageComponent implements OnInit, OnDestroy {
       }
       window.addEventListener('message', msgListener);
       if(!this.formService.isEmbedded()) {
+        // Notify the opener when the user closes the window without "Save & Close" or "Cancel".
         window.addEventListener('beforeunload', (event) => {
-          this.notifyHostClosing();
+          if(!this.hostNotifiedOfClosing) {
+            this.notifyHostClosing();
+          }
         });
       }
     }
   }
 
   /**
-   * Send 'canceled', or 'closed' with the current questionnaire, to the window using the window-open API.
+   * Check whether a message comes from the window using the window-open API: the sender must be the host
+   * window (window.opener, or window.parent when embedded), and its origin must equal the origin of the
+   * referrer URL.
+   *
+   * @param event - Message event received by this window.
+   * @returns True if the message is from the host window, false otherwise.
    */
-  private notifyHostClosing() {
+  private isFromHostWindow(event: MessageEvent): boolean {
+    let hostOrigin: string;
+    try {
+      hostOrigin = new URL(this.formService.windowOpenerUrl).origin;
+    } catch (e) {
+      return false;
+    }
+    return event.origin === hostOrigin && event.source === this.formService.getHostWindow();
+  }
+
+  /**
+   * Send 'canceled', or 'closed' with the current questionnaire, to the window using the window-open API.
+   *
+   * @param alwaysReportError - Show the error dialog even if the same conversion error was already reported.
+   * @returns True if the message was sent, false otherwise.
+   */
+  private notifyHostClosing(alwaysReportError = false): boolean {
     const messageObj: any = {};
     if(this.canceledEvent) {
       messageObj.type = 'canceled';
@@ -272,21 +298,24 @@ export class BasePageComponent implements OnInit, OnDestroy {
       messageObj.type = 'closed';
       messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
     }
-    this.formService.notifyWindowOpener(messageObj);
+    return this.formService.notifyWindowOpener(messageObj, alwaysReportError);
   }
 
   /**
-   * End the window-open API session. A window opened with window.open() is closed, which notifies the
-   * opener in the beforeunload handler. An embedded form builder (iframe) cannot close itself, so the
-   * embedding page is notified directly and is expected to remove the iframe.
+   * End the window-open API session. The host window is notified first. If the notification fails, for
+   * example because the questionnaire cannot be converted to the requested FHIR version, an error dialog is
+   * shown and the form builder stays open. Otherwise, a window opened with window.open() is closed. An
+   * embedded form builder (iframe) cannot close itself, so the embedding page is expected to remove the iframe.
    *
    * @param canceled - True for "Cancel", false for "Save & Close".
    */
   private closeHostSession(canceled: boolean) {
     this.canceledEvent = canceled;
-    if(this.formService.isEmbedded()) {
-      this.notifyHostClosing();
-    } else {
+    if(!this.notifyHostClosing(true)) {
+      return;
+    }
+    this.hostNotifiedOfClosing = true;
+    if(!this.formService.isEmbedded()) {
       window.close();
     }
   }

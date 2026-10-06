@@ -370,42 +370,63 @@ describe('FormService', () => {
     });
   });
 
-  it('should report an incompatible opener notification without repeating the dialog', () => {
-    const questionnaire = {
-      resourceType: 'Questionnaire',
-      status: 'draft',
-      useContext: [{
-        code: {code: 'age'},
-        valueQuantity: {
-          value: 10,
-          comparator: 'ad',
-          unit: 'mL'
-        }
-      }]
-    } as unknown as fhir.Questionnaire;
-    service.windowOpenerUrl = 'https://parent.example.com';
-    service['_windowOpenerFhirVersion'] = 'R4';
-    spyOn(console, 'error');
-    const showMessage = spyOn(service, 'showMessage');
-
-    expect(service.notifyWindowOpener({
-      type: 'updateQuestionnaire',
-      questionnaire
-    })).toBeFalse();
-    expect(service.notifyWindowOpener({
-      type: 'updateQuestionnaire',
-      questionnaire
-    })).toBeFalse();
-    expect(console.error).toHaveBeenCalledWith(
-      'Unable to send the questionnaire to the opener window.',
-      jasmine.any(Error)
-    );
-    expect(showMessage).toHaveBeenCalledOnceWith(
+  describe('incompatible opener notification', () => {
+    let showMessage: jasmine.Spy;
+    let hostWindow: {postMessage: jasmine.Spy};
+    const notifyWithIncompatibleQuestionnaire = (alwaysReportError?: boolean): boolean => {
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        useContext: [{
+          code: {code: 'age'},
+          valueQuantity: {
+            value: 10,
+            comparator: 'ad',
+            unit: 'mL'
+          }
+        }]
+      } as unknown as fhir.Questionnaire;
+      return service.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire}, alwaysReportError);
+    };
+    const expectedMessage = [
       'Questionnaire update not sent',
       FormService.R5_QUANTITY_COMPARATOR_ERROR +
         ' The opener application has not received the latest Questionnaire.',
       MessageType.DANGER
-    );
+    ] as const;
+
+    beforeEach(() => {
+      // Independent of whether Karma runs the specs in an iframe (window.parent) or not (debug.html).
+      hostWindow = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(hostWindow as any);
+      service.windowOpenerUrl = 'https://parent.example.com';
+      service['_windowOpenerFhirVersion'] = 'R4';
+      spyOn(console, 'error');
+      showMessage = spyOn(service, 'showMessage');
+    });
+
+    afterEach(() => {
+      service.windowOpenerUrl = null;
+    });
+
+    it('should report an incompatible opener notification without repeating the dialog', () => {
+      expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
+      expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
+      expect(console.error).toHaveBeenCalledWith(
+        'Unable to send the questionnaire to the opener window.',
+        jasmine.any(Error)
+      );
+      expect(showMessage).toHaveBeenCalledOnceWith(...expectedMessage);
+      expect(hostWindow.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should repeat the dialog when alwaysReportError is set', () => {
+      expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
+      expect(notifyWithIncompatibleQuestionnaire(true)).toBeFalse();
+      expect(showMessage).toHaveBeenCalledTimes(2);
+      expect(showMessage.calls.mostRecent().args).toEqual([...expectedMessage]);
+      expect(hostWindow.postMessage).not.toHaveBeenCalled();
+    });
   });
 
   it('should update __$helpText', () => {

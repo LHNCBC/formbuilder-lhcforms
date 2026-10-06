@@ -10,9 +10,11 @@
   <button id="openWinSTU3" class="btn btn-primary m-2" onClick="openFormBuilder('STU3')">Open form builder (STU3)</button>
   <button id="openWinR4" class="btn btn-primary m-2" onClick="openFormBuilder('R4')">Open form builder (R4)</button>
   <button id="openWinR5" class="btn btn-primary m-2" onClick="openFormBuilder('R5')">Open form builder (R5)</button>
+  <button id="embedR4" class="btn btn-primary m-2" onClick="embedFormBuilder('R4')">Embed form builder (R4)</button>
   <button id="sendQ" class="btn btn-primary m-2" onClick="sendQuestionnaire()">Post questionnaire</button>
   <button id="clear" class="btn btn-primary m-2" onClick="clearMessages()">Clear messages</button>
   <p class="m-1" id="url"></p>
+  <div id="fbFrameContainer"></div>
   <h6 id="initH">initialized</h6>
   <pre class="m-1" id="initW"></pre>
   <h6 id="updateH">updateQuestionnaire</h6>
@@ -28,6 +30,8 @@
   const initialQ = {resourceType: 'Questionnaire', title: 'Form loaded from window-open-test.html', status: 'draft', item: [{text: 'q one', linkId: 'q-1'}]};
 
   let fbWindow = null;
+  // The iframe, if the form builder is embedded instead of opened in a new window.
+  let fbFrame = null;
   // Open the form builder window running on separate origin
   // Read the URL from the http params.
   let fbUrl = new URLSearchParams(window.location.search).get('targetUrl');
@@ -72,11 +76,13 @@
         // Triggered when the window is closed. Use this to get last updated questionnaire
         closedHeader.innerHTML = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
         closedEl.innerHTML = `${messageFromOpenedWindow}`;
+        removeFormBuilderFrame();
         break;
       case 'canceled':
         // Triggered when the window is canceled.
         canceledHeader.innerHTML = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
         canceledEl.innerHTML = `${messageFromOpenedWindow}`;
+        removeFormBuilderFrame();
         break;
       default:
         console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
@@ -96,6 +102,36 @@
     fbWindow = window.open(reqUrl, 'formbuilder_window');
     fbWindow.focus();
     urlEl.innerHTML = 'Opened url: ' + reqUrl;
+  }
+
+  /**
+   * Embed the form builder app in an iframe of this page, instead of opening a new window.
+   */
+  function embedFormBuilder(fhirVersion) {
+    removeFormBuilderFrame();
+    const reqUrl = fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href)+
+      '&fhirVersion='+encodeURIComponent(fhirVersion);
+    fbFrame = document.createElement('iframe');
+    fbFrame.id = 'fbFrame';
+    fbFrame.title = 'Form builder';
+    fbFrame.style.display = 'block';
+    fbFrame.style.width = '100%';
+    fbFrame.style.height = '80vh';
+    fbFrame.src = reqUrl;
+    document.getElementById('fbFrameContainer').appendChild(fbFrame);
+    fbWindow = fbFrame.contentWindow;
+    urlEl.innerHTML = 'Embedded url: ' + reqUrl;
+  }
+
+  /**
+   * Remove the embedded form builder, if any. The form builder cannot close the iframe itself.
+   */
+  function removeFormBuilderFrame() {
+    if(fbFrame) {
+      fbFrame.remove();
+      fbFrame = null;
+      fbWindow = null;
+    }
   }
 
   /**

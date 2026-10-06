@@ -1,4 +1,4 @@
-import {test, expect, Page} from '@playwright/test';
+import {test, expect, Page, FrameLocator} from '@playwright/test';
 
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
@@ -59,6 +59,102 @@ test.describe('Cancel event', () => {
   });
 
 });
+
+test.describe('Embed form builder in an iframe', () => {
+  const initialQTitle = 'Form loaded from window-open-test.html';
+  let frame: FrameLocator;
+
+  test.beforeEach(async ({page}) => {
+    page.on('console', msg => {
+      if(msg.type() === 'error') {
+        console.error(msg.text());
+      }
+      else {
+        console.log(msg.text());
+      }
+    });
+
+    await page.goto(fbSecondUrl);
+    // The route also applies to the requests of the iframe.
+    await new MainPO(page).mockSnomedEditions();
+    await page.getByRole('button', {name: 'Embed form builder (R4)'}).click();
+    // Playwright does not scroll the test page for elements in a cross-origin iframe. The iframe is above the
+    // message panels, which grow while testing, and is 80vh high, so all of it stays visible after this.
+    await page.locator('#fbFrame').scrollIntoViewIfNeeded();
+    frame = page.frameLocator('#fbFrame');
+    await frame.locator('#acceptLoinc').click();
+    await frame.locator('#useSnomed').click();
+    await frame.locator('#acceptSnomed').click();
+    await frame.locator('lfb-loinc-notice button').filter({hasText: 'Accept'}).click();
+
+    expect((await getMessage(page, 'initialized')).type).toBe('initialized');
+    await expect(titleLocator(frame)).toHaveValue(initialQTitle);
+    await expect(frame.getByText(MainPO.windowOpenerNotice)).not.toBeAttached();
+  });
+
+  test('should send closed with the final questionnaire on Save & Close', async ({page}) => {
+    await titleLocator(frame).fill('Edited in iframe');
+    const updated = await getMessage(page, 'updateQuestionnaire');
+    expect(updated.questionnaire.meta.profile[0]).toBe('http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire');
+
+    await frame.getByRole('button', {name: 'Save & Close'}).click();
+
+    const closed = await getMessage(page, 'closed');
+    expect(closed.questionnaire.title).toBe('Edited in iframe');
+    expect(closed.questionnaire.meta.profile[0]).toBe('http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire');
+    // The test page removes the iframe when it receives the message.
+    await expect(page.locator('#fbFrame')).not.toBeAttached();
+  });
+
+  test('should send canceled on Cancel', async ({page}) => {
+    await frame.getByRole('button', {name: 'Cancel'}).click();
+    await frame.getByRole('button', {name: 'No'}).click();
+    await expect(page.locator('#fbFrame')).toBeAttached();
+
+    await frame.getByRole('button', {name: 'Cancel'}).click();
+    await frame.getByRole('button', {name: 'Yes'}).click();
+
+    expect((await getMessage(page, 'canceled')).type).toBe('canceled');
+    await expect(page.locator('#closedQ')).toBeEmpty();
+    await expect(page.locator('#fbFrame')).not.toBeAttached();
+  });
+
+  test('should stay open and show the error if the questionnaire cannot be sent', async ({page}) => {
+    const errorTitle = 'Questionnaire update not sent';
+    // The "ad" Quantity comparator is supported only in FHIR R5, so the questionnaire cannot be sent as R4.
+    await page.evaluate(() => {
+      const q = {
+        resourceType: 'Questionnaire', status: 'draft', title: 'R5 only',
+        useContext: [{
+          code: {system: 'http://terminology.hl7.org/CodeSystem/usage-context-type', code: 'age'},
+          valueQuantity: {value: 10, comparator: 'ad', unit: 'mL'}
+        }],
+        item: [{text: 'q one', linkId: 'q-1', type: 'string'}]
+      };
+      // @ts-ignore - fbWindow and originUrl are globals of window-open-test.html.
+      fbWindow.postMessage({type: 'initialQuestionnaire', questionnaire: q}, originUrl);
+    });
+    await expect(frame.getByText(errorTitle)).toBeVisible();
+    await frame.getByRole('dialog').locator('button.btn-primary', {hasText: 'Close'}).click();
+    await expect(frame.getByRole('dialog')).toHaveCount(0);
+
+    // The dialog is shown again, even though the same error was already reported.
+    await frame.getByRole('button', {name: 'Save & Close'}).click();
+    await expect(frame.getByText(errorTitle)).toBeVisible();
+    await expect(page.locator('#closedQ')).toBeEmpty();
+    await expect(page.locator('#fbFrame')).toBeAttached();
+  });
+});
+
+/**
+ * Get the Title field of the form builder in the given frame.
+ *
+ * @param frame - Frame locator of the embedded form builder.
+ * @returns Locator of the Title field.
+ */
+function titleLocator(frame: FrameLocator) {
+  return frame.locator('lfb-form-fields').getByLabel('Title', {exact: true});
+}
 
 async function getMessage(page: Page, type: string) {
     let ret = null;

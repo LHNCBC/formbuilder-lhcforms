@@ -2,6 +2,23 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.9.0] 2026-10-06
+### Added
+- Support for embedding the form builder in an iframe of the parent page, using
+  the same `/window-open` messages as a window opened with `window.open()`. See
+  API.md.
+
+### Changed
+- The form builder accepts messages only from the window that opened it, or
+  the page embedding it, and only if their origin exactly matches the origin of
+  the `referrer` parameter.
+
+### Fixed
+- `Save & Close` no longer closes the form builder without sending the final
+  questionnaire when it cannot be converted to the requested FHIR version. The
+  error is shown again, and the form builder stays open so that it can be
+  corrected.
+
 ## [12.8.0] 2026-10-01
 ### Changed
 - Changed the Questionnaire and contained ValueSet Description and Purpose

@@ -184,8 +184,9 @@ describe('BasePageComponent', () => {
       expect(notifySpy).toHaveBeenCalledOnceWith({
         type: 'closed',
         questionnaire: jasmine.objectContaining({resourceType: 'Questionnaire', title: 'Edited'})
-      });
+      }, true);
       expect(closeSpy).not.toHaveBeenCalled();
+      expect(component.hostNotifiedOfClosing).toBeTrue();
     });
 
     it('should send canceled to the embedding page when embedded in an iframe', async () => {
@@ -195,21 +196,86 @@ describe('BasePageComponent', () => {
       component.cancel();
       await new Promise((resolve) => setTimeout(resolve));
 
-      expect(notifySpy).toHaveBeenCalledOnceWith({type: 'canceled'});
+      expect(notifySpy).toHaveBeenCalledOnceWith({type: 'canceled'}, true);
       expect(closeSpy).not.toHaveBeenCalled();
     });
 
-    it('should close the window when opened with window.open()', async () => {
+    it('should notify the opener and then close the window when opened with window.open()', async () => {
       spyOn(formService, 'isEmbedded').and.returnValue(false);
       confirmCancelDialog();
 
       component.close();
+      expect(notifySpy).toHaveBeenCalledOnceWith({
+        type: 'closed',
+        questionnaire: jasmine.objectContaining({resourceType: 'Questionnaire', title: 'Edited'})
+      }, true);
+      expect(closeSpy).toHaveBeenCalledTimes(1);
+      expect(notifySpy).toHaveBeenCalledBefore(closeSpy);
+      expect(component.hostNotifiedOfClosing).toBeTrue();
+
       component.cancel();
       await new Promise((resolve) => setTimeout(resolve));
 
-      // The opener is notified in the beforeunload handler of the closing window.
+      expect(notifySpy).toHaveBeenCalledWith({type: 'canceled'}, true);
       expect(closeSpy).toHaveBeenCalledTimes(2);
-      expect(notifySpy).not.toHaveBeenCalled();
     });
+
+    [true, false].forEach((embedded) => {
+      it(`should stay open if the questionnaire cannot be sent (${embedded ? 'iframe' : 'window.open()'})`, () => {
+        spyOn(formService, 'isEmbedded').and.returnValue(embedded);
+        notifySpy.and.returnValue(false);
+
+        component.close();
+
+        expect(notifySpy).toHaveBeenCalledOnceWith(jasmine.objectContaining({type: 'closed'}), true);
+        expect(closeSpy).not.toHaveBeenCalled();
+        expect(component.hostNotifiedOfClosing).toBeFalse();
+      });
+    });
+  });
+
+  describe('messages from the host window of the window-open API', () => {
+    let formService: FormService;
+    let msgListener: (event: Partial<MessageEvent>) => void;
+    let setQuestionnaireSpy: jasmine.Spy;
+    const hostWindow = {postMessage: () => {}} as unknown as Window;
+    const message = {type: 'initialQuestionnaire', questionnaire: {resourceType: 'Questionnaire', status: 'draft'}};
+
+    beforeEach(() => {
+      formService = TestBed.inject(FormService);
+      formService.windowOpenerUrl = 'https://parent.example.com/app';
+      spyOn(formService, 'getHostWindow').and.returnValue(hostWindow);
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+      setQuestionnaireSpy = spyOn(component, 'setQuestionnaire').and.resolveTo(false);
+      // Capture the listener instead of registering it on the shared Karma window.
+      spyOn(window, 'addEventListener').and.callFake((type: string, listener: any) => {
+        if(type === 'message') {
+          msgListener = listener;
+        }
+      });
+      component.addWindowListeners();
+    });
+
+    afterEach(() => {
+      formService.windowOpenerUrl = null;
+    });
+
+    it('should accept a message from the host window and the referrer origin', () => {
+      msgListener({data: message, origin: 'https://parent.example.com', source: hostWindow});
+      expect(setQuestionnaireSpy).toHaveBeenCalledOnceWith(message.questionnaire, true);
+    });
+
+    it('should ignore a message from another window with the referrer origin', () => {
+      msgListener({data: message, origin: 'https://parent.example.com', source: window});
+      expect(setQuestionnaireSpy).not.toHaveBeenCalled();
+    });
+
+    ['https://parent.example', 'https://parent.example.com.evil.example', 'http://parent.example.com']
+      .forEach((origin) => {
+        it(`should ignore a message from the host window with origin ${origin}`, () => {
+          msgListener({data: message, origin, source: hostWindow});
+          expect(setQuestionnaireSpy).not.toHaveBeenCalled();
+        });
+      });
   });
 });

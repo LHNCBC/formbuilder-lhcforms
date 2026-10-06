@@ -166,6 +166,10 @@ targetOrigin — see the handler above — rather than assuming `fbUrl`.
 Use `fbWin.postMessage` to send the `initialQuestionnaire` message to the child
 window, as described above.
 
+The form builder accepts messages only from the window that opened it, and only
+if their origin is exactly the origin of the `referrer` URL. Send them from the
+page that opened the form builder.
+
 ### Loading with an initial questionnaire
 You can load a form builder with an existing FHIR questionnaire resource. You
 want to wait for the `initialized` message after opening the form builder window,
@@ -180,16 +184,26 @@ fbWin.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbOri
 ```
 
 There is a working example in `/tests/window-open-test.html` on how to invoke
-the application and listen to the updates.
+the application and listen to the updates. It also shows how to embed the form
+builder in an iframe (see below).
+
+### Questionnaires that cannot be converted to the requested version
+If the questionnaire cannot be converted to the requested `fhirVersion`, for
+example because it uses the R5-only Quantity comparator `ad` while
+`fhirVersion` is `R4`, the form builder does not send it and shows an error
+instead. In that case `Save & Close` shows the error again and keeps the form
+builder open, so that the user can correct the questionnaire. No `closed`
+message is sent until it can be converted.
 
 ### Embedding the form builder in an iframe
 Instead of a new window, the same `/window-open` URL can be loaded in an
 `<iframe>` of the parent page. The messages are the same as above, with these
 differences:
 
-* The form builder sends its messages to `window.parent`. In the handler, compare
-  `event.source` with `iframe.contentWindow` instead of the `window.open()`
-  handle, and post the `initialQuestionnaire` message to `iframe.contentWindow`.
+* The form builder sends its messages to `window.parent`, and accepts messages
+  only from `window.parent`. In the handler, compare `event.source` with
+  `iframe.contentWindow` instead of the `window.open()` handle, and post the
+  `initialQuestionnaire` message to `iframe.contentWindow`.
 * `Save & Close` and `Cancel` send the `closed` and `canceled` messages, but the
   form builder cannot close itself. The parent page should remove or hide the
   iframe when it receives one of these messages.
