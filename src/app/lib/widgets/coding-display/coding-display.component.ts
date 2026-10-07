@@ -3,6 +3,7 @@ import fhir from 'fhir/r4';
 import {ReactiveFormsModule} from "@angular/forms";
 import {FormService} from "../../../services/form.service";
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
+import {getAllowedSystemLookups, SNOMED_SYSTEM_URL} from '../coding-system/coding-system-lookup';
 
 declare var LForms: any;
 
@@ -65,12 +66,12 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
 
   ngOnInit() {
     super.ngOnInit();
-    this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
+    this.setSystemLookups();
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
+    this.setSystemLookups();
     let sub = this.formProperty.valueChanges.subscribe((value: any) => {
       if(this.autoComplete) {
         this.autoComp.setFieldVal(value);
@@ -129,6 +130,14 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
   }
 
   /**
+   * Set the code-system lookups available for the current SNOMED license state.
+   */
+  private setSystemLookups() {
+    const configuredLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
+    this.systemLookups = getAllowedSystemLookups(configuredLookups, this.formService.isSnomedUser());
+  }
+
+  /**
    * Updates the parent form property's value and the input control value with the provided FHIR 'Coding' object.
    * If manualEntry is true, resets the parent form property with the coding object.
    * If manualEntry is false, sets the input control value to the coding's display value.
@@ -170,7 +179,7 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
     }
 
     const id = this.codingDisplay.nativeElement.id;
-    const options = (this.selectedSystem.systemUrl === "http://snomed.info/sct") ? this.fhirOptions : this.options;
+    const options = (this.selectedSystem.systemUrl === SNOMED_SYSTEM_URL) ? this.fhirOptions : this.options;
     this.autoComp = new LForms.Def.Autocompleter.Search(
       id,
       this.selectedSystem.lookupUrl,

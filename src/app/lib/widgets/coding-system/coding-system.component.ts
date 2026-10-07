@@ -1,6 +1,8 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, OnDestroy, ViewChild} from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
+import {FormService} from '../../../services/form.service';
+import {getAllowedSystemLookups} from './coding-system-lookup';
 
 declare var LForms: any;
 @Component({
@@ -10,8 +12,8 @@ declare var LForms: any;
   template: `
       <div class="{{controlWidthClass}} p-0">
         <input autocomplete="off" #codingSystem type="text" [attr.id]="id"
-               [matTooltip]="'Search by system or type your own.'"
-               placeholder="Search by system or type your own."
+               [matTooltip]="'Select a system or type your own.'"
+               placeholder="Select a system or type your own."
                class="form-control form-control-sm"  />
       </div>
   `,
@@ -30,6 +32,8 @@ declare var LForms: any;
 export class CodingSystemComponent extends LfbControlWidgetComponent implements AfterViewInit, OnDestroy {
   @ViewChild('codingSystem') codingSystem: ElementRef;
 
+  private formService = inject(FormService);
+
   autoComp: any;
   systemUrls: string[] = [];
 
@@ -46,7 +50,10 @@ export class CodingSystemComponent extends LfbControlWidgetComponent implements 
   }
 
   ngAfterViewInit() {
-    const systemLookups = this.formProperty.schema.widget.systemLookups || [];
+    const systemLookups = getAllowedSystemLookups(
+      this.formProperty.schema.widget.systemLookups,
+      this.formService.isSnomedUser()
+    );
     this.systemUrls = systemLookups.map((obj: any) => obj.systemUrl);
 
     // Guard: ensure input element and id are valid before initializing autocomplete
@@ -101,6 +108,5 @@ export class CodingSystemComponent extends LfbControlWidgetComponent implements 
     super.ngOnDestroy();
   }
 }
-
 
 

@@ -63,6 +63,7 @@
   widgetPresetMap: {
     inputBox: 'formStringField',
     textArea: 'formTextareaField',
+    inlineTextArea: 'formInlineTextareaField',
     instant: 'formInstantField',
     'positive-integer': 'formPositiveIntegerField',
     'unsigned-integer': 'formUnsignedIntegerField'
@@ -286,13 +287,15 @@
       '$.properties.title',
       '$.properties.name',
       '$.properties.publisher',
-      '$.properties.description',
-      '$.properties.purpose',
       '$.definitions.Meta.properties.versionId',
       '$.definitions.Meta.properties.lastUpdated',
     ],
     url: [
       '$.definitions.Meta.properties.source',
+    ],
+    inlineTextArea: [
+      '$.properties.description',
+      '$.properties.purpose',
     ],
     textArea: [
       '$.properties.copyright',
