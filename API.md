@@ -38,12 +38,14 @@ application developers must adjust the `window-open` messaging code:
 
 ### Set up event listener
 Before opening the form builder window, add an event listener to the parent
-window. The form builder sends four types of messages, namely `initialized`,
-`updateQuestionnaire`, `closed`, and `canceled`. It can also receive a message with type
+window. The form builder sends five types of messages, namely `initialized`,
+`updateQuestionnaire`, `closed`, `canceled`, and `aborted`. It can also receive a message with type
 `initialQuestionnaire`. The data object exchanged with the form builder consists
 of two fields, `type` and `questionnaire`. The `type` is one of the above-defined
 message types. The `questionnaire` is the associated questionnaire for
-that message type. For the `initialized` and `canceled` messages this field is undefined.
+that message type. For the `initialized`, `canceled`, and `aborted` messages this field is undefined.
+The `aborted` message has an `error` field instead (see
+[Questionnaires that cannot be converted to the requested version](#questionnaires-that-cannot-be-converted-to-the-requested-version)).
 Here is a code snippet to add an event listener.
 
 ```
@@ -132,6 +134,15 @@ function handleFormBuilderMessages(event) {
 
         break;
 
+      case 'aborted':
+        // Triggered when the user closes the form builder window while the questionnaire
+        // cannot be converted to the requested fhirVersion. event.data.error has the reason.
+        // The final questionnaire is not available; the last 'updateQuestionnaire' message
+        // has the last questionnaire that could be sent.
+        // ...
+
+        break;
+
     }
   }
 } 
@@ -145,6 +156,9 @@ parent window's location url to send the messages. Cross-origin (CORS) restricti
 prevent accessing the information, so the caller needs to provide the
 `window.location.href` as a`referrer` parameter in the url to establish the
 communication. The pathname to provide the url parameter is `/window-open`.
+The `referrer` must be an absolute `http` or `https` URL. Otherwise, the form
+builder ignores it, as if it was missing, and runs as a standalone application
+without the window-open messages, `Save & Close`, and `Cancel`.
 
 A new http parameter `fhirVersion` is introduced to request a particular version of
 the questionnaire. The permitted values are `STU3`, `R4`, and `R5`. Any unrecognized
@@ -168,7 +182,8 @@ window, as described above.
 
 The form builder accepts messages only from the window that opened it, and only
 if their origin is exactly the origin of the `referrer` URL. Send them from the
-page that opened the form builder.
+page that opened the form builder. The form builder also sends its messages
+only to that origin.
 
 ### Loading with an initial questionnaire
 You can load a form builder with an existing FHIR questionnaire resource. You
@@ -193,7 +208,17 @@ example because it uses the R5-only Quantity comparator `ad` while
 `fhirVersion` is `R4`, the form builder does not send it and shows an error
 instead. In that case `Save & Close` shows the error again and keeps the form
 builder open, so that the user can correct the questionnaire. No `closed`
-message is sent until it can be converted.
+message is sent until it can be converted. If the user closes the form builder
+window instead (`window.open()` only), the form builder sends an `aborted`
+message with the conversion error in its `error` field, and no questionnaire:
+
+```
+{type: 'aborted', error: 'Quantity comparator "ad" is supported only in FHIR R5. ...'}
+```
+
+The last `updateQuestionnaire` message has the last questionnaire that could be
+sent. Like `closed`, this message is also sent when the user reloads the window,
+after which the form builder sends `initialized` again.
 
 ### Embedding the form builder in an iframe
 Instead of a new window, the same `/window-open` URL can be loaded in an
@@ -210,13 +235,30 @@ differences:
   session: the form builder sends nothing more, not even a pending
   `updateQuestionnaire` of the last edit, and ignores incoming messages. To
   start a new session, reload the iframe (set its `src` again) or replace it.
+  The `aborted` message is not sent, because the form builder in an iframe is
+  not closed by the user, but by the parent page.
 * The notice "This page is sending changes back to the page that opened it" is
-  not shown, because the form builder is displayed within the parent page.
+  not shown. This is deliberate: the form builder is displayed as part of the
+  parent page, which the user sees as the application they are using. The form
+  builder sends its messages only to the origin of the `referrer` URL, so the
+  browser does not deliver them to a parent page of another origin. The parent
+  page is responsible for informing its users that the form builder sends the
+  questionnaire to it.
 * The browser only displays the form builder in an iframe if its server allows
   framing by the parent page (`X-Frame-Options` / `Content-Security-Policy:
   frame-ancestors`). The public instance at `https://lhncbc.nlm.nih.gov/formbuilder`
   only allows the same origin, so this mode requires hosting the form builder
   yourself, e.g. on the same origin as the parent page.
+* If the form builder and the parent page are on different sites, the form
+  builder is a third-party iframe, so its browser storage depends on the
+  browser settings. If the browser blocks third-party storage (e.g. with
+  "Block third-party cookies"), the form builder still works, but does not
+  remember the accepted terms of use (they are asked each time it loads) and
+  does not auto save the questionnaire. Otherwise, browsers keep the storage
+  of a third-party iframe separate for each site embedding it, so the accepted
+  terms and the auto saved questionnaire are not shared with the form builder
+  opened directly or embedded by another site. Hosting the form builder on the
+  same site as the parent page avoids both.
 
 ```
 const iframe = document.getElementById('formBuilderFrame');

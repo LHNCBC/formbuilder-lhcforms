@@ -353,13 +353,41 @@ describe('FormService', () => {
       expect(service.getHostWindow()).toBe(embedded ? window.parent : null);
     });
 
-    it('should post messages to the host window with the referrer as target origin', () => {
+    it('should post messages to the host window with the referrer origin as target origin', () => {
       const host = {postMessage: jasmine.createSpy('postMessage')};
       spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      service.windowOpenerUrl = 'https://parent.example.com/app?x=1#y';
+
+      expect(service.windowOpenerUrl).toBe('https://parent.example.com/app?x=1#y');
+      expect(service.windowOpenerOrigin).toBe('https://parent.example.com');
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeTrue();
+      expect(host.postMessage).toHaveBeenCalledOnceWith({type: 'initialized'}, 'https://parent.example.com');
+    });
+
+    it('should not use a referrer that is not an absolute http or https URL', () => {
+      const host = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      spyOn(console, 'error');
       service.windowOpenerUrl = 'https://parent.example.com/app';
 
-      expect(service.notifyWindowOpener({type: 'initialized'})).toBeTrue();
-      expect(host.postMessage).toHaveBeenCalledOnceWith({type: 'initialized'}, 'https://parent.example.com/app');
+      service.windowOpenerUrl = 'not-a-url';
+
+      expect(service.windowOpenerUrl).toBeNull();
+      expect(service.windowOpenerOrigin).toBeNull();
+      expect(console.error).toHaveBeenCalledOnceWith(jasmine.stringContaining('"not-a-url"'));
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeFalse();
+      expect(host.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should reset the referrer without an error', () => {
+      spyOn(console, 'error');
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      service.windowOpenerUrl = null;
+
+      expect(service.windowOpenerUrl).toBeNull();
+      expect(service.windowOpenerOrigin).toBeNull();
+      expect(console.error).not.toHaveBeenCalled();
     });
 
     it('should not post messages without a host window', () => {
@@ -394,6 +422,13 @@ describe('FormService', () => {
   describe('incompatible opener notification', () => {
     let showMessage: jasmine.Spy;
     let hostWindow: {postMessage: jasmine.Spy};
+    /**
+     * Send an updateQuestionnaire message with a questionnaire that uses the R5-only Quantity comparator "ad",
+     * so that it cannot be converted to the requested R4.
+     *
+     * @param alwaysReportError - Passed to notifyWindowOpener().
+     * @returns Return value of notifyWindowOpener().
+     */
     const notifyWithIncompatibleQuestionnaire = (alwaysReportError?: boolean): boolean => {
       const questionnaire = {
         resourceType: 'Questionnaire',
@@ -412,7 +447,7 @@ describe('FormService', () => {
     const expectedMessage = [
       'Questionnaire update not sent',
       FormService.R5_QUANTITY_COMPARATOR_ERROR +
-        ' The opener application has not received the latest Questionnaire.',
+        ' The parent application has not received the latest Questionnaire.',
       MessageType.DANGER
     ] as const;
 
@@ -434,7 +469,7 @@ describe('FormService', () => {
       expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
       expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
       expect(console.error).toHaveBeenCalledWith(
-        'Unable to send the questionnaire to the opener window.',
+        'Unable to send the questionnaire to the parent window.',
         jasmine.any(Error)
       );
       expect(showMessage).toHaveBeenCalledOnceWith(...expectedMessage);
@@ -447,6 +482,59 @@ describe('FormService', () => {
       expect(showMessage).toHaveBeenCalledTimes(2);
       expect(showMessage.calls.mostRecent().args).toEqual([...expectedMessage]);
       expect(hostWindow.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should keep the conversion error until a questionnaire is sent', () => {
+      expect(service.getWindowOpenerNotificationError()).toBe('');
+      notifyWithIncompatibleQuestionnaire();
+      expect(service.getWindowOpenerNotificationError()).toBe(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+
+      expect(service.notifyWindowOpener({
+        type: 'updateQuestionnaire',
+        questionnaire: {resourceType: 'Questionnaire', status: 'draft'}
+      })).toBeTrue();
+      expect(service.getWindowOpenerNotificationError()).toBe('');
+    });
+  });
+
+  describe('when the browser storage is not accessible', () => {
+    beforeEach(() => {
+      const securityError = new DOMException('Access is denied', 'SecurityError');
+      spyOnProperty(window, 'localStorage', 'get').and.throwError(securityError);
+      spyOnProperty(window, 'sessionStorage', 'get').and.throwError(securityError);
+      spyOn(console, 'error');
+    });
+
+    it('should read, store, and remove items without throwing', () => {
+      expect(service.getStorageItem('localStorage', 'key')).toBeNull();
+      expect(() => service.setStorageItem('sessionStorage', 'key', 'value')).not.toThrow();
+      expect(() => service.removeStorageItem('localStorage', 'key')).not.toThrow();
+      expect(console.error).toHaveBeenCalledTimes(3);
+      expect(console.error).toHaveBeenCalledWith('Unable to read "key" from localStorage.', jasmine.any(DOMException));
+    });
+
+    it('should report that no questionnaire is auto saved', () => {
+      expect(service.isAutoSaved()).toBeFalse();
+    });
+
+    it('should clear the tree node status map', () => {
+      service.treeNodeStatusMap = {node1: {treeNodeId: 'node1', linkId: 'q1'}};
+      expect(() => service.clearAutoSavedTreeNodeStatusMap()).not.toThrow();
+      expect(service.treeNodeStatusMap).toEqual({});
+    });
+  });
+
+  describe('browser storage items', () => {
+    afterEach(() => {
+      localStorage.removeItem('formServiceSpecKey');
+    });
+
+    it('should read, store, and remove an item', () => {
+      service.setStorageItem('localStorage', 'formServiceSpecKey', 'value');
+      expect(localStorage.getItem('formServiceSpecKey')).toBe('value');
+      expect(service.getStorageItem('localStorage', 'formServiceSpecKey')).toBe('value');
+      service.removeStorageItem('localStorage', 'formServiceSpecKey');
+      expect(service.getStorageItem('localStorage', 'formServiceSpecKey')).toBeNull();
     });
   });
 

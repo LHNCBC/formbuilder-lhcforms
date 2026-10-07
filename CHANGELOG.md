@@ -7,11 +7,22 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Support for embedding the form builder in an iframe of the parent page, using
   the same `/window-open` messages as a window opened with `window.open()`. See
   API.md.
+- An `aborted` message with the conversion error, sent when the user closes the
+  form builder window while the questionnaire cannot be converted to the
+  requested FHIR version. Previously, no message was sent in that case.
 
-### Changed
+### Security
 - The form builder accepts messages only from the window that opened it, or
   the page embedding it, and only if their origin exactly matches the origin of
-  the `referrer` parameter.
+  the `referrer` parameter. Previously, messages from any window and origin were
+  accepted. Integrations that post from another window (e.g. a helper iframe),
+  or from an origin that differs from the `referrer` (e.g. `localhost` vs.
+  `127.0.0.1`), must be updated.
+- The `referrer` parameter must be an absolute `http` or `https` URL, and
+  messages are sent to its origin. Otherwise, it is ignored and the form
+  builder runs without the window-open API.
+
+### Changed
 - The `closed` and `canceled` messages end the session. The form builder sends
   no further messages, including a pending `updateQuestionnaire` of the last
   edit, and ignores incoming messages.
@@ -21,6 +32,8 @@ This project follows [Semantic Versioning](http://semver.org/).
   questionnaire when it cannot be converted to the requested FHIR version. The
   error is shown again, and the form builder stays open so that it can be
   corrected.
+- The form builder no longer fails to start when the browser blocks access to
+  its storage, e.g. in a third-party iframe.
 
 ## [12.8.0] 2026-10-01
 ### Changed

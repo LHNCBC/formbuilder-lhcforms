@@ -202,13 +202,21 @@ function titleLocator(frame: FrameLocator) {
   return frame.locator('lfb-form-fields').getByLabel('Title', {exact: true});
 }
 
+/**
+ * Wait for the test page to show the last message of the given type, and get it.
+ *
+ * @param page - Test page.
+ * @param type - Message type: 'initialized', 'updateQuestionnaire', 'closed', 'canceled', or 'aborted'.
+ * @returns The message data, or null for another type.
+ */
 async function getMessage(page: Page, type: string) {
     let ret = null;
     const eventElementMap = {
       initialized: '#initW',
       updateQuestionnaire: '#updateQ',
       closed: '#closedQ',
-      canceled: '#canceledQ'
+      canceled: '#canceledQ',
+      aborted: '#abortedQ'
     };
 
     const loc = eventElementMap[type];
@@ -290,5 +298,45 @@ test.describe('Open form builder in a new window', () => {
       expect(messageData.data.questionnaire.title).toBe('yyyy');
       expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);
     });
+  });
+
+  test('should send aborted if the window is closed when the questionnaire cannot be sent', async ({page}) => {
+    const errorTitle = 'Questionnaire update not sent';
+    const pagePromise = page.context().waitForEvent('page');
+    await page.getByRole('button', {name: 'Open form builder (R4)'}).click();
+    const newPage = await pagePromise;
+    await newPage.waitForLoadState('domcontentloaded');
+    const formBuilderPO = new MainPO(newPage);
+    await formBuilderPO.loadHomePage();
+    expect((await getMessage(page, 'initialized')).type).toBe('initialized');
+
+    // The "ad" Quantity comparator is supported only in FHIR R5, so the questionnaire cannot be sent as R4.
+    await page.evaluate(() => {
+      const q = {
+        resourceType: 'Questionnaire', status: 'draft', title: 'R5 only',
+        useContext: [{
+          code: {system: 'http://terminology.hl7.org/CodeSystem/usage-context-type', code: 'age'},
+          valueQuantity: {value: 10, comparator: 'ad', unit: 'mL'}
+        }],
+        item: [{text: 'q one', linkId: 'q-1', type: 'string'}]
+      };
+      // @ts-ignore - fbWindow and originUrl are globals of window-open-test.html.
+      fbWindow.postMessage({type: 'initialQuestionnaire', questionnaire: q}, originUrl);
+    });
+    const errorDialog = formBuilderPO.page.getByRole('dialog');
+    await expect(formBuilderPO.page.getByText(errorTitle)).toBeVisible();
+    await errorDialog.locator('button.btn-primary', {hasText: 'Close'}).click();
+
+    // Save & Close fails and keeps the window open, then the user closes the window.
+    await formBuilderPO.page.getByRole('button', {name: 'Save & Close'}).click();
+    await expect(formBuilderPO.page.getByText(errorTitle)).toBeVisible();
+    await errorDialog.locator('button.btn-primary', {hasText: 'Close'}).click();
+    await formBuilderPO.page.close({runBeforeUnload: true});
+
+    const aborted = await getMessage(page, 'aborted');
+    expect(aborted.error).toContain('Quantity comparator "ad" is supported only in FHIR R5.');
+    expect(aborted.questionnaire).toBeUndefined();
+    await expect(page.locator('#closedQ')).toBeEmpty();
+    expect(await messagesAfter(page, 'initialized')).not.toContain('closed');
   });
 });

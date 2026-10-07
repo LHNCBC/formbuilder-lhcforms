@@ -24,6 +24,8 @@
   <pre class="m-1" id="closedQ"></pre>
   <h6 id="canceledH">canceled</h6>
   <pre class="m-1" id="canceledQ"></pre>
+  <h6 id="abortedH">aborted</h6>
+  <pre class="m-1" id="abortedQ"></pre>
   <h6 id="logH">Message log (types in the order received)</h6>
   <pre class="m-1" id="msgLog"></pre>
 </div>
@@ -48,6 +50,8 @@
   let updateEl = document.getElementById('updateQ');
   let closedEl = document.getElementById('closedQ');
   let canceledEl = document.getElementById('canceledQ');
+  let abortedHeader = document.getElementById('abortedH');
+  let abortedEl = document.getElementById('abortedQ');
   let msgLogEl = document.getElementById('msgLog');
 
   let urlEl = document.getElementById('url');
@@ -67,27 +71,33 @@
     switch (event.data?.type) {
       case 'initialized':
         // Wait for the child window to be ready, before sending initial questionnaire.
-        initHeader.innerHTML = `${event.data?.type}: New window initialized (${new Date().toISOString()})`;
-        initEl.innerHTML = `${messageFromOpenedWindow}`;
+        initHeader.textContent = `${event.data?.type}: New window initialized (${new Date().toISOString()})`;
+        initEl.textContent = `${messageFromOpenedWindow}`;
         sendQuestionnaire(); // Send initial questionnaire.
         break;
       case 'updateQuestionnaire':
         // Use this to get continuous updates. Wiil be triggered by every edit in
         // the form builder with about 0.5 second debounce.
-        updateHeader.innerHTML = `${event.data?.type}: Updated questionnaire from opened window (${new Date().toISOString()})`;
-        updateEl.innerHTML = `${messageFromOpenedWindow}`
+        updateHeader.textContent = `${event.data?.type}: Updated questionnaire from opened window (${new Date().toISOString()})`;
+        updateEl.textContent = `${messageFromOpenedWindow}`
         break;
       case 'closed':
         // Triggered when the window is closed. Use this to get last updated questionnaire
-        closedHeader.innerHTML = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
-        closedEl.innerHTML = `${messageFromOpenedWindow}`;
+        closedHeader.textContent = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
+        closedEl.textContent = `${messageFromOpenedWindow}`;
         endFormBuilderFrame();
         break;
       case 'canceled':
         // Triggered when the window is canceled.
-        canceledHeader.innerHTML = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
-        canceledEl.innerHTML = `${messageFromOpenedWindow}`;
+        canceledHeader.textContent = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
+        canceledEl.textContent = `${messageFromOpenedWindow}`;
         endFormBuilderFrame();
+        break;
+      case 'aborted':
+        // Triggered when the user closes the window (window.open()) after the questionnaire could not be
+        // converted to the requested FHIR version. The final questionnaire is not available.
+        abortedHeader.textContent = `${event.data?.type}: Window closed without the final questionnaire (${new Date().toISOString()})`;
+        abortedEl.textContent = `${messageFromOpenedWindow}`;
         break;
       default:
         console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
@@ -106,11 +116,13 @@
     const reqUrl = fbUrl+'/window-open?'+referrerParam+versionParam;
     fbWindow = window.open(reqUrl, 'formbuilder_window');
     fbWindow.focus();
-    urlEl.innerHTML = 'Opened url: ' + reqUrl;
+    urlEl.textContent = 'Opened url: ' + reqUrl;
   }
 
   /**
    * Embed the form builder app in an iframe of this page, instead of opening a new window.
+   *
+   * @param fhirVersion - FHIR version of the questionnaires the form builder sends: 'STU3', 'R4', or 'R5'.
    */
   function embedFormBuilder(fhirVersion) {
     removeFormBuilderFrame();
@@ -125,7 +137,7 @@
     fbFrame.src = reqUrl;
     document.getElementById('fbFrameContainer').appendChild(fbFrame);
     fbWindow = fbFrame.contentWindow;
-    urlEl.innerHTML = 'Embedded url: ' + reqUrl;
+    urlEl.textContent = 'Embedded url: ' + reqUrl;
   }
 
   /**
@@ -166,9 +178,10 @@
    * Clear messages, typically to read fresh messages.
    */
   function clearMessages() {
-    initEl.innerHTML = '';
-    updateEl.innerHTML = '';
-    closedEl.innerHTML = '';
+    initEl.textContent = '';
+    updateEl.textContent = '';
+    closedEl.textContent = '';
+    abortedEl.textContent = '';
     msgLogEl.textContent = '';
   }
 </script>

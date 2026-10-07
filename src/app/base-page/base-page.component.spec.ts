@@ -4,6 +4,7 @@ import { BasePageComponent } from './base-page.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import {FormService} from '../services/form.service';
 import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 describe('BasePageComponent', () => {
   let component: BasePageComponent;
@@ -128,10 +129,50 @@ describe('BasePageComponent', () => {
       parseOpenerUrl('/window-open', '?fhirVersion=R4');
       expect(formService.windowOpenerUrl).toBeNull();
     });
+
+    ['not-a-url', '/relative/path', '*', 'javascript:alert(1)', 'ftp://parent.example.com/']
+      .forEach((referrer) => {
+        it(`should ignore the referrer "${referrer}", which is not an absolute http or https URL`, () => {
+          spyOn(console, 'error');
+          parseOpenerUrl('/window-open', '?fhirVersion=R4&referrer=' + encodeURIComponent(referrer));
+          expect(formService.windowOpenerUrl).toBeNull();
+          expect(formService.windowOpenerOrigin).toBeNull();
+          expect(component.openerUrl).toBeNull();
+          expect(console.error).toHaveBeenCalledOnceWith(jasmine.stringContaining(`"${referrer}"`));
+        });
+      });
+  });
+
+  describe('when the browser storage is not accessible', () => {
+    it('should start without remembering the accepted terms', async () => {
+      spyOnProperty(window, 'localStorage', 'get').and.throwError(new DOMException('Access is denied', 'SecurityError'));
+      spyOnProperty(window, 'sessionStorage', 'get').and.throwError(new DOMException('Access is denied', 'SecurityError'));
+      const formService = TestBed.inject(FormService);
+      const setStorageItemSpy = spyOn(formService, 'setStorageItem').and.callThrough();
+      spyOn(TestBed.inject(NgbModal), 'open').and.returnValue(
+        {result: Promise.resolve({acceptedLoinc: true, acceptedSnomed: true})} as any);
+      spyOn(console, 'error');
+
+      const blockedFixture = TestBed.createComponent(BasePageComponent);
+      expect(blockedFixture.componentInstance.acceptedTermsOfUse).toBeFalse();
+      blockedFixture.detectChanges();
+      await blockedFixture.whenStable();
+
+      // The terms were accepted in the dialog, but could not be stored.
+      expect(blockedFixture.componentInstance.acceptedTermsOfUse).toBeTrue();
+      expect(setStorageItemSpy).toHaveBeenCalledWith('localStorage', 'acceptedTermsOfUse', jasmine.any(String));
+      expect(console.error).toHaveBeenCalledWith('Unable to store "acceptedTermsOfUse" in localStorage.',
+        jasmine.any(DOMException));
+    });
   });
 
   describe('notice about sending changes to the opener', () => {
     let formService: FormService;
+    /**
+     * Get the text of the component, to check whether the notice is shown.
+     *
+     * @returns Text content of the component.
+     */
     const noticeText = () => fixture.nativeElement.textContent as string;
 
     beforeEach(() => {
@@ -173,6 +214,11 @@ describe('BasePageComponent', () => {
       formService.windowOpenerUrl = null;
     });
 
+    /**
+     * Make the Cancel confirmation dialog return "Yes" without opening it.
+     *
+     * @returns Spy on the open() method of the modal service.
+     */
     const confirmCancelDialog = () =>
       spyOn(component['modalService'], 'open').and.returnValue({result: Promise.resolve(true)} as any);
 
@@ -377,6 +423,34 @@ describe('BasePageComponent', () => {
         beforeUnloadListener();
         expect(postedTypes()).toEqual(['closed']);
         expect(closeSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should send aborted with the error if the questionnaire cannot be converted', () => {
+        spyOn(formService, 'convertFromR5').and.throwError(new Error('Not convertible'));
+        spyOn(formService, 'showMessage');
+        spyOn(console, 'error');
+
+        // Save & Close fails and keeps the window open, then the user closes the window.
+        component.close();
+        expect(closeSpy).not.toHaveBeenCalled();
+        beforeUnloadListener();
+
+        expect(postedTypes()).toEqual(['aborted']);
+        expect(hostWindow.postMessage).toHaveBeenCalledOnceWith(
+          {type: 'aborted', error: 'Not convertible'}, 'https://parent.example.com');
+      });
+
+      it('should not send aborted after Cancel', async () => {
+        spyOn(formService, 'convertFromR5').and.throwError(new Error('Not convertible'));
+        spyOn(formService, 'showMessage');
+        spyOn(console, 'error');
+        spyOn(component['modalService'], 'open').and.returnValue({result: Promise.resolve(true)} as any);
+
+        component.cancel();
+        await new Promise((resolve) => setTimeout(resolve));
+        beforeUnloadListener();
+
+        expect(postedTypes()).toEqual(['canceled']);
       });
     });
   });

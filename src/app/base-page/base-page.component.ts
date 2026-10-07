@@ -89,18 +89,20 @@ export class BasePageComponent implements OnInit, OnDestroy {
       this.startOption = 'from_autosave';
     }
 
-    const localStorageTerms = JSON.parse(localStorage.getItem("acceptedTermsOfUse"));
+    // Storage is not accessible, e.g., in an iframe of another site if the browser blocks third-party storage.
+    // Then, the terms are not remembered.
+    const localStorageTerms = JSON.parse(this.formService.getStorageItem('localStorage', 'acceptedTermsOfUse'));
     if (localStorageTerms) {
       const acceptedTermsExpired = Date.now() - localStorageTerms.timestamp > this.weekInMilliseconds;
       if (acceptedTermsExpired) {
-        localStorage.removeItem("acceptedTermsOfUse");
+        this.formService.removeStorageItem('localStorage', 'acceptedTermsOfUse');
       } else {
         this.acceptedTermsOfUse = localStorageTerms.acceptedLoinc;
         this.acceptedSnomed = localStorageTerms.acceptedSnomed;
       }
     } else {
-      this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
-      this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+      this.acceptedTermsOfUse = this.formService.getStorageItem('sessionStorage', 'acceptedLoinc') === 'true';
+      this.acceptedSnomed = this.formService.getStorageItem('sessionStorage', 'acceptedSnomed') === 'true';
     }
     this.formService.setSnomedUser(this.acceptedSnomed);
 
@@ -154,14 +156,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
           (result) => {
             this.acceptedTermsOfUse = result.acceptedLoinc;
             if (result.acceptedLoinc && result.acceptedSnomed) {
-              localStorage.setItem('acceptedTermsOfUse', JSON.stringify({
+              this.formService.setStorageItem('localStorage', 'acceptedTermsOfUse', JSON.stringify({
                 acceptedLoinc: result.acceptedLoinc,
                 acceptedSnomed: result.acceptedSnomed,
                 timestamp: Date.now()
               }));
             } else {
-              sessionStorage.acceptedLoinc = result.acceptedLoinc;
-              sessionStorage.acceptedSnomed = result.acceptedSnomed;
+              this.formService.setStorageItem('sessionStorage', 'acceptedLoinc', String(result.acceptedLoinc));
+              this.formService.setStorageItem('sessionStorage', 'acceptedSnomed', String(result.acceptedSnomed));
             }
             this.formService.setSnomedUser(result.acceptedSnomed);
           },
@@ -181,11 +183,12 @@ export class BasePageComponent implements OnInit, OnDestroy {
  * Parse location object for url of window.opener.
  * window.location.href is expected to have url path of the form
  * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
- * of the parent window (window.opener). If the referrer parameter is missing,
- * it reads referrer or origin header for the url.
+ * of the parent window (window.opener, or window.parent if embedded in an iframe). The referrer must be an
+ * absolute http or https URL. Otherwise, it is ignored as if it was missing, and the window-open API is not
+ * used (see FormService.windowOpenerUrl).
  *
  * @param location - Window location object
- * @returns string - window.opener url.
+ * @returns Always null. The referrer and fhirVersion parameters are stored in FormService.
  */
   private parseOpenerUrl(location: Location): string {
     let ret = null;
@@ -208,6 +211,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   /**
    * True if embedded in an iframe of the host page. The notice about sending changes to the opener is not shown
    * then, because the form builder is displayed within the host page.
+   *
+   * @returns True if embedded in an iframe, false otherwise.
    */
   get embedded(): boolean {
     return this.formService.isEmbedded();
@@ -257,7 +262,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
         // Notify the opener when the user closes the window without "Save & Close" or "Cancel". After those,
         // the session has ended and nothing is sent.
         window.addEventListener('beforeunload', (event) => {
-          this.notifyHostClosing();
+          this.notifyHostWindowClosed();
         });
       }
     }
@@ -275,13 +280,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(this.formService.isWindowOpenerSessionEnded()) {
       return false;
     }
-    let hostOrigin: string;
-    try {
-      hostOrigin = new URL(this.formService.windowOpenerUrl).origin;
-    } catch (e) {
-      return false;
-    }
-    return event.origin === hostOrigin && event.source === this.formService.getHostWindow();
+    const hostOrigin = this.formService.windowOpenerOrigin;
+    return !!hostOrigin && event.origin === hostOrigin && event.source === this.formService.getHostWindow();
   }
 
   /**
@@ -299,6 +299,22 @@ export class BasePageComponent implements OnInit, OnDestroy {
       messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
     }
     return this.formService.notifyWindowOpener(messageObj, alwaysReportError);
+  }
+
+  /**
+   * Notify the opener that the user closes the window (window.open()) without "Save & Close" or "Cancel": send
+   * 'closed' with the current questionnaire. If the questionnaire cannot be converted to the requested FHIR
+   * version, send 'aborted' with the conversion error instead, so that the opener still learns that the
+   * session ended. Nothing is sent after the session ended.
+   */
+  private notifyHostWindowClosed() {
+    if(this.notifyHostClosing()) {
+      return;
+    }
+    const error = this.formService.getWindowOpenerNotificationError();
+    if(error) {
+      this.formService.notifyWindowOpener({type: 'aborted', error});
+    }
   }
 
   /**
