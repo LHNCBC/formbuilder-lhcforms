@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick} from '@angular/core/testing';
 
 import { BasePageComponent } from './base-page.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
@@ -186,7 +186,7 @@ describe('BasePageComponent', () => {
         questionnaire: jasmine.objectContaining({resourceType: 'Questionnaire', title: 'Edited'})
       }, true);
       expect(closeSpy).not.toHaveBeenCalled();
-      expect(component.hostNotifiedOfClosing).toBeTrue();
+      expect(formService.isWindowOpenerSessionEnded()).toBeTrue();
     });
 
     it('should send canceled to the embedding page when embedded in an iframe', async () => {
@@ -211,7 +211,7 @@ describe('BasePageComponent', () => {
       }, true);
       expect(closeSpy).toHaveBeenCalledTimes(1);
       expect(notifySpy).toHaveBeenCalledBefore(closeSpy);
-      expect(component.hostNotifiedOfClosing).toBeTrue();
+      expect(formService.isWindowOpenerSessionEnded()).toBeTrue();
 
       component.cancel();
       await new Promise((resolve) => setTimeout(resolve));
@@ -229,7 +229,7 @@ describe('BasePageComponent', () => {
 
         expect(notifySpy).toHaveBeenCalledOnceWith(jasmine.objectContaining({type: 'closed'}), true);
         expect(closeSpy).not.toHaveBeenCalled();
-        expect(component.hostNotifiedOfClosing).toBeFalse();
+        expect(formService.isWindowOpenerSessionEnded()).toBeFalse();
       });
     });
   });
@@ -277,5 +277,107 @@ describe('BasePageComponent', () => {
           expect(setQuestionnaireSpy).not.toHaveBeenCalled();
         });
       });
+
+    it('should ignore a message from the host window after the session ended', () => {
+      formService.endWindowOpenerSession();
+      msgListener({data: message, origin: 'https://parent.example.com', source: hostWindow});
+      expect(setQuestionnaireSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('end of the window-open API session', () => {
+    let formService: FormService;
+    let hostWindow: {postMessage: jasmine.Spy};
+    let autoSaveSpy: jasmine.Spy;
+    let closeSpy: jasmine.Spy;
+
+    /**
+     * Get the types of the messages posted to the host window, in order.
+     *
+     * @returns Message types.
+     */
+    const postedTypes = (): string[] => hostWindow.postMessage.calls.allArgs().map((args) => args[0].type);
+
+    beforeEach(() => {
+      formService = TestBed.inject(FormService);
+      formService.windowOpenerUrl = 'https://parent.example.com/app';
+      hostWindow = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(formService, 'getHostWindow').and.returnValue(hostWindow as any);
+      // Keep the edits of these specs out of localStorage.
+      autoSaveSpy = spyOn(formService, 'autoSave');
+      closeSpy = spyOn(window, 'close');
+      component.formValue = {resourceType: 'Questionnaire', status: 'draft', title: 'Edited'};
+    });
+
+    afterEach(() => {
+      formService.windowOpenerUrl = null;
+    });
+
+    it('should not send the pending update of the last edit after Cancel', fakeAsync(() => {
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+      spyOn(component['modalService'], 'open').and.returnValue({result: Promise.resolve(true)} as any);
+
+      component.notifyChange(component.formValue);
+      component.cancel();
+      flushMicrotasks();
+      tick(500);
+
+      // The debounced autosave ran, but its update was not sent after 'canceled'.
+      expect(autoSaveSpy).toHaveBeenCalled();
+      expect(postedTypes()).toEqual(['canceled']);
+      expect(formService.isWindowOpenerSessionEnded()).toBeTrue();
+    }));
+
+    it('should not send the pending update of the last edit after Save & Close', fakeAsync(() => {
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+
+      component.notifyChange(component.formValue);
+      component.close();
+      tick(500);
+
+      expect(autoSaveSpy).toHaveBeenCalled();
+      expect(postedTypes()).toEqual(['closed']);
+    }));
+
+    it('should keep sending updates if Save & Close could not send the questionnaire', fakeAsync(() => {
+      spyOn(formService, 'isEmbedded').and.returnValue(true);
+      const notify = formService.notifyWindowOpener.bind(formService);
+      spyOn(formService, 'notifyWindowOpener').and.callFake((data: any, alwaysReportError?: boolean) =>
+        data.type === 'closed' ? false : notify(data, alwaysReportError));
+
+      component.close();
+      component.notifyChange(component.formValue);
+      tick(500);
+
+      expect(formService.isWindowOpenerSessionEnded()).toBeFalse();
+      expect(postedTypes()).toEqual(['updateQuestionnaire']);
+    }));
+
+    describe('when the window is closed (window.open())', () => {
+      let beforeUnloadListener: () => void;
+
+      beforeEach(() => {
+        spyOn(formService, 'isEmbedded').and.returnValue(false);
+        // Capture the listener instead of registering it on the shared Karma window.
+        spyOn(window, 'addEventListener').and.callFake((type: string, listener: any) => {
+          if(type === 'beforeunload') {
+            beforeUnloadListener = listener;
+          }
+        });
+        component.addWindowListeners();
+      });
+
+      it('should send closed if the user closes the window directly', () => {
+        beforeUnloadListener();
+        expect(postedTypes()).toEqual(['closed']);
+      });
+
+      it('should not send closed again after Save & Close', () => {
+        component.close();
+        beforeUnloadListener();
+        expect(postedTypes()).toEqual(['closed']);
+        expect(closeSpy).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });

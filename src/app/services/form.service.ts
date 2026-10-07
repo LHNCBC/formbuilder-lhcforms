@@ -75,6 +75,8 @@ export class FormService {
 
   private _loading = false;
   private windowOpenerNotificationError = '';
+  // Set when the window-open API session ended with a 'closed' or 'canceled' message.
+  private windowOpenerSessionEnded = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
@@ -695,6 +697,24 @@ export class FormService {
    */
   isEmbedded(): boolean {
     return !window.opener && window.parent !== window;
+  }
+
+  /**
+   * End the window-open API session, after the 'closed' or 'canceled' message was sent. Nothing is sent to
+   * the host window afterwards, e.g. a pending questionnaire update of the last edit. Otherwise, a host that
+   * only hides the embedded form builder would receive updates after the final message.
+   */
+  endWindowOpenerSession() {
+    this.windowOpenerSessionEnded = true;
+  }
+
+  /**
+   * Check whether the window-open API session has ended.
+   *
+   * @returns True if the 'closed' or 'canceled' message was sent, false otherwise.
+   */
+  isWindowOpenerSessionEnded(): boolean {
+    return this.windowOpenerSessionEnded;
   }
 
   /**
@@ -1579,6 +1599,7 @@ export class FormService {
    *
    * If the questionnaire cannot be converted to the requested FHIR version, nothing is sent and an error
    * dialog is shown. The dialog is not repeated for the same error, unless alwaysReportError is true.
+   * Nothing is sent after the session ended (see endWindowOpenerSession()).
    *
    * @param data - Data to post.
    * @param alwaysReportError - Show the error dialog even if the same error was already reported. Use it when
@@ -1586,6 +1607,9 @@ export class FormService {
    * @returns True if the data was posted, false otherwise.
    */
   notifyWindowOpener(data: any, alwaysReportError = false): boolean {
+    if(this.windowOpenerSessionEnded) {
+      return false;
+    }
     const hostWindow = this.getHostWindow();
     if(this._windowOpenerUrl && hostWindow) {
       // Return the data in the requested format

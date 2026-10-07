@@ -368,6 +368,27 @@ describe('FormService', () => {
 
       expect(service.notifyWindowOpener({type: 'initialized'})).toBeFalse();
     });
+
+    it('should not post messages or report errors after the session ended', () => {
+      const host = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      const convertSpy = spyOn(service, 'convertFromR5').and.throwError('not convertible');
+      const showMessage = spyOn(service, 'showMessage');
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      expect(service.isWindowOpenerSessionEnded()).toBeFalse();
+      service.endWindowOpenerSession();
+      expect(service.isWindowOpenerSessionEnded()).toBeTrue();
+
+      expect(service.notifyWindowOpener({type: 'canceled'})).toBeFalse();
+      expect(service.notifyWindowOpener({
+        type: 'updateQuestionnaire',
+        questionnaire: {resourceType: 'Questionnaire', status: 'draft'}
+      }, true)).toBeFalse();
+      expect(host.postMessage).not.toHaveBeenCalled();
+      expect(convertSpy).not.toHaveBeenCalled();
+      expect(showMessage).not.toHaveBeenCalled();
+    });
   });
 
   describe('incompatible opener notification', () => {

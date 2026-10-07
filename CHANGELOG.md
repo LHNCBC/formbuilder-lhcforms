@@ -12,6 +12,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 - The form builder accepts messages only from the window that opened it, or
   the page embedding it, and only if their origin exactly matches the origin of
   the `referrer` parameter.
+- The `closed` and `canceled` messages end the session. The form builder sends
+  no further messages, including a pending `updateQuestionnaire` of the last
+  edit, and ignores incoming messages.
 
 ### Fixed
 - `Save & Close` no longer closes the form builder without sending the final

@@ -13,6 +13,7 @@
   <button id="embedR4" class="btn btn-primary m-2" onClick="embedFormBuilder('R4')">Embed form builder (R4)</button>
   <button id="sendQ" class="btn btn-primary m-2" onClick="sendQuestionnaire()">Post questionnaire</button>
   <button id="clear" class="btn btn-primary m-2" onClick="clearMessages()">Clear messages</button>
+  <label class="m-2"><input type="checkbox" id="hideOnEnd"> Hide the embedded form builder on closed or canceled, instead of removing it</label>
   <p class="m-1" id="url"></p>
   <div id="fbFrameContainer"></div>
   <h6 id="initH">initialized</h6>
@@ -23,6 +24,8 @@
   <pre class="m-1" id="closedQ"></pre>
   <h6 id="canceledH">canceled</h6>
   <pre class="m-1" id="canceledQ"></pre>
+  <h6 id="logH">Message log (types in the order received)</h6>
+  <pre class="m-1" id="msgLog"></pre>
 </div>
 
 <script>
@@ -45,6 +48,7 @@
   let updateEl = document.getElementById('updateQ');
   let closedEl = document.getElementById('closedQ');
   let canceledEl = document.getElementById('canceledQ');
+  let msgLogEl = document.getElementById('msgLog');
 
   let urlEl = document.getElementById('url');
   window.addEventListener('message', handleMessage, true);
@@ -59,6 +63,7 @@
       return;
     }
     originUrl = event.origin;
+    msgLogEl.textContent += `${event.data?.type}\n`;
     switch (event.data?.type) {
       case 'initialized':
         // Wait for the child window to be ready, before sending initial questionnaire.
@@ -76,13 +81,13 @@
         // Triggered when the window is closed. Use this to get last updated questionnaire
         closedHeader.innerHTML = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
         closedEl.innerHTML = `${messageFromOpenedWindow}`;
-        removeFormBuilderFrame();
+        endFormBuilderFrame();
         break;
       case 'canceled':
         // Triggered when the window is canceled.
         canceledHeader.innerHTML = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
         canceledEl.innerHTML = `${messageFromOpenedWindow}`;
-        removeFormBuilderFrame();
+        endFormBuilderFrame();
         break;
       default:
         console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
@@ -135,6 +140,20 @@
   }
 
   /**
+   * Handle the end of an embedded form builder session (closed or canceled): hide the iframe if
+   * "Hide the embedded form builder" is checked, otherwise remove it. A hidden form builder keeps
+   * running, so any message it still sends shows in the message log.
+   */
+  function endFormBuilderFrame() {
+    if(fbFrame && document.getElementById('hideOnEnd').checked) {
+      fbFrame.style.display = 'none';
+    }
+    else {
+      removeFormBuilderFrame();
+    }
+  }
+
+  /**
    * Send questionnaire to form builder using window.postMessage()
    */
   function sendQuestionnaire() {
@@ -150,6 +169,7 @@
     initEl.innerHTML = '';
     updateEl.innerHTML = '';
     closedEl.innerHTML = '';
+    msgLogEl.textContent = '';
   }
 </script>
 </body>

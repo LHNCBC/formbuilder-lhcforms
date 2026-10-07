@@ -206,7 +206,10 @@ differences:
   `initialQuestionnaire` message to `iframe.contentWindow`.
 * `Save & Close` and `Cancel` send the `closed` and `canceled` messages, but the
   form builder cannot close itself. The parent page should remove or hide the
-  iframe when it receives one of these messages.
+  iframe when it receives one of these messages. These messages end the
+  session: the form builder sends nothing more, not even a pending
+  `updateQuestionnaire` of the last edit, and ignores incoming messages. To
+  start a new session, reload the iframe (set its `src` again) or replace it.
 * The notice "This page is sending changes back to the page that opened it" is
   not shown, because the form builder is displayed within the parent page.
 * The browser only displays the form builder in an iframe if its server allows

@@ -144,7 +144,53 @@ test.describe('Embed form builder in an iframe', () => {
     await expect(page.locator('#closedQ')).toBeEmpty();
     await expect(page.locator('#fbFrame')).toBeAttached();
   });
+
+  test.describe('when the parent page hides the iframe instead of removing it', () => {
+    // The form builder sends updateQuestionnaire 500 ms after the last change.
+    const updateDebounceMs = 500;
+
+    test.beforeEach(async ({page}) => {
+      await page.getByLabel('Hide the embedded form builder on closed or canceled').check();
+    });
+
+    test('should send nothing after canceled', async ({page}) => {
+      await frame.getByRole('button', {name: 'Cancel'}).click();
+      // Change the questionnaire right before confirming, so its update is still pending when the session ends.
+      await page.getByRole('button', {name: 'Post questionnaire'}).click();
+      await frame.getByRole('button', {name: 'Yes'}).click();
+
+      expect((await getMessage(page, 'canceled')).type).toBe('canceled');
+      await expect(page.locator('#fbFrame')).toBeHidden();
+      // A pending update would arrive within the debounce time.
+      await page.waitForTimeout(2 * updateDebounceMs);
+      expect(await messagesAfter(page, 'canceled')).toEqual([]);
+    });
+
+    test('should send nothing after closed', async ({page}) => {
+      await titleLocator(frame).fill('Edited before Save & Close');
+      await frame.getByRole('button', {name: 'Save & Close'}).click();
+
+      expect((await getMessage(page, 'closed')).questionnaire.title).toBe('Edited before Save & Close');
+      await expect(page.locator('#fbFrame')).toBeHidden();
+      // A pending update would arrive within the debounce time.
+      await page.waitForTimeout(2 * updateDebounceMs);
+      expect(await messagesAfter(page, 'closed')).toEqual([]);
+    });
+  });
 });
+
+/**
+ * Get the types of the messages the test page received after the first message of the given type.
+ *
+ * @param page - Test page.
+ * @param type - Message type, e.g. 'closed'.
+ * @returns Message types received after it, in order.
+ */
+async function messagesAfter(page: Page, type: string): Promise<string[]> {
+  const types = (await page.locator('#msgLog').textContent()).split('\n').filter(Boolean);
+  expect(types).toContain(type);
+  return types.slice(types.indexOf(type) + 1);
+}
 
 /**
  * Get the Title field of the form builder in the given frame.

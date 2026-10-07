@@ -67,8 +67,6 @@ export class BasePageComponent implements OnInit, OnDestroy {
   // Accepted terms in localstorage expires in a week.
   weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
   canceledEvent = false;
-  // Set when "Save & Close" or "Cancel" has already notified the host window.
-  hostNotifiedOfClosing = false;
   titleAriaLabel: string;
   editMenuTargetStep = 'item-editor';
   formFieldsRefreshToken = 0;
@@ -256,11 +254,10 @@ export class BasePageComponent implements OnInit, OnDestroy {
       }
       window.addEventListener('message', msgListener);
       if(!this.formService.isEmbedded()) {
-        // Notify the opener when the user closes the window without "Save & Close" or "Cancel".
+        // Notify the opener when the user closes the window without "Save & Close" or "Cancel". After those,
+        // the session has ended and nothing is sent.
         window.addEventListener('beforeunload', (event) => {
-          if(!this.hostNotifiedOfClosing) {
-            this.notifyHostClosing();
-          }
+          this.notifyHostClosing();
         });
       }
     }
@@ -269,12 +266,15 @@ export class BasePageComponent implements OnInit, OnDestroy {
   /**
    * Check whether a message comes from the window using the window-open API: the sender must be the host
    * window (window.opener, or window.parent when embedded), and its origin must equal the origin of the
-   * referrer URL.
+   * referrer URL. Messages are ignored after the session ended.
    *
    * @param event - Message event received by this window.
-   * @returns True if the message is from the host window, false otherwise.
+   * @returns True if the message is from the host window and the session is active, false otherwise.
    */
   private isFromHostWindow(event: MessageEvent): boolean {
+    if(this.formService.isWindowOpenerSessionEnded()) {
+      return false;
+    }
     let hostOrigin: string;
     try {
       hostOrigin = new URL(this.formService.windowOpenerUrl).origin;
@@ -304,8 +304,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
   /**
    * End the window-open API session. The host window is notified first. If the notification fails, for
    * example because the questionnaire cannot be converted to the requested FHIR version, an error dialog is
-   * shown and the form builder stays open. Otherwise, a window opened with window.open() is closed. An
-   * embedded form builder (iframe) cannot close itself, so the embedding page is expected to remove the iframe.
+   * shown and the form builder stays open. Otherwise, the session ends, so that nothing more is sent, such as
+   * a pending update of the last edit. A window opened with window.open() is closed. An embedded form builder
+   * (iframe) cannot close itself, so the embedding page is expected to remove or hide the iframe.
    *
    * @param canceled - True for "Cancel", false for "Save & Close".
    */
@@ -314,7 +315,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(!this.notifyHostClosing(true)) {
       return;
     }
-    this.hostNotifiedOfClosing = true;
+    this.formService.endWindowOpenerSession();
     if(!this.formService.isEmbedded()) {
       window.close();
     }
