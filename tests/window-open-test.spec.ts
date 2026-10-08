@@ -3,7 +3,7 @@ import {test, expect, Page, FrameLocator} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 
-const fbSecondUrl = encodeURI(`/tests/window-open-test.html?targetUrl=${encodeURI(process.env.TEST_BASE_URL_SECOND)}`);
+const windowOpenTestPageUrl = '/tests/window-open-test.html';
 
 test.describe('Window opener notice', () => {
 
@@ -16,6 +16,37 @@ test.describe('Window opener notice', () => {
     // if it was opened by window.open(). So, negative assertion has still some
     // testing value.
     await expect(page.getByText(MainPO.windowOpenerNotice)).not.toBeAttached();
+  });
+});
+
+test.describe('Form builder URL input', () => {
+
+  test.beforeEach(async ({page}) => {
+    await page.goto(windowOpenTestPageUrl);
+  });
+
+  test('should show an error and load nothing for an invalid URL', async ({page}) => {
+    const errorText = 'Enter the absolute http or https URL of the form builder';
+    await expect(page.getByLabel('Form builder URL')).toHaveValue('');
+    await page.getByRole('button', {name: 'Open form builder'}).click();
+    await expect(page.locator('#inputMsg')).toContainText(errorText);
+
+    await page.getByLabel('Form builder URL').fill('not a url');
+    await page.getByRole('button', {name: 'Embed form builder'}).click();
+    await expect(page.locator('#inputMsg')).toContainText(errorText);
+    await expect(page.locator('#fbFrame')).not.toBeAttached();
+    await expect(page.locator('#url')).toBeEmpty();
+  });
+
+  test('should warn about the same origin, and ignore a trailing slash', async ({page}) => {
+    const pageOrigin = new URL(page.url()).origin;
+    await page.getByLabel('Form builder URL').fill(pageOrigin + '/');
+    await page.getByLabel('FHIR version').selectOption('Default');
+    await page.getByRole('button', {name: 'Embed form builder'}).click();
+
+    await expect(page.locator('#inputMsg')).toContainText('Warning: the form builder URL has the origin of this page');
+    await expect(page.locator('#fbFrame')).toHaveAttribute('src',
+      `${pageOrigin}/window-open?referrer=${encodeURIComponent(page.url())}`);
   });
 });
 
@@ -32,9 +63,11 @@ test.describe('Cancel event', () => {
       }
     });
 
-    await page.goto(fbSecondUrl);
+    await page.goto(windowOpenTestPageUrl);
+    await page.getByLabel('Form builder URL').fill(process.env.TEST_BASE_URL_SECOND);
     const pagePromise = page.context().waitForEvent('page');
-    await page.getByRole('button', {name: `Open form builder (Default)`}).click();
+    await page.getByLabel('FHIR version').selectOption('Default');
+    await page.getByRole('button', {name: 'Open form builder'}).click();
     const newPage = await pagePromise;
     await newPage.waitForLoadState('domcontentloaded');
     mainPO = new MainPO(newPage);
@@ -74,10 +107,12 @@ test.describe('Embed form builder in an iframe', () => {
       }
     });
 
-    await page.goto(fbSecondUrl);
+    await page.goto(windowOpenTestPageUrl);
+    await page.getByLabel('Form builder URL').fill(process.env.TEST_BASE_URL_SECOND);
     // The route also applies to the requests of the iframe.
     await new MainPO(page).mockSnomedEditions();
-    await page.getByRole('button', {name: 'Embed form builder (R4)'}).click();
+    await page.getByLabel('FHIR version').selectOption('R4');
+    await page.getByRole('button', {name: 'Embed form builder'}).click();
     // Playwright does not scroll the test page for elements in a cross-origin iframe. The iframe is above the
     // message panels, which grow while testing, and is 80vh high, so all of it stays visible after this.
     await page.locator('#fbFrame').scrollIntoViewIfNeeded();
@@ -241,7 +276,8 @@ test.describe('Open form builder in a new window', () => {
       }
     });
 
-    await page.goto(fbSecondUrl);
+    await page.goto(windowOpenTestPageUrl);
+    await page.getByLabel('Form builder URL').fill(process.env.TEST_BASE_URL_SECOND);
   });
 
   [
@@ -253,7 +289,8 @@ test.describe('Open form builder in a new window', () => {
     test(`should return ${fhirVersion} questionnaire`, async ({page}) => {
 
       const pagePromise = page.context().waitForEvent('page');
-      await page.getByRole('button', {name: `Open form builder (${fhirVersion})`}).click();
+      await page.getByLabel('FHIR version').selectOption(fhirVersion);
+      await page.getByRole('button', {name: 'Open form builder'}).click();
       const newPage = await pagePromise;
       await newPage.waitForLoadState('domcontentloaded');
       const formBuilderPO = new MainPO(newPage);
@@ -303,7 +340,8 @@ test.describe('Open form builder in a new window', () => {
   test('should send aborted if the window is closed when the questionnaire cannot be sent', async ({page}) => {
     const errorTitle = 'Questionnaire update not sent';
     const pagePromise = page.context().waitForEvent('page');
-    await page.getByRole('button', {name: 'Open form builder (R4)'}).click();
+    await page.getByLabel('FHIR version').selectOption('R4');
+    await page.getByRole('button', {name: 'Open form builder'}).click();
     const newPage = await pagePromise;
     await newPage.waitForLoadState('domcontentloaded');
     const formBuilderPO = new MainPO(newPage);
