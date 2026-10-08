@@ -5,6 +5,18 @@ import {PWUtils} from "./pw-utils";
 
 const windowOpenTestPageUrl = '/tests/window-open-test.html';
 
+// Browser console of the test page, captured by the tests that load the form builder. It is attached to the
+// result of a failed test, and printed while the test runs if PW_BROWSER_CONSOLE is set.
+let browserConsole: string[] = [];
+
+test.beforeEach(() => {
+  browserConsole = [];
+});
+
+test.afterEach(async ({}, testInfo) => {
+  await PWUtils.attachBrowserConsoleOnFailure(testInfo, browserConsole);
+});
+
 test.describe('Window opener notice', () => {
 
   test('should not exist if not opened by window.open() call', async ({page}) => {
@@ -54,14 +66,7 @@ test.describe('Cancel event', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
-    page.on('console', msg => {
-      if(msg.type() === 'error') {
-        console.error(msg.text());
-      }
-      else {
-        console.log(msg.text());
-      }
-    });
+    browserConsole = PWUtils.captureBrowserConsole(page);
 
     await page.goto(windowOpenTestPageUrl);
     await page.getByLabel('Form builder URL').fill(process.env.TEST_BASE_URL_SECOND);
@@ -98,14 +103,7 @@ test.describe('Embed form builder in an iframe', () => {
   let frame: FrameLocator;
 
   test.beforeEach(async ({page}) => {
-    page.on('console', msg => {
-      if(msg.type() === 'error') {
-        console.error(msg.text());
-      }
-      else {
-        console.log(msg.text());
-      }
-    });
+    browserConsole = PWUtils.captureBrowserConsole(page);
 
     await page.goto(windowOpenTestPageUrl);
     await page.getByLabel('Form builder URL').fill(process.env.TEST_BASE_URL_SECOND);
@@ -267,14 +265,7 @@ async function getMessage(page: Page, type: string) {
 test.describe('Open form builder in a new window', () => {
 
   test.beforeEach(async ({page}) => {
-    page.on('console', msg => {
-      if(msg.type() === 'error') {
-        console.error(msg.text());
-      }
-      else {
-        console.log(msg.text());
-      }
-    });
+    browserConsole = PWUtils.captureBrowserConsole(page);
 
     await page.goto(windowOpenTestPageUrl);
     await page.getByLabel('Form builder URL').fill(process.env.TEST_BASE_URL_SECOND);
