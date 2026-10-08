@@ -62,6 +62,11 @@ export class FormService {
   private static readonly IDENTIFIER_RECURSION_LEVELS = 10;
   static readonly R5_QUANTITY_COMPARATOR_ERROR =
     'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
+  // Oldest LHC-Forms major version with the file layout documented for a configured lforms-source.
+  static readonly MIN_CONFIGURED_LFORMS_MAJOR_VERSION = 33;
+  // The lforms-loader functions used by loadLFormsLib(), held here so tests can stub them; ES module
+  // exports cannot be spied on.
+  static readonly lformsLoader = {getSupportedLFormsVersions, loadLForms};
 
   private _document = inject<Document>(DOCUMENT);
   private modalService = inject(NgbModal);
@@ -1711,21 +1716,24 @@ export class FormService {
   }
 
   /**
-   * Load LForms library at run time.
-   * @return - A promise which resolves to version number loaded.
+   * Load LForms library at run time, from the source configured by getConfiguredLFormsSource() if
+   * any, otherwise the latest version from the NLM server.
+   * @return - A promise which resolves to version number loaded. It rejects if the configured
+   *   lforms-version is invalid or the library fails to load.
    */
   async loadLFormsLib(): Promise<string> {
     const configured = FormService.getConfiguredLFormsSource();
     if (configured) {
-      return loadLForms(configured.version, undefined, configured.source).then(() => configured.version)
+      return FormService.lformsLoader.loadLForms(configured.version, undefined, configured.source)
+        .then(() => configured.version)
         .catch((error: any) => {
           console.error(`lforms-loader.loadLForms() failed to load LHC-Forms from ${configured.source}`);
           throw new Error(error?.message || `Failed to load LHC-Forms from ${configured.source}`);
         });
     }
-    return getSupportedLFormsVersions().then((versions: string []) => {
+    return FormService.lformsLoader.getSupportedLFormsVersions().then((versions: string []) => {
       const latestVersion = versions[0] || '34.3.0';
-      return loadLForms(latestVersion).then(() => latestVersion).catch((error: any) => {
+      return FormService.lformsLoader.loadLForms(latestVersion).then(() => latestVersion).catch((error: any) => {
         console.error(`lforms-loader.loadLForms() failed: ${error.message}`);
         throw new Error(error);
       });
@@ -1742,11 +1750,23 @@ export class FormService {
    *   <meta name="lforms-version" content="(its version, e.g. 44.1.0)">
    * @param doc - The document to read the meta tags from.
    * @return - The base URL and version, or null if not configured.
+   * @throws Error - If both tags are present but the version is not an X.Y.Z version of at least
+   *   MIN_CONFIGURED_LFORMS_MAJOR_VERSION. lforms-loader picks the file layout from the major version,
+   *   so an invalid version would otherwise request files that do not exist in the configured copy.
    */
   static getConfiguredLFormsSource(doc: Document = document): {source: string, version: string} | null {
     const source = doc.querySelector('meta[name="lforms-source"]')?.getAttribute('content')?.trim().replace(/\/+$/, '');
     const version = doc.querySelector('meta[name="lforms-version"]')?.getAttribute('content')?.trim();
-    return source && version ? {source, version} : null;
+    if (!source || !version) {
+      return null;
+    }
+
+    const majorVersion = /^(\d+)\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.exec(version)?.[1];
+    if (!majorVersion || Number(majorVersion) < FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION) {
+      throw new Error(`Invalid lforms-version meta tag "${version}": expected the X.Y.Z version ` +
+        `(${FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION}.0.0 or later) of the LHC-Forms copy at ${source}.`);
+    }
+    return {source, version};
   }
 
   /**

@@ -102,8 +102,9 @@ to the `<head>` of `index.html` of the built application:
 `lforms-source` is the base URL of the extracted
 [LHC-Forms release](https://lhcforms-static.nlm.nih.gov/lforms-versions/) (or of `dist/lforms` of the
 `lforms` npm package). It must contain `webcomponent/styles.css`, `webcomponent/assets/lib/zone.min.js`,
-`webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. Use a recent LHC-Forms version; the form builder
-is developed and tested with the latest one.
+`webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. `lforms-version` must be the `X.Y.Z` version of
+that copy, 33.0.0 or later; otherwise, the form builder reports an error instead of loading LHC-Forms. Use a
+recent LHC-Forms version; the form builder is developed and tested with the latest one.
 
 ## **Contributing**
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.

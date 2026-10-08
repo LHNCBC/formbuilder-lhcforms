@@ -354,6 +354,86 @@ describe('FormService', () => {
       expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '', 'lforms-version': '44.1.0'})))
         .toBeNull();
     });
+
+    it('should accept X.Y.Z versions from 33.0.0, with an optional pre-release suffix', () => {
+      for (const version of ['33.0.0', '44.1.0', '44.1.0-beta.1']) {
+        expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '/lforms', 'lforms-version': version})))
+          .withContext(version)
+          .toEqual({source: '/lforms', version});
+      }
+    });
+
+    it('should throw an error naming the meta tag if the version is invalid or too old', () => {
+      for (const version of ['v44.1.0', 'latest', '44', '44.1', '44.1.0.1', '32.9.9']) {
+        expect(() => FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '/lforms', 'lforms-version': version})))
+          .withContext(version)
+          .toThrowError(`Invalid lforms-version meta tag "${version}": expected the X.Y.Z version (33.0.0 or later) ` +
+            'of the LHC-Forms copy at /lforms.');
+      }
+    });
+
+    describe('loadLFormsLib()', () => {
+      let addedTags: HTMLMetaElement[];
+      let loadLForms: jasmine.Spy;
+      let getSupportedLFormsVersions: jasmine.Spy;
+
+      /**
+       * Adds lforms-source and lforms-version meta tags to the test page's document.
+       * @param source - The lforms-source content.
+       * @param version - The lforms-version content.
+       */
+      function configureSource(source: string, version: string) {
+        Object.entries({'lforms-source': source, 'lforms-version': version}).forEach(([name, content]) => {
+          const tag = document.createElement('meta');
+          tag.setAttribute('name', name);
+          tag.setAttribute('content', content);
+          document.head.appendChild(tag);
+          addedTags.push(tag);
+        });
+      }
+
+      beforeEach(() => {
+        addedTags = [];
+        // The common testing setup stubs loadLFormsLib(); exercise the real method with a stubbed loader.
+        (service.loadLFormsLib as jasmine.Spy).and.callThrough();
+        loadLForms = spyOn(FormService.lformsLoader, 'loadLForms').and.resolveTo('44.1.0');
+        getSupportedLFormsVersions = spyOn(FormService.lformsLoader, 'getSupportedLFormsVersions')
+          .and.resolveTo(['45.0.0', '44.1.0']);
+      });
+
+      afterEach(() => {
+        addedTags.forEach((tag) => tag.remove());
+      });
+
+      it('should load the configured copy without querying the NLM version list', async () => {
+        configureSource('/lforms-44.1.0/', '44.1.0');
+        await expectAsync(service.loadLFormsLib()).toBeResolvedTo('44.1.0');
+        expect(loadLForms).toHaveBeenCalledOnceWith('44.1.0', undefined, '/lforms-44.1.0');
+        expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
+      });
+
+      it('should reject with an error naming the configured source if it fails to load', async () => {
+        configureSource('/no-such-dir', '44.1.0');
+        loadLForms.and.rejectWith(new Event('error'));
+        spyOn(console, 'error');
+        await expectAsync(service.loadLFormsLib()).toBeRejectedWithError('Failed to load LHC-Forms from /no-such-dir');
+        expect(console.error).toHaveBeenCalledWith(
+          'lforms-loader.loadLForms() failed to load LHC-Forms from /no-such-dir');
+      });
+
+      it('should reject an invalid configured version without loading LHC-Forms', async () => {
+        configureSource('/lforms-44.1.0', 'v44.1.0');
+        await expectAsync(service.loadLFormsLib()).toBeRejectedWithError(/^Invalid lforms-version meta tag "v44\.1\.0"/);
+        expect(loadLForms).not.toHaveBeenCalled();
+        expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
+      });
+
+      it('should load the latest NLM version if no source is configured', async () => {
+        await expectAsync(service.loadLFormsLib()).toBeResolvedTo('45.0.0');
+        expect(getSupportedLFormsVersions).toHaveBeenCalledTimes(1);
+        expect(loadLForms).toHaveBeenCalledOnceWith('45.0.0');
+      });
+    });
   });
 
   it('should report an incompatible opener notification without repeating the dialog', () => {

@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.9.0] 2026-10-08
+### Added
+- Added support for loading LHC-Forms from a deployment-hosted copy, configured
+  with the `lforms-source` and `lforms-version` meta tags in `index.html`.
+
 ## [12.8.0] 2026-10-01
 ### Changed
 - Changed the Questionnaire and contained ValueSet Description and Purpose
