@@ -2,6 +2,16 @@ import {test, expect, Page} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
+/**
+ * Assert that form-level Advanced fields remain expanded. The panel opened in
+ * beforeEach stays open across imports, so clicking it again would collapse it.
+ * @param page - Playwright page containing Form Builder.
+ */
+const expectAdvancedFieldsExpanded = async (page: Page) => {
+  await expect(page.getByRole('button', {name: 'Advanced fields'}))
+    .toHaveAttribute('aria-expanded', 'true');
+};
+
 const getDateRangeInputs = (page: Page) => {
   const widget = page.locator('lfb-date-range');
   return {
@@ -37,7 +47,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
 
   test('should import effectivePeriod from file', async ({page}) => {
     await PWUtils.uploadFile(page, 'effective-period-sample.json');
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await expectAdvancedFieldsExpanded(page);
 
     const {startInput, endInput} = getDateRangeInputs(page);
 
@@ -50,7 +60,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
 
   test('should import dateTime effectivePeriod values from file', async ({page}) => {
     await PWUtils.uploadFile(page, 'effective-period-datetime-sample.json');
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await expectAdvancedFieldsExpanded(page);
 
     const {startInput, endInput} = getDateRangeInputs(page);
 
@@ -66,7 +76,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
 
   test('should show range error for imported invalid effectivePeriod', async ({page}) => {
     await PWUtils.uploadFile(page, 'effective-period-invalid-sample.json');
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await expectAdvancedFieldsExpanded(page);
 
     const errorMsg = page.locator('lfb-date-range small.text-danger[role="alert"]');
     await expect(errorMsg).toBeVisible();

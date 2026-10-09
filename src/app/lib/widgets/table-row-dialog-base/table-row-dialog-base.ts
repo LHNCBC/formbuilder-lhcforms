@@ -180,9 +180,18 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
         value: 'no'
       }]};
 
+    // Close the Material dialog only after the ngb modal is hidden and has restored
+    // the aria-hidden values it saved, which include the app root hidden by the
+    // Material dialog. Otherwise, when animations are off (e.g. prefers-reduced-motion),
+    // ngb restores aria-hidden="true" on the app root after Material has removed it.
+    let discard = false;
     modalRef.closed.subscribe((result) => {
-      if (result === 'yes') {
-        this.matDialogRef.close(false);
+      discard = result === 'yes';
+    });
+    modalRef.hidden.subscribe(() => {
+      if (discard) {
+        // ngb reverts aria-hidden in a microtask after 'hidden'; close after it.
+        setTimeout(() => this.matDialogRef.close(false));
       }
     });
   }

@@ -344,6 +344,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   removeProperty(index: number) {
     const actionResult = this.answerOptionService.validateAnswerOptionAction(this.formProperty, index, 'delete');
     if (!actionResult.valid) {
+      // This dialog does not use the isDialogOpen guard: on close, focus returns to the
+      // Remove button, which does not trigger onEdit(). Resetting the guard here would
+      // clear it while an onEdit() warning opened in the meantime is still showing.
       const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by other item\'s text and linkId.', actionResult.message, this.buttons);
       modalRef.closed.subscribe(result => {
         if (result === 'continue') {
@@ -362,10 +365,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
             this.validationService.validateAllItems(nodes, 0, true, '/enableWhen');
           }
           this.cdr.detectChanges();
-        } else {
-          setTimeout(() => {
-            this.isDialogOpen = false;
-          }, 300);
         }
       });
     } else {

@@ -2,11 +2,34 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.7.0] 2026-09-18
+## [12.9.0] 2026-10-08
 ### Added
 - Added support for repeatable SDC `templateExtract` extensions on Questionnaires
   and Questionnaire items, including FHIRPath expressions for extracted resource
   IDs and Bundle entry request fields.
+
+## [12.8.0] 2026-10-01
+### Changed
+- Changed the Questionnaire and contained ValueSet Description and Purpose
+  fields to inline textareas to support multiline text.
+
+### Fixed
+- Removed LOINC from the Answer Choices System suggestions while preserving
+  manually entered and imported LOINC-coded answers.
+- Limited SNOMED System suggestions and answer lookup to users who enabled
+  SNOMED support and accepted the SNOMED International Browser License Agreement.
+- Updated the Answer Choices System field guidance to clarify that users can
+  select a suggested system or enter their own.
+- Cleared SNOMED license acceptance when SNOMED terminology support is disabled.
+
+## [12.7.0] 2026-09-22
+### Changed
+- Changed the item-level Question text and Help text fields to inline textareas
+  while preserving their CSS and XHTML controls.
+
+### Fixed
+- Fixed a crash when loading non-string primitive extensions in the
+  string-with-css control.
 
 ## [12.6.0] 2026-09-16
 ### Added

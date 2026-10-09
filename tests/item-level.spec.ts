@@ -157,7 +157,7 @@ test.describe('Home page', () => {
       await expect(itemTextField).toHaveValue('Item 0', { timeout: 10000 });
 
       addNewItemButton = PWUtils.getButton(page, 'Toolbar with item action buttons', 'Add new item');
-      helpText = page.locator('input[id^="__\$helpText\.text"]');
+      helpText = page.getByLabel('Help text', {exact: true});
 
       codeOption = page.locator('div').filter({ hasText: 'Question code' }).first();
       await expect(codeOption).toBeVisible();

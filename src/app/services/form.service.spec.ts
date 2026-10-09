@@ -124,6 +124,45 @@ describe('FormService', () => {
     expect(usageContextSchema.properties.code.widget.id).toBe('usage-context-code');
   });
 
+  it('should configure question and help text as multiline string-with-css fields', () => {
+    expect(service.itemSchema.properties.text.widget).toEqual(jasmine.objectContaining({
+      id: 'string-with-css',
+      rows: 1
+    }));
+    expect(service.itemSchema.properties.__$helpText.properties.text.widget).toEqual(jasmine.objectContaining({
+      id: 'string-with-css',
+      rows: 1
+    }));
+    expect(service.itemSchema.properties.prefix.widget.id).toBe('string-with-css');
+    expect(service.itemSchema.properties.prefix.widget.rows).toBeUndefined();
+  });
+
+  it('should configure questionnaire description and purpose as multiline fields', () => {
+    expect(service.flSchema.properties.description.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.flSchema.properties.purpose.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.flSchema.properties.implicitRules.widget.id).toBe('string');
+    expect(service.flSchema.properties.copyright.widget.rows).toBeUndefined();
+  });
+
+  it('should configure ValueSet description and purpose as multiline fields', () => {
+    expect(service.valueSetSchema.properties.description.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.valueSetSchema.properties.purpose.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.valueSetSchema.properties.implicitRules.widget.id).toBe('string');
+    expect(service.valueSetSchema.properties.copyright.widget.rows).toBeUndefined();
+  });
+
   it('should preserve the R5 ad Quantity comparator and reject older-version conversion', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',

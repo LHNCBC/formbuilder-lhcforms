@@ -70,11 +70,35 @@ test.describe('string-with-css.component.spec.ts', () => {
         await mainPO.cleanLoadILPage();
   });
 
+  test('should use multiline fields for question and help text', async ({page}) => {
+    await expect(page.getByLabel('Question text', {exact: true})).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(page.getByLabel('Help text', {exact: true})).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(page.getByLabel('Prefix', {exact: true})).toHaveJSProperty('tagName', 'INPUT');
+  });
+
+  test('should reflect question and help text changes in the rendered preview', async ({page}) => {
+    const questionText = 'Updated question text\nwith a second line';
+    const helpText = 'Updated help text\nwith a second line';
+
+    await page.getByLabel('Question text', {exact: true}).fill(questionText);
+    await page.getByLabel('Help text', {exact: true}).fill(helpText);
+    await PWUtils.clickMenuBarButton(page, 'Preview');
+
+    const preview = page.locator('lfb-preview-dlg');
+    await expect(preview.locator('lhc-item-question span.question').first()).toHaveText(questionText);
+    const helpButton = preview.getByRole('button', {name: /Help button for Updated question text/});
+    await helpButton.click();
+    const helpPopover = page.locator('.lhc-popover-help');
+    await expect(helpPopover).toBeVisible();
+    await expect(helpPopover).toContainText(helpText);
+  });
+
   FIELD_LABELS.forEach((fieldLabel) => {
     test(fieldLabel + ': Should add plain text/CSS/XHTML', async ({page}) => {
       const inputGroup = page.getByLabel(fieldLabel).locator('..');
-      await inputGroup.locator('input').clear();
-      await inputGroup.locator('input').fill(fieldLabel+' plain text');
+      const plainTextField = page.getByLabel(fieldLabel, {exact: true});
+      await plainTextField.clear();
+      await plainTextField.fill(fieldLabel+' plain text');
       await inputGroup.getByRole('button', {name: 'CSS Styles'}).click();
       let dropdown = await inputGroup.locator('div.dropdown-menu.show');
       await expect(dropdown).toBeVisible();
@@ -150,6 +174,56 @@ test.describe('string-with-css.component.spec.ts', () => {
     expect(q.item[0].item[0].text).toEqual('Help text: modified plain text');
     expect(q.item[0].item[0]._text.extension[0].valueString).toEqual('/*Help text: modified CSS*/');
     expect(q.item[0].item[0]._text.extension[1].valueString).toEqual('Help text: modified <b>XHTML</b>');
+  });
+
+  test('should import items with a non-string primitive extension without error', async ({page}) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    const fileJson = await PWUtils.uploadFile(page, 'css-xhtml-non-string-ext-sample.json', true);
+    let q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q).toEqual(fileJson);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+
+    // The rendering-style/XHTML values still load into the widget's dropdowns.
+    const inputGroup = page.getByLabel('Question text', {exact: true})
+      .locator('xpath=ancestor::div[contains(@class, "input-group")][1]');
+    await inputGroup.getByRole('button', {name: 'CSS Styles'}).click();
+    await expect(inputGroup.getByLabel('Specify CSS Styles'))
+      .toHaveValue('color: red; /*Question text: CSS*/');
+    await inputGroup.getByRole('button', {name: 'Close'}).click();
+    await inputGroup.getByRole('button', {name: 'XHTML'}).click();
+    await expect(inputGroup.getByLabel('Specify XHTML'))
+      .toHaveValue('Question text: <b>XHTML</b>');
+    await inputGroup.getByRole('button', {name: 'Close'}).click();
+
+    // The non-string extension must not crash the component (no undefined.trim()).
+    expect(pageErrors).toEqual([]);
+
+    // Round-trip preserves the non-string primitive and rendering extensions.
+    q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q.item[0]._text.extension).toContainEqual({
+      url: 'https://example.org/flag',
+      valueBoolean: true
+    });
+    expect(q.item[0]._prefix.extension).toContainEqual({
+      url: 'https://example.org/prefix-count',
+      valueInteger: 7
+    });
+    expect(q.item[0].item[0]._text.extension).toContainEqual({
+      url: 'https://example.org/help-flag',
+      valueBoolean: true
+    });
+    const renderingExtensions = q.item[0]._text.extension.filter((ext) =>
+      ext.url === 'http://hl7.org/fhir/StructureDefinition/rendering-style' ||
+      ext.url === 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml');
+    expect(renderingExtensions).toEqual([{
+      url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+      valueString: 'color: red; /*Question text: CSS*/'
+    }, {
+      url: 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml',
+      valueString: 'Question text: <b>XHTML</b>'
+    }]);
   });
 
   test('Bugfix: should detect help text on the second item in the tree', async ({page}) => {
