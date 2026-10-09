@@ -66,6 +66,13 @@ const assertCodeField = async (page: Page, jsonPointerToCodeField: string) => {
   ]);
 };
 
+/**
+ * Search a mocked FHIR server by form title and open the first result.
+ *
+ * @param page - The Playwright page, with the FHIR server selection dialog open.
+ * @param titleSearchTerm - Title search term; also selects the mock response fixture
+ *   `fixtures/fhir-server-mock-response-<titleSearchTerm>.json`.
+ */
 const fhirSearch = async (page: Page, titleSearchTerm: string) => {
   const fixturePath = path.join(__dirname, 'fixtures', `fhir-server-mock-response-${titleSearchTerm}.json`);
   const fixture = await fs.readFile(fixturePath, 'utf-8');

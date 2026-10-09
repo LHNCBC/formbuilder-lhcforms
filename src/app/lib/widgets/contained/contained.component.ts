@@ -71,7 +71,8 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   faView = faEye;
 
   /**
-   * Ng OnInit lifecycle hook.
+   * Ng OnInit lifecycle hook. Configure the Add menu choices (create a ValueSet, upload
+   * a file, or import from a FHIR server) and suppress the default empty row.
    */
   ngOnInit() {
     this.addDefaultItemIfEmpty = false; // Avoid adding default row.
@@ -191,7 +192,8 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   /**
-   * Prevent deletion from leaving a dangling local Usage Context reference.
+   * Prevent deletion from leaving a dangling local Usage Context or template-based
+   * extraction reference. Referenced rows show a warning instead of the confirmation.
    *
    * @param index - Index of the contained resource to delete.
    * @param message - Standard confirmation message used for unreferenced rows.
@@ -222,6 +224,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
 
   /**
    * Override the default add behavior to create a ValueSet in the existing resource editor.
+   * The saved ValueSet is marked as an internal R5 resource before it is added.
    *
    * @param popover - Unused standard table popover reference.
    */
@@ -393,6 +396,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
    * Check if the edit button should be disabled for a given row.
    * @param arrayProperty - The ArrayProperty containing the rows.
    * @param index - Row index in the table.
+   * @returns True when the row has no resourceType, so there is nothing to view or edit.
    */
   _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     return !arrayProperty?.properties[index]?.value?.resourceType;

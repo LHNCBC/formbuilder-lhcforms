@@ -55,6 +55,7 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
 
   containedResources: ContainedResourceOption[] = [];
 
+  /** Use the template extraction dialog to add and edit table rows. */
   constructor() {
     super();
     this.dialogComponentType = TemplateExtractDlgComponent;

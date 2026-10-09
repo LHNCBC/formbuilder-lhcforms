@@ -44,7 +44,11 @@ describe('ExpressionEditorDlgComponent', () => {
     };
   });
 
-  /** Render the wrapper and return the actual package component receiving its inputs. */
+  /**
+   * Render the wrapper and return the actual package component receiving its inputs.
+   *
+   * @returns The ExpressionEditorComponent instance rendered by the wrapper.
+   */
   function renderEditor(): ExpressionEditorComponent {
     fixture.detectChanges();
     return fixture.debugElement.query(By.directive(ExpressionEditorComponent)).componentInstance;

@@ -11,7 +11,12 @@ import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_VARIABLE} from '../src/app
 async function importRepeatedExtractionQuestionnaire(page: Page): Promise<void> {
   const allocateIdUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extractAllocateId';
 
-  /** Create a scope containing unrelated extensions and two occurrences of the same template. */
+  /**
+   * Create a scope containing unrelated extensions and two occurrences of the same template.
+   *
+   * @param scope - Prefix for the allocated id, variable name, and fullUrl values, e.g. 'root'.
+   * @returns allocateId and variable extensions followed by two templateExtract extensions.
+   */
   function scopeExtensions(scope: string): fhir.Extension[] {
     return [
       {url: allocateIdUrl, valueString: `${scope}Id`},

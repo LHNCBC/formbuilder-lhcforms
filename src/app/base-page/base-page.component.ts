@@ -87,6 +87,11 @@ export class BasePageComponent implements OnInit, OnDestroy {
   private extensionCardinalityService = inject(ExtensionCardinalityService);
   private containedResourceService = inject(ContainedResourceService);
 
+  /**
+   * Restore start-page and terms-of-use state, set up debounced auto-save and
+   * guiding-step tracking, and notify the window opener once LForms loads.
+   * Auto-save stores the Questionnaire together with its contained-resource version records.
+   */
   constructor() {
     this.acResult = null;
     const isAutoSaved = this.formService.isAutoSaved();
@@ -305,7 +310,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Set questionnaire.
-   * Make
+   * Converts the input to internal R5 and records the FHIR version each contained
+   * resource came from, so later exports can warn about version mismatches.
    * @param questionnaire - Input FHIR questionnaire
    * @param confirmSubjectTypeImport - Whether to ask how to handle imported subjectType values invalid in internal R5.
    * @param clearCardinalitySelections - Whether to clear choices associated with the previous Questionnaire.
@@ -493,7 +499,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * View preview of lforms widget and questionnaire json
+   * View preview of lforms widget and questionnaire json.
+   * Passes contained-resource version records so the preview can show compatibility warnings.
    */
   showPreviewDlg() {
     // configure lforms template options
@@ -525,8 +532,10 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Save form to local file, mostly copied from current form builder.
-   * @exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'
-   * 'R4' is assumed if not specified.
+   * Returns without saving if the user cancels the contained-resource compatibility
+   * warning or the subjectType compatibility prompt.
+   * @param exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'.
+   *   'R5' is assumed if not specified.
    */
   async saveToFile(exportVersion = 'R5') {
     if(!await this.confirmContainedResourceExport(exportVersion)) {
@@ -704,7 +713,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
 
   /**
-   * Create or update a Questionnaire on the selected FHIR server after resolving subjectType compatibility.
+   * Create or update a Questionnaire on the selected FHIR server after confirming
+   * contained-resource compatibility and resolving subjectType compatibility.
    * @param type - Export operation type ('CREATE' | 'UPDATE')
    */
   exportToServer(type: ExportType) {
@@ -751,7 +761,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * Ask whether export should continue when contained-resource versions may not match the target.
    *
    * @param version - Target FHIR export version.
-   * @returns True when no warning is needed or the user chooses to export anyway.
+   * @returns Promise<boolean> - Resolves to true when no warning is needed or the user chooses to export anyway,
+   *   false when the user cancels the export.
    */
   async confirmContainedResourceExport(version: string): Promise<boolean> {
     const records: ContainedResourceVersionRecord[] =

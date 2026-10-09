@@ -75,6 +75,12 @@ describe('templateExtract utilities', () => {
   });
 
   it('finds references at the root and in nested items', () => {
+    /**
+     * Build a templateExtract extension with only a template child.
+     *
+     * @param reference - Local reference to the template resource, e.g. '#root-template'.
+     * @returns The templateExtract extension.
+     */
     const templateExtension = (reference: string): fhir.Extension => ({
       url: EXTENSION_URL_TEMPLATE_EXTRACT,
       extension: [{url: 'template', valueReference: {reference}}]

@@ -23,6 +23,12 @@ describe('ImportQuestionnaireService', () => {
   });
 
   it('copies repeatable templateExtract extensions into the widget field', () => {
+    /**
+     * Build a templateExtract extension with only a template child.
+     *
+     * @param reference - Local reference to the template resource, e.g. '#one'.
+     * @returns The templateExtract extension.
+     */
     const extension = (reference: string) => ({
       url: EXTENSION_URL_TEMPLATE_EXTRACT,
       extension: [{url: 'template', valueReference: {reference}}]

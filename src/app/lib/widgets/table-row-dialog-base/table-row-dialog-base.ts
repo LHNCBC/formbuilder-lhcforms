@@ -158,7 +158,8 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
   }
 
   /**
-   * Handle the cancel button event.
+   * Handle the cancel button event. Close the dialog right away when nothing changed;
+   * otherwise ask for confirmation and close only if the user discards the changes.
    */
   cancel() {
     const isDirty = this.hasModelChanged();

@@ -35,9 +35,19 @@ const KNOWN_CHILD_URLS = new Set<string>(TEMPLATE_EXTRACT_CHILD_URLS);
 
 /**
  * Convert a templateExtract extension into the widget's edit model.
+ *
+ * @param extension - A templateExtract extension, possibly with unknown child slices.
+ * @returns Edit model with empty strings for absent children and a copy of the source extension.
  */
 export function parseTemplateExtractExtension(extension: fhir.Extension): TemplateExtractEditModel {
   const children = extension?.extension || [];
+
+  /**
+   * Read the valueString of the first child extension with the given url.
+   *
+   * @param url - Child extension url.
+   * @returns The child's valueString, or an empty string if absent.
+   */
   const getString = (url: TemplateExtractExpressionUrl): string =>
     children.find(child => child.url === url)?.valueString || '';
 
@@ -57,6 +67,10 @@ export function parseTemplateExtractExtension(extension: fhir.Extension): Templa
  * Convert the widget's edit model to a valid complex templateExtract extension.
  * Unknown child slices and metadata on known slices are retained when an imported
  * extension is edited.
+ *
+ * @param model - Edit model; empty expression fields are omitted from the result.
+ * @returns A templateExtract extension with the template child first, followed by
+ *   non-empty expression children and then any unknown children.
  */
 export function buildTemplateExtractExtension(model: TemplateExtractEditModel): fhir.Extension {
   const result: fhir.Extension = copy(model.sourceExtension || {url: EXTENSION_URL_TEMPLATE_EXTRACT});
@@ -114,6 +128,9 @@ export function buildTemplateExtractExtension(model: TemplateExtractEditModel): 
 
 /**
  * Return selectable local references for the resources already contained by a Questionnaire.
+ *
+ * @param questionnaire - Questionnaire whose contained resources are listed.
+ * @returns Options for contained resources that have both an id and a resourceType.
  */
 export function getContainedResourceOptions(questionnaire: fhir.Questionnaire): ContainedResourceOption[] {
   return (questionnaire?.contained || [])
@@ -127,12 +144,23 @@ export function getContainedResourceOptions(questionnaire: fhir.Questionnaire): 
 /**
  * Check whether a contained resource is targeted by a templateExtract extension
  * at the Questionnaire root or on any Questionnaire item.
+ *
+ * @param questionnaire - Questionnaire to search.
+ * @param resourceId - Contained resource id, without the leading '#'.
+ * @returns True when any templateExtract extension's template child references '#resourceId'.
  */
 export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, resourceId?: string): boolean {
   if(!questionnaire || !resourceId) {
     return false;
   }
   const reference = `#${resourceId}`;
+
+  /**
+   * Check whether any extension in a list is a templateExtract targeting the resource.
+   *
+   * @param extensions - Extensions of the Questionnaire or of an item.
+   * @returns True when a templateExtract extension references the resource.
+   */
   const referencesResource = (extensions: fhir.Extension[] = []): boolean =>
     extensions.some(extension =>
       extension.url === EXTENSION_URL_TEMPLATE_EXTRACT &&
@@ -140,6 +168,13 @@ export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, r
         child.url === 'template' && child.valueReference?.reference === reference
       )
     );
+
+  /**
+   * Recursively check items and their descendants for a templateExtract reference.
+   *
+   * @param items - Questionnaire items to search.
+   * @returns True when any item in the subtree references the resource.
+   */
   const searchItems = (items: fhir.QuestionnaireItem[] = []): boolean =>
     items.some(item => referencesResource(item.extension) || searchItems(item.item));
 

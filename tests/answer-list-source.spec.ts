@@ -103,6 +103,19 @@ const getReferencedOptionMsgMultiple = (
   refs.map(ref => ` • '${ref.enableWhenItemName}' (linkId: '${ref.enableWhenItemLinkId}')`).join('') +
   `for conditional display. ${action} this option may affect their behavior.`;
 
+/**
+ * Edit a referenced answer option after accepting the warning, and check that the
+ * enableWhen item referencing it then shows a validation error.
+ *
+ * @param page - The Playwright page.
+ * @param type - Answer option data type, e.g. 'integer', 'time', or 'coding'.
+ * @param enableWhenNodeName - Tree node name of the item whose enableWhen references the option.
+ * @param answerOptionNodeName - Tree node name of the item that owns the answer options.
+ * @param answerOptionSelector - Selector of the referenced answer option input.
+ * @param referencedMsg - Expected warning dialog message.
+ * @param buttonText - Warning dialog button to click.
+ * @param editValue - New value for the answer option.
+ */
 const modifyReferencedData = async (
   page: Page,
   type: string,

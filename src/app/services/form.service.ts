@@ -1553,8 +1553,10 @@ export class FormService {
 
 
   /**
-   * Save questionnaire in local storage
-   * @param fhirQ - Questionnaire
+   * Save questionnaire in local storage, without Form Builder's internal fields, along with
+   * the version records of its contained resources. Also send the cleaned questionnaire
+   * to the window opener.
+   * @param fhirQ - Questionnaire, possibly including internal fields.
    */
   autoSaveForm(fhirQ: fhir.Questionnaire) {
     const cleanQuestionnaire = Util.convertToQuestionnaireJSON(fhirQ);
@@ -1602,7 +1604,9 @@ export class FormService {
 
 
   /**
-   * Retrieve questionnaire from the storage.
+   * Retrieve questionnaire from the storage and reapply the saved version records to
+   * its contained resources.
+   * @returns The stored questionnaire, or null if none is stored.
    */
   autoLoadForm(): fhir.Questionnaire {
     const questionnaire = this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;

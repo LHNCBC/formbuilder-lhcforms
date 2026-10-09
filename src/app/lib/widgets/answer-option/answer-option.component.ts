@@ -336,8 +336,10 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * Overriding parent method.
    * Remove a given item, i.e. a row in the table.
    *
-   * Before calling parent class api to remove the item, we need to do some housekeeping with respect to table's
-   * selection (radio/checkbox) indexes.
+   * If the option is referenced by another item's enableWhen, show a warning first and
+   * remove the row only if the user chooses to continue. The referencing items are then
+   * revalidated. The parent class removes the row and adjusts the selection
+   * (radio/checkbox) indexes.
    *
    * @param index - Index of the formProperty to be removed from the array.
    */

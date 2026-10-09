@@ -23,7 +23,12 @@ interface EditorInputs {
   display?: DisplaySectionControl;
 }
 
-/** Create an occurrence whose template reference is deliberately shared by other rows. */
+/**
+ * Create an occurrence whose template reference is deliberately shared by other rows.
+ *
+ * @param expression - FHIRPath expression stored in the fullUrl child.
+ * @returns A templateExtract extension referencing '#patient-template'.
+ */
 function templateExtension(expression: string): fhir.Extension {
   return {
     url: EXTENSION_URL_TEMPLATE_EXTRACT,
