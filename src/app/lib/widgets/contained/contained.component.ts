@@ -21,6 +21,7 @@ import {
   ContainedResourceService,
   PreparedContainedResource
 } from '../../../services/contained-resource.service';
+import {SharedObjectService} from '../../../services/shared-object.service';
 import {Util} from '../../util';
 import {faEye} from '@fortawesome/free-solid-svg-icons';
 import {FhirServersDlgComponent} from '../fhir-servers-dlg/fhir-servers-dlg.component';
@@ -66,6 +67,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   private readonly containedResourceService = inject(ContainedResourceService);
   private readonly modalService = inject(NgbModal);
   private readonly fhirService = inject(FhirService);
+  private readonly sharedObjectService = inject(SharedObjectService);
 
   matDialogService: MatDialog = inject(MatDialog);
   faView = faEye;
@@ -419,12 +421,17 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   /**
-   * Check whether template-based extraction targets a contained resource id.
+   * Check whether template-based extraction targets a contained resource id, at the
+   * Questionnaire root or on any item. This table is in the form-level editor, whose
+   * model excludes items, so items are read from the current Questionnaire.
    *
    * @param resourceId - Contained resource id.
    * @returns True when a template extraction targets the resource.
    */
   private isReferencedByTemplateExtraction(resourceId: string | undefined): boolean {
-    return hasTemplateExtractReference(this.formProperty?.findRoot()?.value, resourceId);
+    return hasTemplateExtractReference(
+      this.sharedObjectService.composeQuestionnaire(this.formProperty?.findRoot()?.value),
+      resourceId
+    );
   }
 }

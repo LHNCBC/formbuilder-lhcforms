@@ -1483,7 +1483,13 @@ export class FormService {
    * Convert a given questionnaire to R5 version. R5 is also internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.
    *
+   * Contained resources are not converted, so each one that is not yet annotated is
+   * annotated with its FHIR version, using the version of the input Questionnaire as the
+   * fallback. The version must be detected before conversion, because the converted
+   * Questionnaire carries an R5 profile.
+   *
    * @param fhirQ - A given questionnaire. Could be STU3, R4, R5 etc.
+   * @returns The R5 questionnaire with annotated contained resources.
    */
   convertToR5(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
     let ret = fhirQ;
@@ -1491,7 +1497,9 @@ export class FormService {
     if(fhirVersion !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
-    return AttachmentUtil.normalizeQuestionnaireAttachments(ret, 'R5');
+    ret = AttachmentUtil.normalizeQuestionnaireAttachments(ret, 'R5');
+    this.containedResourceService.annotateContainedResources(ret, fhirVersion);
+    return ret;
   }
 
   /**

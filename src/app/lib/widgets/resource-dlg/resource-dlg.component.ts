@@ -13,6 +13,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
 import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
+import {SharedObjectService} from '../../../services/shared-object.service';
 import {Util} from '../../util';
 
 /**
@@ -49,6 +50,7 @@ export class ResourceDlgComponent {
   matDialogRef = inject(MatDialogRef<ResourceDlgComponent>);
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
+  private sharedObjectService = inject(SharedObjectService);
   private readonly originalResourceId: string | undefined;
 
   /**
@@ -130,13 +132,16 @@ export class ResourceDlgComponent {
   }
 
   /**
-   * Check whether template-based extraction targets the original contained resource id.
+   * Check whether template-based extraction targets the original contained resource id,
+   * at the Questionnaire root or on any item. Contained resources are edited from the
+   * form-level editor, whose model excludes items, so items are read from the current
+   * Questionnaire.
    *
    * @returns True when a templateExtract extension references the original id.
    */
   private isReferencedByTemplateExtraction(): boolean {
     return hasTemplateExtractReference(
-      this.data.formProperty.findRoot()?.value,
+      this.sharedObjectService.composeQuestionnaire(this.data.formProperty.findRoot()?.value),
       this.originalResourceId
     );
   }

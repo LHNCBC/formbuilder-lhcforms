@@ -112,6 +112,17 @@ test.describe('Template-based extraction', () => {
     await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
     await expect(referencedResourceRow).toHaveCount(1);
 
+    // #observation-template is referenced only by an item, which the form-level model excludes.
+    const itemReferencedResourceRow = containedTable.locator('tbody > tr').nth(1);
+    await expect(PWUtils.getTableCell(containedTable, 2, 2)).toHaveText('observation-template');
+    await itemReferencedResourceRow.getByRole('button', {name: 'Remove this row'}).click();
+    await expect(inUseDialog).toContainText(
+      'The contained resource #observation-template is referenced by Template-based extraction and cannot be deleted.'
+    );
+    await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+    await expect(inUseDialog).toHaveCount(0);
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(2);
+
     await formWidget.getByRole('button', {name: 'Add new template extraction', exact: true}).click();
     templateDialog = page.getByRole('dialog', {name: 'Add template extraction'});
     await templateDialog.getByLabel('Contained resource template').selectOption('#observation-template');

@@ -310,8 +310,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Set questionnaire.
-   * Converts the input to internal R5 and records the FHIR version each contained
-   * resource came from, so later exports can warn about version mismatches.
+   * Converts the input to internal R5. The conversion records the FHIR version each
+   * contained resource came from, so later exports can warn about version mismatches.
    * @param questionnaire - Input FHIR questionnaire
    * @param confirmSubjectTypeImport - Whether to ask how to handle imported subjectType values invalid in internal R5.
    * @param clearCardinalitySelections - Whether to clear choices associated with the previous Questionnaire.
@@ -322,9 +322,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     confirmSubjectTypeImport = false,
     clearCardinalitySelections = true
   ): Promise<boolean> {
-    const sourceVersion = Util.detectFHIRVersion(questionnaire);
     let q = this.formService.convertToR5(questionnaire);
-    this.containedResourceService.annotateContainedResources(q, sourceVersion);
     if(confirmSubjectTypeImport) {
       q = await this.resolveSubjectTypeImportQuestionnaire(q, 'R5');
       if(!q) {
@@ -337,6 +335,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
+    // formValue is updated in place from here on, so form-level editors can reach current items.
+    this.modelService.currentQuestionnaire = this.formValue;
     this.refreshFormFields();
     this.notifyChange(this.formValue);
     return true;

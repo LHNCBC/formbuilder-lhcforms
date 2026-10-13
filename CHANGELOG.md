@@ -7,6 +7,12 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added support for repeatable SDC `templateExtract` extensions on Questionnaires
   and Questionnaire items, including FHIRPath expressions for extracted resource
   IDs and Bundle entry request fields.
+- Prevented deleting a contained resource, or changing its ID, while a
+  `templateExtract` extension on the Questionnaire or on any item references it.
+- Provided the Questionnaire's items to the expression editor when editing
+  form-level template extraction expressions.
+- Recorded the original FHIR version of contained resources in imported
+  Questionnaires, so that previews and exports warn about version mismatches.
 
 ## [12.8.0] 2026-10-01
 ### Changed

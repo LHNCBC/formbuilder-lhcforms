@@ -276,6 +276,32 @@ test.describe('Contained resource local-file import', () => {
   });
 });
 
+test.describe('Contained resource versions in an imported Questionnaire', () => {
+  test.beforeEach(async ({page}) => {
+    await page.goto('/');
+    const mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+    await PWUtils.uploadFile(page, 'contained-unprofiled-r4-questionnaire.json', false);
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+  });
+
+  test('records the imported Questionnaire version for an unprofiled contained resource', async ({page}) => {
+    const containedTable = PWUtils.getTableByFieldLabel(
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(1);
+    await expect(PWUtils.getTableCell(containedTable, 1, 1)).toHaveText('Patient');
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('patient-1');
+    // The Questionnaire is converted to R5 on import; the resource keeps the source version.
+    await expect(PWUtils.getTableCell(containedTable, 1, 4)).toHaveText('R4');
+
+    await page.getByRole('button', {name: 'Preview'}).click();
+    await expect(page.locator('.contained-resource-version-warning'))
+      .toContainText('Patient #patient-1 was imported as FHIR R4');
+  });
+});
+
 test.describe('Contained resource import from a FHIR server', () => {
   test.beforeEach(async ({page}) => {
     await page.goto('/');

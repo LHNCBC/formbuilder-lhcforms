@@ -183,13 +183,14 @@ export class TemplateExtractDlgComponent implements OnInit {
 
   /**
    * Return a clean current Questionnaire suitable for the expression editor.
+   * At form level, the editor model excludes items, so it is combined with the current
+   * item tree; at item level, the current Questionnaire is used.
    * @returns Questionnaire without form-builder-only fields.
    */
   private getQuestionnaire(): fhir.Questionnaire {
-    const rootValue = this.data.arrayProperty?.findRoot()?.value;
-    const questionnaire = rootValue?.resourceType === 'Questionnaire'
-      ? rootValue
-      : this.sharedObjectService.questionnaire;
+    const questionnaire = this.sharedObjectService.composeQuestionnaire(
+      this.data.arrayProperty?.findRoot()?.value
+    );
     return Util.convertToQuestionnaireJSON(questionnaire) as fhir.Questionnaire;
   }
 

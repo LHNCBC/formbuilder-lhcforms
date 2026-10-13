@@ -1,0 +1,25 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "status": "draft",
+  "title": "R4 questionnaire with an unprofiled contained resource",
+  "contained": [
+    {
+      "resourceType": "Patient",
+      "id": "patient-1",
+      "active": true
+    }
+  ],
+  "item": [
+    {
+      "linkId": "q1",
+      "type": "string",
+      "text": "Question 1"
+    }
+  ]
+}
+

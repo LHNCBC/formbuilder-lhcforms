@@ -10,6 +10,7 @@ import fhir from "fhir/r4";
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {ISchema, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
 import {ContainedResourceService} from './contained-resource.service';
+import {Util} from '../lib/util';
 
 describe('FormService', () => {
   let service: FormService;
@@ -55,6 +56,51 @@ describe('FormService', () => {
         info: {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
       }]
     ]);
+  });
+
+  describe('contained-resource versions on import', () => {
+    /**
+     * Create an R4 Questionnaire with an unprofiled contained Patient.
+     *
+     * @returns A Questionnaire whose FHIR version is detectable only from its own profile.
+     */
+    const r4QuestionnaireWithUnprofiledResource = (): fhir.Questionnaire => ({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      contained: [{resourceType: 'Patient', id: 'patient-1'}],
+      item: [{linkId: 'q1', type: 'string', text: 'Question 1'}]
+    });
+
+    it('records the source version when an R4 file is parsed', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+
+      const imported = service.parseQuestionnaire(JSON.stringify(r4QuestionnaireWithUnprofiledResource()));
+
+      expect(imported.meta.profile).toEqual([Util.R5_PROFILE_URL]);
+      expect(containedResourceService.getVersionInfo(imported.contained[0])).toEqual(
+        {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
+      );
+    });
+
+    it('keeps the source version when the converted Questionnaire is converted again', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+
+      // Server import converts once, then setQuestionnaire() converts the R5 result again.
+      const imported = service.convertToR5(service.convertToR5(r4QuestionnaireWithUnprofiledResource()));
+
+      expect(containedResourceService.getVersionInfo(imported.contained[0])?.version).toBe('R4');
+    });
+
+    it('does not replace version information that is already present', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+      const questionnaire = r4QuestionnaireWithUnprofiledResource();
+      containedResourceService.annotateEditorResource(questionnaire.contained[0]);
+
+      const imported = service.convertToR5(questionnaire);
+
+      expect(containedResourceService.getVersionInfo(imported.contained[0])?.source).toBe('editor');
+    });
   });
 
   it('should apply explicitly requested widget presets without sharing mutable objects', () => {
