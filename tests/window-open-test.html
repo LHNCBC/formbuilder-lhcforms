@@ -2,36 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Form builder window-open API test</title>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; }
+    section { border: 1px solid #ccc; border-radius: 4px; margin: 1rem 0; padding: 0.5rem 1rem; }
+    section > h2 { font-size: 1.1rem; margin: 0.25rem 0 0.75rem; }
+    h3 { font-size: 0.95rem; margin: 0.75rem 0 0.25rem; }
+    .row { align-items: center; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0.5rem 0; }
+    .hint { color: #555; font-size: 0.9rem; }
+    #inputMsg:empty, #url:empty { display: none; }
+    #url { font-family: monospace; font-size: 0.85rem; overflow-wrap: anywhere; }
+    pre { background: #f5f5f5; border: 1px solid #ddd; margin: 0; max-height: 15rem; overflow: auto; padding: 0.5rem; }
+    pre:empty::before { color: #999; content: '(none)'; }
+  </style>
 </head>
 <body>
-<div class="bg-body p-2" xmlns="http://www.w3.org/1999/html">
-  <button id="openWinDefault" class="btn btn-primary m-2" onClick="openFormBuilder()">Open form builder (Default)</button>
-  <button id="openWinSTU3" class="btn btn-primary m-2" onClick="openFormBuilder('STU3')">Open form builder (STU3)</button>
-  <button id="openWinR4" class="btn btn-primary m-2" onClick="openFormBuilder('R4')">Open form builder (R4)</button>
-  <button id="openWinR5" class="btn btn-primary m-2" onClick="openFormBuilder('R5')">Open form builder (R5)</button>
-  <button id="sendQ" class="btn btn-primary m-2" onClick="sendQuestionnaire()">Post questionnaire</button>
-  <button id="clear" class="btn btn-primary m-2" onClick="clearMessages()">Clear messages</button>
-  <p class="m-1" id="url"></p>
-  <h6 id="initH">initialized</h6>
-  <pre class="m-1" id="initW"></pre>
-  <h6 id="updateH">updateQuestionnaire</h6>
-  <pre class="m-1" id="updateQ"></pre>
-  <h6 id="closedH">closed</h6>
-  <pre class="m-1" id="closedQ"></pre>
-  <h6 id="canceledH">canceled</h6>
-  <pre class="m-1" id="canceledQ"></pre>
-</div>
+<h1>Form builder window-open API test</h1>
+<ol class="hint">
+  <li>Enter the URL of a form builder. It is expected to run on an origin different from this page.</li>
+  <li>Choose the FHIR version of the questionnaires the form builder sends.</li>
+  <li>Open the form builder in a new window, or embed it in this page. A sample questionnaire is posted to it
+    after it sends the <code>initialized</code> message.</li>
+</ol>
+
+<section>
+  <h2>1. Form builder</h2>
+  <div class="row">
+    <label for="targetUrl">Form builder URL</label>
+    <input type="url" id="targetUrl" size="50" placeholder="e.g. http://localhost:9032">
+    <label for="fhirVersion">FHIR version</label>
+    <select id="fhirVersion">
+      <option value="">Default</option>
+      <option value="STU3">STU3</option>
+      <option value="R4">R4</option>
+      <option value="R5">R5</option>
+    </select>
+  </div>
+  <p id="inputMsg" role="status"></p>
+</section>
+
+<section>
+  <h2>2. Launch</h2>
+  <div class="row">
+    <button id="openWin" onClick="openFormBuilder()">Open form builder</button>
+    <span class="hint">in a new window.</span>
+  </div>
+  <div class="row">
+    <button id="embed" onClick="embedFormBuilder()">Embed form builder</button>
+    <span class="hint">in an iframe below.</span>
+    <label><input type="checkbox" id="hideOnEnd"> Hide the embedded form builder on closed or canceled, instead of removing it</label>
+  </div>
+  <p id="url"></p>
+</section>
+
+<section>
+  <h2>3. Interact</h2>
+  <div class="row">
+    <button id="sendQ" onClick="sendQuestionnaire()" title="Post the sample questionnaire to the form builder again.">Post questionnaire</button>
+    <button id="clear" onClick="clearMessages()" title="Clear the messages below, typically to read fresh messages.">Clear messages</button>
+    <span class="hint">Post the sample questionnaire again, or clear the messages below.</span>
+  </div>
+  <div id="fbFrameContainer"></div>
+</section>
+
+<section>
+  <h2>4. Messages from the form builder</h2>
+  <h3 id="logH">Message log (types in the order received)</h3>
+  <pre id="msgLog"></pre>
+  <h3 id="initH">initialized</h3>
+  <pre id="initW"></pre>
+  <h3 id="updateH">updateQuestionnaire</h3>
+  <pre id="updateQ"></pre>
+  <h3 id="closedH">closed</h3>
+  <pre id="closedQ"></pre>
+  <h3 id="canceledH">canceled</h3>
+  <pre id="canceledQ"></pre>
+  <h3 id="abortedH">aborted</h3>
+  <pre id="abortedQ"></pre>
+</section>
 
 <script>
   // Sample questionnaire to be edited in form builder.
   const initialQ = {resourceType: 'Questionnaire', title: 'Form loaded from window-open-test.html', status: 'draft', item: [{text: 'q one', linkId: 'q-1'}]};
 
   let fbWindow = null;
-  // Open the form builder window running on separate origin
-  // Read the URL from the http params.
-  let fbUrl = new URLSearchParams(window.location.search).get('targetUrl');
-  let originUrl = new URL(fbUrl).origin; // This could be different if the target is redirected
+  // The iframe, if the form builder is embedded instead of opened in a new window.
+  let fbFrame = null;
+  // Origin of the form builder, the only origin messages are posted to. It is set from the entered form
+  // builder URL, and updated from the messages of the form builder, in case the URL is redirected.
+  let originUrl = null;
+
+  // The form builder is expected to run on an origin different from this page. The URL is entered by the
+  // user, and prefilled from the targetUrl parameter of this page, if any.
+  let targetUrlEl = document.getElementById('targetUrl');
+  let fhirVersionEl = document.getElementById('fhirVersion');
+  let inputMsgEl = document.getElementById('inputMsg');
+  targetUrlEl.value = new URLSearchParams(window.location.search).get('targetUrl') || '';
 
   let initHeader = document.getElementById('initH');
   let updateHeader = document.getElementById('updateH');
@@ -41,6 +107,9 @@
   let updateEl = document.getElementById('updateQ');
   let closedEl = document.getElementById('closedQ');
   let canceledEl = document.getElementById('canceledQ');
+  let abortedHeader = document.getElementById('abortedH');
+  let abortedEl = document.getElementById('abortedQ');
+  let msgLogEl = document.getElementById('msgLog');
 
   let urlEl = document.getElementById('url');
   window.addEventListener('message', handleMessage, true);
@@ -55,28 +124,37 @@
       return;
     }
     originUrl = event.origin;
+    msgLogEl.textContent += `${event.data?.type}\n`;
     switch (event.data?.type) {
       case 'initialized':
         // Wait for the child window to be ready, before sending initial questionnaire.
-        initHeader.innerHTML = `${event.data?.type}: New window initialized (${new Date().toISOString()})`;
-        initEl.innerHTML = `${messageFromOpenedWindow}`;
+        initHeader.textContent = `${event.data?.type}: New window initialized (${new Date().toISOString()})`;
+        initEl.textContent = `${messageFromOpenedWindow}`;
         sendQuestionnaire(); // Send initial questionnaire.
         break;
       case 'updateQuestionnaire':
         // Use this to get continuous updates. Wiil be triggered by every edit in
         // the form builder with about 0.5 second debounce.
-        updateHeader.innerHTML = `${event.data?.type}: Updated questionnaire from opened window (${new Date().toISOString()})`;
-        updateEl.innerHTML = `${messageFromOpenedWindow}`
+        updateHeader.textContent = `${event.data?.type}: Updated questionnaire from opened window (${new Date().toISOString()})`;
+        updateEl.textContent = `${messageFromOpenedWindow}`
         break;
       case 'closed':
         // Triggered when the window is closed. Use this to get last updated questionnaire
-        closedHeader.innerHTML = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
-        closedEl.innerHTML = `${messageFromOpenedWindow}`;
+        closedHeader.textContent = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
+        closedEl.textContent = `${messageFromOpenedWindow}`;
+        endFormBuilderFrame();
         break;
       case 'canceled':
         // Triggered when the window is canceled.
-        canceledHeader.innerHTML = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
-        canceledEl.innerHTML = `${messageFromOpenedWindow}`;
+        canceledHeader.textContent = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
+        canceledEl.textContent = `${messageFromOpenedWindow}`;
+        endFormBuilderFrame();
+        break;
+      case 'aborted':
+        // Triggered when the user closes the window (window.open()) after the questionnaire could not be
+        // converted to the requested FHIR version. The final questionnaire is not available.
+        abortedHeader.textContent = `${event.data?.type}: Window closed without the final questionnaire (${new Date().toISOString()})`;
+        abortedEl.textContent = `${messageFromOpenedWindow}`;
         break;
       default:
         console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
@@ -84,36 +162,138 @@
   }
 
   /**
-   * Open a child window to load form builder app.
+   * Show a message about the entered form builder URL, or clear it.
+   *
+   * @param message - Message to show. An empty string clears the message.
+   * @param isError - True to show the message as an error, false to show it as a warning.
    */
-  function openFormBuilder(fhirVersion) {
-    const referrerParam = 'referrer='+encodeURIComponent(window.location.href);
-    let versionParam = '';
-    if(fhirVersion) {
-      versionParam = '&fhirVersion='+encodeURIComponent(fhirVersion);
+  function showInputMessage(message, isError) {
+    inputMsgEl.textContent = message;
+    inputMsgEl.style.color = isError ? 'red' : 'darkorange';
+  }
+
+  /**
+   * Build the URL to load the form builder with the window-open API, from the entered form builder URL and
+   * FHIR version. An error is shown if the form builder URL is invalid, and a warning if it has the origin of
+   * this page. The form builder is expected to run on another origin, though the same origin also works.
+   *
+   * @returns The URL of the form builder's /window-open path, or null if the entered form builder URL is not
+   *   an absolute http or https URL.
+   */
+  function getWindowOpenUrl() {
+    let url = null;
+    try {
+      url = new URL(targetUrlEl.value.trim());
     }
-    const reqUrl = fbUrl+'/window-open?'+referrerParam+versionParam;
+    catch(e) {
+      url = null;
+    }
+    if(!url || !['http:', 'https:'].includes(url.protocol)) {
+      showInputMessage('Enter the absolute http or https URL of the form builder, e.g. http://localhost:9032', true);
+      return null;
+    }
+
+    if(url.origin === window.location.origin) {
+      showInputMessage(`Warning: the form builder URL has the origin of this page (${url.origin}). `+
+        'The form builder is expected to run on a different origin.', false);
+    }
+    else {
+      showInputMessage('', false);
+    }
+
+    originUrl = url.origin;
+    const fbUrl = url.origin + url.pathname.replace(/\/+$/, '');
+    let reqUrl = fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href);
+    if(fhirVersionEl.value) {
+      reqUrl += '&fhirVersion='+encodeURIComponent(fhirVersionEl.value);
+    }
+    return reqUrl;
+  }
+
+  /**
+   * Open a child window to load form builder app, using the entered form builder URL and FHIR version.
+   */
+  function openFormBuilder() {
+    const reqUrl = getWindowOpenUrl();
+    if(!reqUrl) {
+      return;
+    }
     fbWindow = window.open(reqUrl, 'formbuilder_window');
     fbWindow.focus();
-    urlEl.innerHTML = 'Opened url: ' + reqUrl;
+    urlEl.textContent = 'Opened url: ' + reqUrl;
+  }
+
+  /**
+   * Embed the form builder app in an iframe of this page, instead of opening a new window, using the entered
+   * form builder URL and FHIR version.
+   */
+  function embedFormBuilder() {
+    const reqUrl = getWindowOpenUrl();
+    if(!reqUrl) {
+      return;
+    }
+    removeFormBuilderFrame();
+    fbFrame = document.createElement('iframe');
+    fbFrame.id = 'fbFrame';
+    fbFrame.title = 'Form builder';
+    fbFrame.style.display = 'block';
+    fbFrame.style.width = '100%';
+    fbFrame.style.height = '80vh';
+    fbFrame.src = reqUrl;
+    document.getElementById('fbFrameContainer').appendChild(fbFrame);
+    fbWindow = fbFrame.contentWindow;
+    urlEl.textContent = 'Embedded url: ' + reqUrl;
+  }
+
+  /**
+   * Remove the embedded form builder, if any. The form builder cannot close the iframe itself.
+   */
+  function removeFormBuilderFrame() {
+    if(fbFrame) {
+      fbFrame.remove();
+      fbFrame = null;
+      fbWindow = null;
+    }
+  }
+
+  /**
+   * Handle the end of an embedded form builder session (closed or canceled): hide the iframe if
+   * "Hide the embedded form builder" is checked, otherwise remove it. A hidden form builder keeps
+   * running, so any message it still sends shows in the message log.
+   */
+  function endFormBuilderFrame() {
+    if(fbFrame && document.getElementById('hideOnEnd').checked) {
+      fbFrame.style.display = 'none';
+    }
+    else {
+      removeFormBuilderFrame();
+    }
   }
 
   /**
    * Send questionnaire to form builder using window.postMessage()
    */
   function sendQuestionnaire() {
-    if(fbWindow && !fbWindow.closed) {
+    if(fbWindow && !fbWindow.closed && originUrl) {
       fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, originUrl);
     }
   }
 
   /**
-   * Clear messages, typically to read fresh messages.
+   * Clear messages, typically to read fresh messages. The headers are reset to the message types.
    */
   function clearMessages() {
-    initEl.innerHTML = '';
-    updateEl.innerHTML = '';
-    closedEl.innerHTML = '';
+    initHeader.textContent = 'initialized';
+    updateHeader.textContent = 'updateQuestionnaire';
+    closedHeader.textContent = 'closed';
+    canceledHeader.textContent = 'canceled';
+    abortedHeader.textContent = 'aborted';
+    initEl.textContent = '';
+    updateEl.textContent = '';
+    closedEl.textContent = '';
+    canceledEl.textContent = '';
+    abortedEl.textContent = '';
+    msgLogEl.textContent = '';
   }
 </script>
 </body>
