@@ -362,4 +362,42 @@ describe('TemplateExtractDlgComponent', () => {
       expect(modalService.open).not.toHaveBeenCalled();
     });
   });
+
+  describe('duplicate warning', () => {
+    /**
+     * Read the rendered duplicate warning.
+     * @returns Warning element, or null when it is not displayed.
+     */
+    function getWarningElement(): HTMLElement | null {
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('.template-extract-duplicate-warning');
+    }
+
+    it('warns without blocking save when a new occurrence duplicates another row', async () => {
+      await createDialog('item', -1);
+      expect(getWarningElement()).toBeNull();
+
+      component.model.fullUrl = " 'item-first' ";
+      const warning = getWarningElement();
+      expect(warning.getAttribute('role')).toBe('alert');
+      expect(warning.textContent.trim()).toBe(
+        'Row 1 at this level already uses the same template with identical expressions. ' +
+        'Each occurrence is extracted separately, which may create duplicate or conflicting Bundle entries.'
+      );
+      expect(component.canSave()).toBeTrue();
+      component.save();
+      expect(dialogRef.close).toHaveBeenCalledOnceWith(jasmine.objectContaining({url: EXTENSION_URL_TEMPLATE_EXTRACT}));
+    });
+
+    it('does not compare the edited row with itself and clears when the template differs', async () => {
+      await createDialog('form', 0);
+      expect(getWarningElement()).toBeNull();
+
+      component.model.fullUrl = "'root-second'";
+      expect(getWarningElement().textContent).toContain('Row 2 at this level already uses');
+
+      component.model.templateReference = '#other-template';
+      expect(getWarningElement()).toBeNull();
+    });
+  });
 });

@@ -65,6 +65,12 @@
           </div>
         </div>
       </section>
+
+      @if (getDuplicateWarning(); as duplicateWarning) {
+        <div class="alert alert-warning mt-3 mb-0 template-extract-duplicate-warning" role="alert">
+          {{duplicateWarning}}
+        </div>
+      }
     </div>
   </mat-dialog-content>
 

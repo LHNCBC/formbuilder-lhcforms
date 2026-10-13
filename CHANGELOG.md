@@ -13,6 +13,11 @@ This project follows [Semantic Versioning](http://semver.org/).
   form-level template extraction expressions.
 - Recorded the original FHIR version of contained resources in imported
   Questionnaires, so that previews and exports warn about version mismatches.
+- Kept the recorded FHIR version of contained resources after form-level edits.
+- Rejected imported contained resources whose IDs are not JSON strings or are
+  empty, instead of accepting or replacing them.
+- Added a non-blocking warning when `templateExtract` extensions at the same
+  scope use the same template with identical expressions.
 
 ## [12.8.0] 2026-10-01
 ### Changed

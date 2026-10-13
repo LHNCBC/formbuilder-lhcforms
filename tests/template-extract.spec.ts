@@ -258,4 +258,43 @@ test.describe('Template-based extraction', () => {
     await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
     await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'root-second'");
   });
+
+  test('warns without blocking save when rows at the same scope duplicate an extraction', async ({page}) => {
+    await importRepeatedExtractionQuestionnaire(page);
+    await PWUtils.expandAdvancedFields(page);
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    const consequence =
+      'Each occurrence is extracted separately, which may create duplicate or conflicting Bundle entries.';
+    await expect(widget.getByRole('alert')).toHaveCount(0);
+
+    // Make row 2 identical to row 1.
+    await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
+    await dialog.getByRole('button', {name: 'Create or edit fullUrl FHIRPath expression'}).click();
+    const editor = page.locator('lhc-expression-editor');
+    await editor.locator('#final-expression').fill("'root-first'");
+    await editor.locator('#export').click();
+    await expect(editor).toHaveCount(0);
+    await expect(dialog.getByRole('alert')).toHaveText(
+      `Row 1 at this level already uses the same template with identical expressions. ${consequence}`
+    );
+    await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeEnabled();
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toBeHidden();
+
+    await expect(widget.getByRole('alert')).toHaveText(
+      `Rows 1 and 2 use the same template with identical expressions. ${consequence}`
+    );
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const extensions = questionnaire.extension.filter(extension => extension.url === EXTENSION_URL_TEMPLATE_EXTRACT);
+    expect(extensions).toHaveLength(2);
+    expect(extensions[1]).toEqual(extensions[0]);
+
+    // Removing the duplicate clears the warning.
+    await widget.getByRole('button', {name: 'Remove this row'}).nth(1).click();
+    await page.getByRole('dialog').getByRole('button', {name: 'Delete'}).click();
+    await expect(widget.locator('tbody > tr')).toHaveCount(1);
+    await expect(widget.getByRole('alert')).toHaveCount(0);
+  });
 });

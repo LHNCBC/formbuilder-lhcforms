@@ -93,9 +93,15 @@ export class ContainedResourceService {
       throw new Error('A contained resource cannot contain nested resources.');
     }
 
-    const generatedId = !resource.id;
+    // Generate an id only when it is absent. Explicitly supplied values, including
+    // falsy ones such as "", 0, false, and null, must be validated, not replaced.
+    const generatedId = resource.id === undefined;
     if(generatedId) {
       resource.id = this.generateResourceId(resource.resourceType, existingResources);
+    }
+    // RegExp.test() coerces non-strings (e.g. 123 to "123"), so check the type first.
+    if(typeof resource.id !== 'string') {
+      throw new Error(`The resource id ${JSON.stringify(resource.id)} must be a JSON string.`);
     }
     if(!/^[A-Za-z0-9\-.]{1,64}$/.test(resource.id)) {
       throw new Error(`The resource id "${resource.id}" is not a valid FHIR id.`);

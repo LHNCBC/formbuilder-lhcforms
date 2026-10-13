@@ -2,7 +2,12 @@ import fhir from 'fhir/r4';
 import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {
   buildTemplateExtractExtension,
+  findDuplicateTemplateExtractGroups,
+  formatRowNumbers,
   getContainedResourceOptions,
+  getDuplicateTemplateExtractDialogWarning,
+  getDuplicateTemplateExtractTableWarning,
+  getTemplateExtractSignature,
   hasTemplateExtractReference,
   parseTemplateExtractExtension
 } from './template-extract.util';
@@ -105,5 +110,71 @@ describe('templateExtract utilities', () => {
     expect(hasTemplateExtractReference(questionnaire, 'root-template')).toBeTrue();
     expect(hasTemplateExtractReference(questionnaire, 'item-template')).toBeTrue();
     expect(hasTemplateExtractReference(questionnaire, 'other')).toBeFalse();
+  });
+
+  describe('duplicate detection', () => {
+    /**
+     * Build a templateExtract extension with a template and optional expression children.
+     *
+     * @param reference - Local template reference.
+     * @param children - Additional child extensions.
+     * @returns The templateExtract extension.
+     */
+    const occurrence = (reference: string, children: fhir.Extension[] = []): fhir.Extension => ({
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [{url: 'template', valueReference: {reference}}, ...children]
+    });
+
+    it('groups rows with the same template and identical trimmed expressions', () => {
+      const extensions = [
+        occurrence('#a', [{url: 'fullUrl', valueString: '%id'}]),
+        occurrence('#a', [{url: 'fullUrl', valueString: '%other'}]),
+        occurrence('#b', [{url: 'fullUrl', valueString: '%id'}]),
+        // Whitespace and unknown child extensions do not change the extraction instruction.
+        occurrence('#a', [
+          {url: 'fullUrl', valueString: ' %id '},
+          {url: 'http://example.org/custom', valueCode: 'x'}
+        ]),
+        occurrence('#b'),
+        occurrence('#b', [{url: 'resourceId', valueString: '   '}])
+      ];
+
+      expect(findDuplicateTemplateExtractGroups(extensions)).toEqual([[0, 3], [4, 5]]);
+    });
+
+    it('reports no duplicates for distinct rows or an empty list', () => {
+      expect(findDuplicateTemplateExtractGroups([occurrence('#a'), occurrence('#b')])).toEqual([]);
+      expect(findDuplicateTemplateExtractGroups([])).toEqual([]);
+      expect(getDuplicateTemplateExtractTableWarning([])).toBe('');
+      expect(getDuplicateTemplateExtractDialogWarning([])).toBe('');
+    });
+
+    it('distinguishes the same expression in different fields', () => {
+      const fullUrl = occurrence('#a', [{url: 'fullUrl', valueString: '%id'}]);
+      const resourceId = occurrence('#a', [{url: 'resourceId', valueString: '%id'}]);
+      expect(getTemplateExtractSignature(parseTemplateExtractExtension(fullUrl)))
+        .not.toBe(getTemplateExtractSignature(parseTemplateExtractExtension(resourceId)));
+    });
+
+    it('formats row numbers', () => {
+      expect(formatRowNumbers([2])).toBe('Row 2');
+      expect(formatRowNumbers([1, 3])).toBe('Rows 1 and 3');
+      expect(formatRowNumbers([1, 2, 4])).toBe('Rows 1, 2, and 4');
+    });
+
+    it('builds the table and dialog warnings', () => {
+      const consequence =
+        'Each occurrence is extracted separately, which may create duplicate or conflicting Bundle entries.';
+      expect(getDuplicateTemplateExtractTableWarning([[0, 2], [1, 3, 4]])).toBe(
+        'Rows 1 and 3 use the same template with identical expressions. ' +
+        'Rows 2, 4, and 5 use the same template with identical expressions. ' + consequence
+      );
+      expect(getDuplicateTemplateExtractDialogWarning([2])).toBe(
+        'Row 2 at this level already uses the same template with identical expressions. ' + consequence
+      );
+      expect(getDuplicateTemplateExtractDialogWarning([1, 3])).toBe(
+        'Rows 1 and 3 at this level already use the same template with identical expressions. ' + consequence
+      );
+    });
   });
 });

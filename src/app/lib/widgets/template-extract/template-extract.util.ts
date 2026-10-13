@@ -32,6 +32,9 @@ export interface ContainedResourceOption {
 }
 
 const KNOWN_CHILD_URLS = new Set<string>(TEMPLATE_EXTRACT_CHILD_URLS);
+const EXPRESSION_URLS = TEMPLATE_EXTRACT_CHILD_URLS.slice(1) as TemplateExtractExpressionUrl[];
+const DUPLICATE_CONSEQUENCE =
+  'Each occurrence is extracted separately, which may create duplicate or conflicting Bundle entries.';
 
 /**
  * Convert a templateExtract extension into the widget's edit model.
@@ -180,3 +183,82 @@ export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, r
 
   return referencesResource(questionnaire.extension) || searchItems(questionnaire.item);
 }
+
+/**
+ * Build a key that identifies the extraction instruction of a templateExtract occurrence.
+ * Only the template reference and the trimmed expressions are compared; unknown child
+ * extensions and metadata do not change what is extracted.
+ *
+ * @param model - Parsed templateExtract occurrence.
+ * @returns Comparison key; equal keys denote duplicate extraction instructions.
+ */
+export function getTemplateExtractSignature(model: TemplateExtractEditModel): string {
+  return JSON.stringify([
+    model?.templateReference || '',
+    ...EXPRESSION_URLS.map(url => model?.[url]?.trim() || '')
+  ]);
+}
+
+/**
+ * Group the templateExtract occurrences of one scope that use the same template and
+ * identical expressions.
+ *
+ * @param extensions - templateExtract extensions at a single Questionnaire or item scope.
+ * @returns Groups of zero-based indexes, in row order; only groups with two or more rows.
+ */
+export function findDuplicateTemplateExtractGroups(extensions: fhir.Extension[] = []): number[][] {
+  const groups = new Map<string, number[]>();
+  extensions.forEach((extension, index) => {
+    const key = getTemplateExtractSignature(parseTemplateExtractExtension(extension));
+    groups.set(key, [...(groups.get(key) || []), index]);
+  });
+  return Array.from(groups.values()).filter(group => group.length > 1);
+}
+
+/**
+ * Format one-based row numbers as readable text, e.g. "Row 2" or "Rows 1, 2, and 4".
+ *
+ * @param rowNumbers - One-based row numbers; at least one is expected.
+ * @returns Row label followed by the numbers.
+ */
+export function formatRowNumbers(rowNumbers: number[]): string {
+  if(rowNumbers.length <= 1) {
+    return `Row ${rowNumbers[0]}`;
+  }
+  if(rowNumbers.length === 2) {
+    return `Rows ${rowNumbers[0]} and ${rowNumbers[1]}`;
+  }
+  return `Rows ${rowNumbers.slice(0, -1).join(', ')}, and ${rowNumbers[rowNumbers.length - 1]}`;
+}
+
+/**
+ * Build the summary-table warning for duplicate templateExtract occurrences.
+ *
+ * @param groups - Duplicate groups returned by findDuplicateTemplateExtractGroups().
+ * @returns Warning text, or an empty string when there are no duplicates.
+ */
+export function getDuplicateTemplateExtractTableWarning(groups: number[][]): string {
+  if(!groups.length) {
+    return '';
+  }
+  const duplicates = groups
+    .map(group => `${formatRowNumbers(group.map(index => index + 1))} use the same template with identical expressions.`)
+    .join(' ');
+  return `${duplicates} ${DUPLICATE_CONSEQUENCE}`;
+}
+
+/**
+ * Build the dialog warning shown when the occurrence being edited duplicates other rows.
+ *
+ * @param rowNumbers - One-based numbers of the other rows with the same extraction instruction.
+ * @returns Warning text, or an empty string when there are no duplicates.
+ */
+export function getDuplicateTemplateExtractDialogWarning(rowNumbers: number[]): string {
+  if(!rowNumbers.length) {
+    return '';
+  }
+  const verb = rowNumbers.length === 1 ? 'uses' : 'use';
+  return `${formatRowNumbers(rowNumbers)} at this level already ${verb} the same template with identical expressions. ` +
+    DUPLICATE_CONSEQUENCE;
+}
+
