@@ -110,6 +110,74 @@ describe('ContainedComponent', () => {
     });
   });
 
+  describe('importing a resource whose id is already used', () => {
+    const existing = [
+      {resourceType: 'ValueSet', id: 'vs1', status: 'active'},
+      {resourceType: 'Patient', id: 'patient-template', active: false, gender: 'female'}
+    ];
+    let reset: jasmine.Spy;
+
+    /**
+     * Select a local file with the given resource.
+     *
+     * @param resource - Resource JSON to import.
+     */
+    async function importFile(resource: object): Promise<void> {
+      const input = {
+        files: [new File([JSON.stringify(resource)], 'resource.json', {type: 'application/json'})],
+        value: 'resource.json'
+      };
+      await component.onResourceFileSelected({target: input} as unknown as Event);
+    }
+
+    beforeEach(() => {
+      reset = jasmine.createSpy('reset');
+      component['formProperty'] = {value: existing, addItem, reset} as any;
+    });
+
+    it('replaces the contents of a resource of the same type and keeps its id', async () => {
+      showDialog.and.returnValue({result: Promise.resolve('replace')});
+
+      await importFile({resourceType: 'Patient', id: 'patient-template', active: true});
+
+      expect(showDialog).toHaveBeenCalledOnceWith(
+        jasmine.anything(),
+        'Replace contained resource',
+        jasmine.stringContaining('A contained Patient with id <strong>patient-template</strong> already exists.'),
+        [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'replace'}]
+      );
+      expect(addItem).not.toHaveBeenCalled();
+      expect(reset).toHaveBeenCalledTimes(1);
+      const [resources, onlySelf] = reset.calls.mostRecent().args;
+      expect(onlySelf).toBeFalse();
+      expect(resources[0]).toBe(existing[0]);
+      expect(resources[1]).toEqual(jasmine.objectContaining({resourceType: 'Patient', id: 'patient-template', active: true}));
+      expect(resources[1].gender).toBeUndefined();
+      expect(component['containedResourceService'].getVersionInfo(resources[1])?.confidence).toBe('unknown');
+    });
+
+    it('keeps the existing resource when replacement is canceled', async () => {
+      showDialog.and.returnValue({result: Promise.resolve('cancel')});
+
+      await importFile({resourceType: 'Patient', id: 'patient-template', active: true});
+
+      expect(reset).not.toHaveBeenCalled();
+      expect(addItem).not.toHaveBeenCalled();
+    });
+
+    it('rejects a resource of another type', async () => {
+      await importFile({resourceType: 'Observation', id: 'patient-template', status: 'final'});
+
+      expect(showDialog).toHaveBeenCalledOnceWith(
+        jasmine.anything(),
+        'Unable to import contained resource',
+        'A contained Patient with id "patient-template" already exists. It can only be replaced by a Patient resource.'
+      );
+      expect(reset).not.toHaveBeenCalled();
+      expect(addItem).not.toHaveBeenCalled();
+    });
+  });
+
   it('routes Add menu actions to ValueSet creation and file upload', () => {
     spyOn(component, 'addItemWithAlert');
     spyOn(component, 'openResourceFilePicker');

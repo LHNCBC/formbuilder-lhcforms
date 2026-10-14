@@ -1717,13 +1717,16 @@ export class FormService {
 
   /**
    * Retrieve questionnaire from the storage and reapply the saved version records to
-   * its contained resources.
+   * its contained resources. Resources without a matching record, e.g. in forms autosaved
+   * before records were stored, are annotated from their own evidence only. The autosaved
+   * Questionnaire is always R5, so its version says nothing about the resources' source.
    * @returns The stored questionnaire, or null if none is stored.
    */
   autoLoadForm(): fhir.Questionnaire {
     const questionnaire = this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
     const records = this.autoLoad('containedResourceVersions') as ContainedResourceVersionRecord[];
     this.containedResourceService.applyVersionRecords(questionnaire, records);
+    this.containedResourceService.annotateContainedResources(questionnaire);
     return questionnaire;
   }
 

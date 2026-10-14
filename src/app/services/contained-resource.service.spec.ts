@@ -1,5 +1,5 @@
 import fhir from 'fhir/r4';
-import {ContainedResourceService} from './contained-resource.service';
+import {ContainedResourceService, DuplicateContainedResourceIdError} from './contained-resource.service';
 
 describe('ContainedResourceService', () => {
   let service: ContainedResourceService;
@@ -128,6 +128,72 @@ describe('ContainedResourceService', () => {
       JSON.stringify({resourceType: 'Patient', id: '123'}),
       [{resourceType: 'Patient', id: '123'} as fhir.Resource]
     )).toThrowError('A contained resource with id "123" already exists.');
+  });
+
+  it('identifies the existing resource that uses a duplicate id', () => {
+    let thrown: unknown;
+    try {
+      service.prepareImportedResource(
+        JSON.stringify({resourceType: 'Patient', id: 'patient-1'}),
+        [{resourceType: 'ValueSet', id: 'vs1'}, {resourceType: 'Patient', id: 'patient-1'}] as fhir.Resource[]
+      );
+    }
+    catch(error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(DuplicateContainedResourceIdError);
+    expect((thrown as DuplicateContainedResourceIdError).resourceId).toBe('patient-1');
+    expect((thrown as DuplicateContainedResourceIdError).existingIndex).toBe(1);
+  });
+
+  it('does not report version issues for ValueSets, whether created or imported', () => {
+    const records = [
+      {
+        resourceType: 'ValueSet',
+        id: 'created-vs',
+        info: {version: 'R5' as const, confidence: 'authoritative' as const, source: 'editor' as const}
+      },
+      {
+        resourceType: 'ValueSet',
+        id: 'imported-vs',
+        info: {version: 'R4' as const, confidence: 'inferred' as const, source: 'questionnaire' as const}
+      },
+      {
+        resourceType: 'ValueSet',
+        id: 'unknown-vs',
+        info: {version: null, confidence: 'unknown' as const, source: 'unknown' as const}
+      }
+    ];
+
+    ['STU3', 'R4', 'R5'].forEach((target) => {
+      expect(service.getCompatibilityIssues(records, target)).withContext(target).toEqual([]);
+      expect(service.getCompatibilityWarning(records, target)).withContext(target).toBe('');
+    });
+  });
+
+  it('describes how each resource version was recorded', () => {
+    const warning = service.getCompatibilityWarning([
+      {
+        resourceType: 'Patient',
+        id: 'created',
+        info: {version: 'R5', confidence: 'authoritative', source: 'editor'}
+      },
+      {
+        resourceType: 'Patient',
+        id: 'imported',
+        info: {version: 'R5', confidence: 'inferred', source: 'questionnaire'}
+      },
+      {
+        resourceType: 'Patient',
+        id: 'unknown',
+        info: {version: null, confidence: 'unknown', source: 'unknown'}
+      }
+    ], 'R4');
+
+    expect(warning).toContain('<li>Patient #created was created in Form Builder as FHIR R5.</li>');
+    expect(warning).toContain('<li>Patient #imported was imported as FHIR R5.</li>');
+    expect(warning).toContain('<li>Patient #unknown has an unknown FHIR version.</li>');
   });
 
   it('finds mismatched and unknown versions while accepting matching versions', () => {

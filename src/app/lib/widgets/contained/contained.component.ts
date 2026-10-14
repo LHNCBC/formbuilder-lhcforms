@@ -19,6 +19,7 @@ import type {UsageContextEditModel} from '../usage-context/usage-context.types';
 import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
 import {
   ContainedResourceService,
+  DuplicateContainedResourceIdError,
   PreparedContainedResource
 } from '../../../services/contained-resource.service';
 import {SharedObjectService} from '../../../services/shared-object.service';
@@ -31,6 +32,7 @@ import {
 } from '../fhir-search-dlg/fhir-search-dlg.component';
 import {FhirService} from '../../../services/fhir.service';
 import {firstValueFrom} from 'rxjs';
+import fhir from 'fhir/r4';
 import {getContainedResourceDisplay} from './contained-resource-display.util';
 
 
@@ -286,15 +288,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
       const resource = await firstValueFrom(
         this.fhirService.readResource(selection.resourceType, selection.id)
       );
-      const prepared = this.containedResourceService.prepareImportedResource(
-        resource,
-        this.formProperty.value || [],
-        '',
-        sourceVersion
-      );
-      if(await this.confirmNormalization(prepared)) {
-        this.formProperty.addItem(prepared.resource);
-      }
+      await this.importResource(resource, '', sourceVersion);
     }
     catch(error) {
       this.showImportError(error instanceof Error ? error.message : String(error));
@@ -325,14 +319,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     }
 
     try {
-      const prepared = this.containedResourceService.prepareImportedResource(
-        await selectedFile.text(),
-        this.formProperty.value || [],
-        selectedFile.type
-      );
-      if(await this.confirmNormalization(prepared)) {
-        this.formProperty.addItem(prepared.resource);
-      }
+      await this.importResource(await selectedFile.text(), selectedFile.type);
     }
     catch(error) {
       this.showImportError(error instanceof Error ? error.message : String(error));
@@ -340,6 +327,86 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     finally {
       input.value = '';
     }
+  }
+
+  /**
+   * Validate an imported resource and add it, or, when a resource of the same type already
+   * uses its id, replace that resource's contents after confirmation. Replacing keeps the id,
+   * so Usage Context and template-based extraction references stay valid.
+   *
+   * @param input - JSON file contents or a resource read from a FHIR server.
+   * @param contentType - Browser-provided file MIME type, when available.
+   * @param serverVersion - Known version of the source FHIR server, when applicable.
+   * @throws Error when the resource is invalid, or its id is used by a resource of another type.
+   */
+  private async importResource(
+    input: string | fhir.Resource,
+    contentType = '',
+    serverVersion?: string
+  ): Promise<void> {
+    const existingResources: fhir.Resource[] = this.formProperty.value || [];
+    let replaceIndex = -1;
+    let prepared: PreparedContainedResource;
+    try {
+      prepared = this.containedResourceService.prepareImportedResource(
+        input, existingResources, contentType, serverVersion
+      );
+    }
+    catch(error) {
+      if(!(error instanceof DuplicateContainedResourceIdError)) {
+        throw error;
+      }
+      replaceIndex = error.existingIndex;
+      // Validate against the other resources, as if the matching one were already removed.
+      prepared = this.containedResourceService.prepareImportedResource(
+        input,
+        existingResources.filter((_resource, index) => index !== replaceIndex),
+        contentType,
+        serverVersion
+      );
+      const existingType = existingResources[replaceIndex].resourceType;
+      if(existingType !== prepared.resource.resourceType) {
+        throw new Error(
+          `A contained ${existingType} with id "${error.resourceId}" already exists. ` +
+          `It can only be replaced by a ${existingType} resource.`
+        );
+      }
+      if(!await this.confirmReplacement(existingType, error.resourceId)) {
+        return;
+      }
+    }
+
+    if(!await this.confirmNormalization(prepared)) {
+      return;
+    }
+    if(replaceIndex < 0) {
+      this.formProperty.addItem(prepared.resource);
+    }
+    else {
+      // Reset the array so the row is rebuilt; resetting the row object would keep fields
+      // that are absent from the new contents.
+      const resources = [...existingResources];
+      resources[replaceIndex] = prepared.resource;
+      this.formProperty.reset(resources, false);
+    }
+  }
+
+  /**
+   * Ask whether an imported resource should replace the existing resource with the same id.
+   *
+   * @param resourceType - Type shared by the existing and imported resources.
+   * @param resourceId - Id shared by the existing and imported resources.
+   * @returns True when the existing resource should be replaced.
+   */
+  private async confirmReplacement(resourceType: string, resourceId: string): Promise<boolean> {
+    const modalRef = this.dialogService.showDialog(
+      MessageType.WARNING,
+      'Replace contained resource',
+      `A contained ${resourceType} with id <strong>${resourceId}</strong> already exists. ` +
+      'Replace its contents with the imported resource? The id is kept, so references to it remain valid.',
+      [{label: 'Cancel', value: 'cancel'}, {label: 'Replace', value: 'replace'}]
+    );
+    return modalRef.result.then((result) => result === 'replace').catch(() => false);
   }
 
   /**

@@ -71,12 +71,23 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
     this.syncFromExtensions();
   }
 
-  /** Observe questionnaire and extension changes after the table is materialized. */
+  /**
+   * Observe questionnaire, contained-resource, and extension changes after the table is materialized.
+   * At form level, the contained-resource table edits the same model, so its changes are
+   * observed directly; the shared questionnaire is only published when a form is loaded.
+   */
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.subscriptions.push(this.sharedObjectService.questionnaire$.subscribe(questionnaire => {
       this.refreshContainedResources(questionnaire);
     }));
+    const containedProperty = this.formProperty?.findRoot()?.getProperty('contained');
+    if(containedProperty) {
+      this.subscriptions.push(containedProperty.valueChanges.subscribe((contained: fhir.Resource[]) => {
+        // The root value is updated after this child emits, so use the emitted value.
+        this.setContainedResources(contained);
+      }));
+    }
     this.subscriptions.push(this.extensionsService.extensionsObservable.subscribe(() => {
       if(!this.updatingExtensions) {
         this.syncFromExtensions();
@@ -217,13 +228,26 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
   }
 
   /**
-   * Refresh the dialog/table labels from the current Questionnaire model.
-   * @param questionnaire - Current Questionnaire emitted by the shared model service.
+   * Refresh the dialog/table labels from the current Questionnaire model. At form level,
+   * the editor model holds the current contained resources. At item level, the working
+   * Questionnaire does, because form-level edits made after loading are not republished
+   * as the shared questionnaire.
+   * @param questionnaire - Questionnaire emitted by the shared model service, used when
+   *   no working Questionnaire is available.
    */
   private refreshContainedResources(questionnaire: fhir.Questionnaire): void {
-    const rootValue = this.formProperty?.findRoot()?.value;
-    const currentQuestionnaire = rootValue?.resourceType === 'Questionnaire' ? rootValue : questionnaire;
-    this.containedResources = getContainedResourceOptions(currentQuestionnaire);
+    const currentQuestionnaire = this.sharedObjectService.composeQuestionnaire(
+      this.formProperty?.findRoot()?.value
+    ) || questionnaire;
+    this.setContainedResources(currentQuestionnaire?.contained);
+  }
+
+  /**
+   * Replace the template choices used by the Add button, row labels, and dialog.
+   * @param contained - Current contained resources.
+   */
+  private setContainedResources(contained: fhir.Resource[] | undefined): void {
+    this.containedResources = getContainedResourceOptions({contained} as fhir.Questionnaire);
     this.cdr.markForCheck();
   }
 
