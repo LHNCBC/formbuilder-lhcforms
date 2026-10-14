@@ -37,6 +37,13 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
+    /*
+     * Disable Bootstrap's smooth scrolling. Since Playwright 1.64, actionability scrolling
+     * is instant, which can race with animated scrolls and ng-bootstrap popup repositioning,
+     * so clicks inside datepicker popups land on the wrong element.
+     */
+    reducedMotion: 'reduce',
+
     launchOptions: {
       slowMo: slowMo
     }

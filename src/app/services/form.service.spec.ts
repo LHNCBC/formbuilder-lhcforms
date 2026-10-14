@@ -10,6 +10,7 @@ import fhir from "fhir/r4";
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {ISchema, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
 import {ContainedResourceService} from './contained-resource.service';
+import {Util} from '../lib/util';
 
 describe('FormService', () => {
   let service: FormService;
@@ -55,6 +56,51 @@ describe('FormService', () => {
         info: {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
       }]
     ]);
+  });
+
+  describe('contained-resource versions on import', () => {
+    /**
+     * Create an R4 Questionnaire with an unprofiled contained Patient.
+     *
+     * @returns A Questionnaire whose FHIR version is detectable only from its own profile.
+     */
+    const r4QuestionnaireWithUnprofiledResource = (): fhir.Questionnaire => ({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      contained: [{resourceType: 'Patient', id: 'patient-1'}],
+      item: [{linkId: 'q1', type: 'string', text: 'Question 1'}]
+    });
+
+    it('records the source version when an R4 file is parsed', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+
+      const imported = service.parseQuestionnaire(JSON.stringify(r4QuestionnaireWithUnprofiledResource()));
+
+      expect(imported.meta.profile).toEqual([Util.R5_PROFILE_URL]);
+      expect(containedResourceService.getVersionInfo(imported.contained[0])).toEqual(
+        {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
+      );
+    });
+
+    it('keeps the source version when the converted Questionnaire is converted again', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+
+      // Server import converts once, then setQuestionnaire() converts the R5 result again.
+      const imported = service.convertToR5(service.convertToR5(r4QuestionnaireWithUnprofiledResource()));
+
+      expect(containedResourceService.getVersionInfo(imported.contained[0])?.version).toBe('R4');
+    });
+
+    it('does not replace version information that is already present', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+      const questionnaire = r4QuestionnaireWithUnprofiledResource();
+      containedResourceService.annotateEditorResource(questionnaire.contained[0]);
+
+      const imported = service.convertToR5(questionnaire);
+
+      expect(containedResourceService.getVersionInfo(imported.contained[0])?.source).toBe('editor');
+    });
   });
 
   it('should apply explicitly requested widget presets without sharing mutable objects', () => {
@@ -122,6 +168,45 @@ describe('FormService', () => {
     const usageContextSchema = service.cloneUsageContextSchema() as any;
 
     expect(usageContextSchema.properties.code.widget.id).toBe('usage-context-code');
+  });
+
+  it('should configure question and help text as multiline string-with-css fields', () => {
+    expect(service.itemSchema.properties.text.widget).toEqual(jasmine.objectContaining({
+      id: 'string-with-css',
+      rows: 1
+    }));
+    expect(service.itemSchema.properties.__$helpText.properties.text.widget).toEqual(jasmine.objectContaining({
+      id: 'string-with-css',
+      rows: 1
+    }));
+    expect(service.itemSchema.properties.prefix.widget.id).toBe('string-with-css');
+    expect(service.itemSchema.properties.prefix.widget.rows).toBeUndefined();
+  });
+
+  it('should configure questionnaire description and purpose as multiline fields', () => {
+    expect(service.flSchema.properties.description.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.flSchema.properties.purpose.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.flSchema.properties.implicitRules.widget.id).toBe('string');
+    expect(service.flSchema.properties.copyright.widget.rows).toBeUndefined();
+  });
+
+  it('should configure ValueSet description and purpose as multiline fields', () => {
+    expect(service.valueSetSchema.properties.description.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.valueSetSchema.properties.purpose.widget).toEqual(jasmine.objectContaining({
+      id: 'textarea',
+      rows: 1
+    }));
+    expect(service.valueSetSchema.properties.implicitRules.widget.id).toBe('string');
+    expect(service.valueSetSchema.properties.copyright.widget.rows).toBeUndefined();
   });
 
   it('should preserve the R5 ad Quantity comparator and reject older-version conversion', () => {
@@ -321,42 +406,213 @@ describe('FormService', () => {
     }
   });
 
-  it('should report an incompatible opener notification without repeating the dialog', () => {
-    const questionnaire = {
-      resourceType: 'Questionnaire',
-      status: 'draft',
-      useContext: [{
-        code: {code: 'age'},
-        valueQuantity: {
-          value: 10,
-          comparator: 'ad',
-          unit: 'mL'
-        }
-      }]
-    } as unknown as fhir.Questionnaire;
-    service.windowOpenerUrl = 'https://parent.example.com';
-    service['_windowOpenerFhirVersion'] = 'R4';
-    spyOn(console, 'error');
-    const showMessage = spyOn(service, 'showMessage');
+  describe('host window of the window-open API', () => {
+    afterEach(() => {
+      service.windowOpenerUrl = null;
+    });
 
-    expect(service.notifyWindowOpener({
-      type: 'updateQuestionnaire',
-      questionnaire
-    })).toBeFalse();
-    expect(service.notifyWindowOpener({
-      type: 'updateQuestionnaire',
-      questionnaire
-    })).toBeFalse();
-    expect(console.error).toHaveBeenCalledWith(
-      'Unable to send the questionnaire to the opener window.',
-      jasmine.any(Error)
-    );
-    expect(showMessage).toHaveBeenCalledOnceWith(
+    it('should use the opener window if opened with window.open()', () => {
+      const opener = {postMessage: jasmine.createSpy('postMessage')};
+      const originalOpener = window.opener;
+      window.opener = opener;
+      try {
+        expect(service.getHostWindow()).toBe(opener as any);
+        expect(service.isEmbedded()).toBeFalse();
+      } finally {
+        window.opener = originalOpener;
+      }
+    });
+
+    it('should use the parent window if embedded in an iframe', () => {
+      // Karma runs the specs in an iframe, unless debug.html is used.
+      const embedded = window.parent !== window;
+      expect(service.isEmbedded()).toBe(embedded);
+      expect(service.getHostWindow()).toBe(embedded ? window.parent : null);
+    });
+
+    it('should post messages to the host window with the referrer origin as target origin', () => {
+      const host = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      service.windowOpenerUrl = 'https://parent.example.com/app?x=1#y';
+
+      expect(service.windowOpenerUrl).toBe('https://parent.example.com/app?x=1#y');
+      expect(service.windowOpenerOrigin).toBe('https://parent.example.com');
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeTrue();
+      expect(host.postMessage).toHaveBeenCalledOnceWith({type: 'initialized'}, 'https://parent.example.com');
+    });
+
+    it('should not use a referrer that is not an absolute http or https URL', () => {
+      const host = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      spyOn(console, 'error');
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      service.windowOpenerUrl = 'not-a-url';
+
+      expect(service.windowOpenerUrl).toBeNull();
+      expect(service.windowOpenerOrigin).toBeNull();
+      expect(console.error).toHaveBeenCalledOnceWith(jasmine.stringContaining('"not-a-url"'));
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeFalse();
+      expect(host.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should reset the referrer without an error', () => {
+      spyOn(console, 'error');
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      service.windowOpenerUrl = null;
+
+      expect(service.windowOpenerUrl).toBeNull();
+      expect(service.windowOpenerOrigin).toBeNull();
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it('should not post messages without a host window', () => {
+      spyOn(service, 'getHostWindow').and.returnValue(null);
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      expect(service.notifyWindowOpener({type: 'initialized'})).toBeFalse();
+    });
+
+    it('should not post messages or report errors after the session ended', () => {
+      const host = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(host as any);
+      const convertSpy = spyOn(service, 'convertFromR5').and.throwError('not convertible');
+      const showMessage = spyOn(service, 'showMessage');
+      service.windowOpenerUrl = 'https://parent.example.com/app';
+
+      expect(service.isWindowOpenerSessionEnded()).toBeFalse();
+      service.endWindowOpenerSession();
+      expect(service.isWindowOpenerSessionEnded()).toBeTrue();
+
+      expect(service.notifyWindowOpener({type: 'canceled'})).toBeFalse();
+      expect(service.notifyWindowOpener({
+        type: 'updateQuestionnaire',
+        questionnaire: {resourceType: 'Questionnaire', status: 'draft'}
+      }, true)).toBeFalse();
+      expect(host.postMessage).not.toHaveBeenCalled();
+      expect(convertSpy).not.toHaveBeenCalled();
+      expect(showMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('incompatible opener notification', () => {
+    let showMessage: jasmine.Spy;
+    let hostWindow: {postMessage: jasmine.Spy};
+    /**
+     * Send an updateQuestionnaire message with a questionnaire that uses the R5-only Quantity comparator "ad",
+     * so that it cannot be converted to the requested R4.
+     *
+     * @param alwaysReportError - Passed to notifyWindowOpener().
+     * @returns Return value of notifyWindowOpener().
+     */
+    const notifyWithIncompatibleQuestionnaire = (alwaysReportError?: boolean): boolean => {
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        useContext: [{
+          code: {code: 'age'},
+          valueQuantity: {
+            value: 10,
+            comparator: 'ad',
+            unit: 'mL'
+          }
+        }]
+      } as unknown as fhir.Questionnaire;
+      return service.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire}, alwaysReportError);
+    };
+    const expectedMessage = [
       'Questionnaire update not sent',
       FormService.R5_QUANTITY_COMPARATOR_ERROR +
-        ' The opener application has not received the latest Questionnaire.',
+        ' The parent application has not received the latest Questionnaire.',
       MessageType.DANGER
-    );
+    ] as const;
+
+    beforeEach(() => {
+      // Independent of whether Karma runs the specs in an iframe (window.parent) or not (debug.html).
+      hostWindow = {postMessage: jasmine.createSpy('postMessage')};
+      spyOn(service, 'getHostWindow').and.returnValue(hostWindow as any);
+      service.windowOpenerUrl = 'https://parent.example.com';
+      service['_windowOpenerFhirVersion'] = 'R4';
+      spyOn(console, 'error');
+      showMessage = spyOn(service, 'showMessage');
+    });
+
+    afterEach(() => {
+      service.windowOpenerUrl = null;
+    });
+
+    it('should report an incompatible opener notification without repeating the dialog', () => {
+      expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
+      expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
+      expect(console.error).toHaveBeenCalledWith(
+        'Unable to send the questionnaire to the parent window.',
+        jasmine.any(Error)
+      );
+      expect(showMessage).toHaveBeenCalledOnceWith(...expectedMessage);
+      expect(hostWindow.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should repeat the dialog when alwaysReportError is set', () => {
+      expect(notifyWithIncompatibleQuestionnaire()).toBeFalse();
+      expect(notifyWithIncompatibleQuestionnaire(true)).toBeFalse();
+      expect(showMessage).toHaveBeenCalledTimes(2);
+      expect(showMessage.calls.mostRecent().args).toEqual([...expectedMessage]);
+      expect(hostWindow.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should keep the conversion error until a questionnaire is sent', () => {
+      expect(service.getWindowOpenerNotificationError()).toBe('');
+      notifyWithIncompatibleQuestionnaire();
+      expect(service.getWindowOpenerNotificationError()).toBe(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+
+      expect(service.notifyWindowOpener({
+        type: 'updateQuestionnaire',
+        questionnaire: {resourceType: 'Questionnaire', status: 'draft'}
+      })).toBeTrue();
+      expect(service.getWindowOpenerNotificationError()).toBe('');
+    });
+  });
+
+  describe('when the browser storage is not accessible', () => {
+    beforeEach(() => {
+      const securityError = new DOMException('Access is denied', 'SecurityError');
+      spyOnProperty(window, 'localStorage', 'get').and.throwError(securityError);
+      spyOnProperty(window, 'sessionStorage', 'get').and.throwError(securityError);
+      spyOn(console, 'error');
+    });
+
+    it('should read, store, and remove items without throwing', () => {
+      expect(service.getStorageItem('localStorage', 'key')).toBeNull();
+      expect(() => service.setStorageItem('sessionStorage', 'key', 'value')).not.toThrow();
+      expect(() => service.removeStorageItem('localStorage', 'key')).not.toThrow();
+      expect(console.error).toHaveBeenCalledTimes(3);
+      expect(console.error).toHaveBeenCalledWith('Unable to read "key" from localStorage.', jasmine.any(DOMException));
+    });
+
+    it('should report that no questionnaire is auto saved', () => {
+      expect(service.isAutoSaved()).toBeFalse();
+    });
+
+    it('should clear the tree node status map', () => {
+      service.treeNodeStatusMap = {node1: {treeNodeId: 'node1', linkId: 'q1'}};
+      expect(() => service.clearAutoSavedTreeNodeStatusMap()).not.toThrow();
+      expect(service.treeNodeStatusMap).toEqual({});
+    });
+  });
+
+  describe('browser storage items', () => {
+    afterEach(() => {
+      localStorage.removeItem('formServiceSpecKey');
+    });
+
+    it('should read, store, and remove an item', () => {
+      service.setStorageItem('localStorage', 'formServiceSpecKey', 'value');
+      expect(localStorage.getItem('formServiceSpecKey')).toBe('value');
+      expect(service.getStorageItem('localStorage', 'formServiceSpecKey')).toBe('value');
+      service.removeStorageItem('localStorage', 'formServiceSpecKey');
+      expect(service.getStorageItem('localStorage', 'formServiceSpecKey')).toBeNull();
+    });
   });
 
   it('should update __$helpText', () => {

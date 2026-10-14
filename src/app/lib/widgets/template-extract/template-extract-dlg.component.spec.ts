@@ -23,7 +23,12 @@ interface EditorInputs {
   display?: DisplaySectionControl;
 }
 
-/** Create an occurrence whose template reference is deliberately shared by other rows. */
+/**
+ * Create an occurrence whose template reference is deliberately shared by other rows.
+ *
+ * @param expression - FHIRPath expression stored in the fullUrl child.
+ * @returns A templateExtract extension referencing '#patient-template'.
+ */
 function templateExtension(expression: string): fhir.Extension {
   return {
     url: EXTENSION_URL_TEMPLATE_EXTRACT,
@@ -98,6 +103,7 @@ describe('TemplateExtractDlgComponent', () => {
     }).compileComponents();
     sharedObjectService = TestBed.inject(SharedObjectService);
     sharedObjectService.questionnaire = questionnaire;
+    sharedObjectService.currentQuestionnaire = questionnaire;
   });
 
   afterEach(() => modalResult?.complete());
@@ -164,7 +170,7 @@ describe('TemplateExtractDlgComponent', () => {
 
   it('uses an empty linkId and the selected root occurrence in the current form model', async () => {
     Object.assign(questionnaire, {__$editorState: true});
-    sharedObjectService.questionnaire = {...copy(questionnaire), title: 'Stale shared questionnaire'};
+    sharedObjectService.currentQuestionnaire = {...copy(questionnaire), title: 'Stale shared questionnaire'};
     await createDialog('form');
     component.model.templateReference = '#other-template';
     component.model.fullUrl = "'unsaved root draft'";
@@ -183,6 +189,21 @@ describe('TemplateExtractDlgComponent', () => {
     ]);
     expect(JSON.stringify(editorInputs.questionnaire)).not.toContain('__$');
     expect(questionnaire).toEqual(original);
+  });
+
+  it('gives the form-level expression editor the current items, which the form model excludes', async () => {
+    const currentQuestionnaire = copy(questionnaire);
+    sharedObjectService.currentQuestionnaire = currentQuestionnaire;
+    // Like the form-level editor model, the root value has no items.
+    delete questionnaire.item;
+    await createDialog('form');
+
+    component.editExpression('fullUrl');
+
+    expect(editorInputs.linkId).toBe('');
+    expect(editorInputs.questionnaire.title).toBe('Current questionnaire');
+    expect(editorInputs.questionnaire.item).toEqual(currentQuestionnaire.item);
+    expect(questionnaire.item).toBeUndefined();
   });
 
   (['form', 'item'] as const).forEach(scope => {
@@ -339,6 +360,44 @@ describe('TemplateExtractDlgComponent', () => {
       expect(() => component.editExpression('fullUrl'))
         .toThrowError('Cannot edit template extraction: the selected occurrence was not found.');
       expect(modalService.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('duplicate warning', () => {
+    /**
+     * Read the rendered duplicate warning.
+     * @returns Warning element, or null when it is not displayed.
+     */
+    function getWarningElement(): HTMLElement | null {
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('.template-extract-duplicate-warning');
+    }
+
+    it('warns without blocking save when a new occurrence duplicates another row', async () => {
+      await createDialog('item', -1);
+      expect(getWarningElement()).toBeNull();
+
+      component.model.fullUrl = " 'item-first' ";
+      const warning = getWarningElement();
+      expect(warning.getAttribute('role')).toBe('alert');
+      expect(warning.textContent.trim()).toBe(
+        'Row 1 at this level already uses the same template with identical expressions. ' +
+        'Each occurrence is extracted separately, which may create duplicate or conflicting Bundle entries.'
+      );
+      expect(component.canSave()).toBeTrue();
+      component.save();
+      expect(dialogRef.close).toHaveBeenCalledOnceWith(jasmine.objectContaining({url: EXTENSION_URL_TEMPLATE_EXTRACT}));
+    });
+
+    it('does not compare the edited row with itself and clears when the template differs', async () => {
+      await createDialog('form', 0);
+      expect(getWarningElement()).toBeNull();
+
+      component.model.fullUrl = "'root-second'";
+      expect(getWarningElement().textContent).toContain('Row 2 at this level already uses');
+
+      component.model.templateReference = '#other-template';
+      expect(getWarningElement()).toBeNull();
     });
   });
 });

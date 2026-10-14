@@ -177,7 +177,11 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     LForms.Util.setFHIRContext(this.fhirService.getSmartClient());
   }
 
-  /** Initialize the preview and discover extraction settings at all questionnaire scopes. */
+  /**
+   * Initialize the tabs and build the warnings shown on the rendered-form tab:
+   * missing preferred terminology servers and contained resources that may not be
+   * compatible with R5. Then select the default JSON version tab.
+   */
   ngOnInit() {
     this.activeTopLevelTabIndex = 0;
     this.activeJsonTabIndex = FHIR_VERSIONS.R4;
@@ -215,8 +219,9 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Update format and server based on version tab selected.
-   * @param ngEvent - Angular event
+   * Update format and server based on version tab selected, and build the JSON and the
+   * combined subjectType and contained-resource compatibility warnings for that version.
+   * @param ngEvent - Index of the selected version tab (an FHIR_VERSIONS value).
    */
   onJsonVersionSelected(ngEvent: number) {
     this.format = FHIR_VERSIONS[ngEvent] as FHIR_VERSION_TYPE;

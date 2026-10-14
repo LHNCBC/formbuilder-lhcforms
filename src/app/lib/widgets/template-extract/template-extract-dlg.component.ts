@@ -22,6 +22,8 @@ import {
   buildTemplateExtractExtension,
   ContainedResourceOption,
   getContainedResourceOptions,
+  getDuplicateTemplateExtractDialogWarning,
+  getTemplateExtractSignature,
   parseTemplateExtractExtension,
   TemplateExtractEditModel,
   TemplateExtractExpressionUrl
@@ -82,6 +84,8 @@ export class TemplateExtractDlgComponent implements OnInit {
   containedResources: ContainedResourceOption[] = [];
   isNew = true;
   bundleFieldsCollapsed = true;
+  // Comparison keys of the other rows at this scope, which cannot change while the dialog is open.
+  private otherRowSignatures: {rowNumber: number; signature: string}[] = [];
 
   /** Initialize the dialog from an existing occurrence or a blank model. */
   ngOnInit(): void {
@@ -93,6 +97,7 @@ export class TemplateExtractDlgComponent implements OnInit {
       ? parseTemplateExtractExtension(extension)
       : this.createNewModel();
     this.bundleFieldsCollapsed = !this.hasBundleFieldValue();
+    this.otherRowSignatures = this.getOtherRowSignatures();
 
     const questionnaire = this.getQuestionnaire();
     this.containedResources = getContainedResourceOptions(questionnaire);
@@ -124,6 +129,19 @@ export class TemplateExtractDlgComponent implements OnInit {
   /** Toggle visibility of the optional Bundle entry expression fields. */
   toggleBundleFields(): void {
     this.bundleFieldsCollapsed = !this.bundleFieldsCollapsed;
+  }
+
+  /**
+   * Describe other rows at this scope that already use the selected template with identical
+   * expressions. The warning does not block saving, because repetition may be intentional.
+   * @returns Warning text, or an empty string when the draft is not a duplicate.
+   */
+  getDuplicateWarning(): string {
+    const signature = getTemplateExtractSignature(this.model);
+    const rowNumbers = this.otherRowSignatures
+      .filter(row => row.signature === signature)
+      .map(row => row.rowNumber);
+    return getDuplicateTemplateExtractDialogWarning(rowNumbers);
   }
 
   /**
@@ -182,14 +200,28 @@ export class TemplateExtractDlgComponent implements OnInit {
   }
 
   /**
+   * Compute comparison keys for the rows at this scope other than the one being edited.
+   * @returns One-based row numbers with their comparison keys.
+   */
+  private getOtherRowSignatures(): {rowNumber: number; signature: string}[] {
+    return ((this.data.arrayProperty?.properties || []) as {value: unknown}[])
+      .map((property, index) => ({
+        rowNumber: index + 1,
+        signature: getTemplateExtractSignature(parseTemplateExtractExtension(property?.value as fhir.Extension))
+      }))
+      .filter((_row, index) => index !== this.data.rowIndex);
+  }
+
+  /**
    * Return a clean current Questionnaire suitable for the expression editor.
+   * At form level, the editor model excludes items, so it is combined with the current
+   * item tree; at item level, the current Questionnaire is used.
    * @returns Questionnaire without form-builder-only fields.
    */
   private getQuestionnaire(): fhir.Questionnaire {
-    const rootValue = this.data.arrayProperty?.findRoot()?.value;
-    const questionnaire = rootValue?.resourceType === 'Questionnaire'
-      ? rootValue
-      : this.sharedObjectService.questionnaire;
+    const questionnaire = this.sharedObjectService.composeQuestionnaire(
+      this.data.arrayProperty?.findRoot()?.value
+    );
     return Util.convertToQuestionnaireJSON(questionnaire) as fhir.Questionnaire;
   }
 

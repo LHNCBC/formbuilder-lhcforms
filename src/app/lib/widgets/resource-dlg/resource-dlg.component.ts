@@ -13,6 +13,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
 import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
+import {SharedObjectService} from '../../../services/shared-object.service';
 import {Util} from '../../util';
 
 /**
@@ -49,8 +50,14 @@ export class ResourceDlgComponent {
   matDialogRef = inject(MatDialogRef<ResourceDlgComponent>);
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
+  private sharedObjectService = inject(SharedObjectService);
   private readonly originalResourceId: string | undefined;
 
+  /**
+   * Initialize the edited resource and its original id. The resource type comes from the
+   * resource itself, then the form property schema, then the dialog data, then 'ValueSet';
+   * it selects the editor schema.
+   */
   constructor() {
     this.input = this.data.formProperty?.value;
     this.changedValue = this.input;
@@ -73,7 +80,9 @@ export class ResourceDlgComponent {
 
 
   /**
-   * Handle the dialog save and close event.
+   * Handle the dialog save and close event. For a ValueSet, block saving when the id is
+   * empty, the form has errors, or the id of a resource referenced by Usage Context or
+   * template-based extraction was changed.
    */
   save() {
     if(this.resourceType === 'ValueSet') {
@@ -98,7 +107,8 @@ export class ResourceDlgComponent {
   }
 
   /**
-   * Check whether an edited id would break a local Usage Context reference.
+   * Check whether an edited id would break a local Usage Context or template-based
+   * extraction reference.
    *
    * @returns True when the original id is referenced and the edited id differs.
    */
@@ -109,7 +119,11 @@ export class ResourceDlgComponent {
     return this.isReferencedByUsageContext() || this.isReferencedByTemplateExtraction();
   }
 
-  /** Check whether Usage Context targets the original contained resource id. */
+  /**
+   * Check whether Usage Context targets the original contained resource id.
+   *
+   * @returns True when a Usage Context valueReference targets the original id.
+   */
   private isReferencedByUsageContext(): boolean {
     const usageContexts = this.data.formProperty.findRoot()
       ?.getProperty('useContext')
@@ -117,10 +131,17 @@ export class ResourceDlgComponent {
     return hasUsageContextLocalReference(usageContexts, this.originalResourceId);
   }
 
-  /** Check whether template-based extraction targets the original contained resource id. */
+  /**
+   * Check whether template-based extraction targets the original contained resource id,
+   * at the Questionnaire root or on any item. Contained resources are edited from the
+   * form-level editor, whose model excludes items, so items are read from the current
+   * Questionnaire.
+   *
+   * @returns True when a templateExtract extension references the original id.
+   */
   private isReferencedByTemplateExtraction(): boolean {
     return hasTemplateExtractReference(
-      this.data.formProperty.findRoot()?.value,
+      this.sharedObjectService.composeQuestionnaire(this.data.formProperty.findRoot()?.value),
       this.originalResourceId
     );
   }

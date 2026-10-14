@@ -113,6 +113,23 @@ describe('ContainedResourceService', () => {
     )).toThrowError('A contained resource with id "same-id" already exists.');
   });
 
+  it('rejects explicitly supplied non-string and empty ids instead of generating one', () => {
+    [123, 0, true, false, null, ['abc'], {value: 'abc'}].forEach((id) => {
+      expect(() => service.prepareImportedResource(JSON.stringify({resourceType: 'Patient', id})))
+        .withContext(JSON.stringify(id))
+        .toThrowError(`The resource id ${JSON.stringify(id)} must be a JSON string.`);
+    });
+    expect(() => service.prepareImportedResource(JSON.stringify({resourceType: 'Patient', id: ''})))
+      .toThrowError('The resource id "" is not a valid FHIR id.');
+  });
+
+  it('detects a duplicate of an existing string id', () => {
+    expect(() => service.prepareImportedResource(
+      JSON.stringify({resourceType: 'Patient', id: '123'}),
+      [{resourceType: 'Patient', id: '123'} as fhir.Resource]
+    )).toThrowError('A contained resource with id "123" already exists.');
+  });
+
   it('finds mismatched and unknown versions while accepting matching versions', () => {
     const records = [
       {

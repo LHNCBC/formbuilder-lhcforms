@@ -1,4 +1,7 @@
 import {ContainedResourceService} from '../../../services/contained-resource.service';
+import {SharedObjectService} from '../../../services/shared-object.service';
+import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {TableComponent} from '../table/table.component';
 import {ContainedComponent} from './contained.component';
 import {of} from 'rxjs';
 
@@ -119,5 +122,40 @@ describe('ContainedComponent', () => {
     expect(component.addItemWithAlert).toHaveBeenCalledTimes(1);
     expect(component.openResourceFilePicker).toHaveBeenCalledTimes(1);
     expect(serverImport).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks deleting a resource referenced only by an item-level templateExtract', () => {
+    const sharedObjectService = new SharedObjectService();
+    // The form-level model has no items; they come from the current Questionnaire.
+    sharedObjectService.currentQuestionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      item: [{
+        linkId: 'q1',
+        type: 'string',
+        extension: [{
+          url: EXTENSION_URL_TEMPLATE_EXTRACT,
+          extension: [{url: 'template', valueReference: {reference: '#patient-template'}}]
+        }]
+      }]
+    };
+    Object.defineProperty(component, 'sharedObjectService', {value: sharedObjectService});
+    const formLevelRoot = {
+      value: {resourceType: 'Questionnaire', status: 'draft'},
+      getProperty: () => ({value: []})
+    };
+    component['formProperty'] = {
+      properties: [{value: {resourceType: 'Patient', id: 'patient-template'}}],
+      findRoot: () => formLevelRoot
+    } as any;
+    const parentConfirm = spyOn(TableComponent.prototype, 'confirmRemoveProperty');
+
+    component.confirmRemoveProperty(0);
+
+    expect(showDialog).toHaveBeenCalledTimes(1);
+    expect(showDialog.calls.mostRecent().args[2]).toBe(
+      'The contained resource #patient-template is referenced by Template-based extraction and cannot be deleted.'
+    );
+    expect(parentConfirm).not.toHaveBeenCalled();
   });
 });

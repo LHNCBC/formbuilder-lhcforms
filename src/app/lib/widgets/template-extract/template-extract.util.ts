@@ -32,12 +32,25 @@ export interface ContainedResourceOption {
 }
 
 const KNOWN_CHILD_URLS = new Set<string>(TEMPLATE_EXTRACT_CHILD_URLS);
+const EXPRESSION_URLS = TEMPLATE_EXTRACT_CHILD_URLS.slice(1) as TemplateExtractExpressionUrl[];
+const DUPLICATE_CONSEQUENCE =
+  'Each occurrence is extracted separately, which may create duplicate or conflicting Bundle entries.';
 
 /**
  * Convert a templateExtract extension into the widget's edit model.
+ *
+ * @param extension - A templateExtract extension, possibly with unknown child slices.
+ * @returns Edit model with empty strings for absent children and a copy of the source extension.
  */
 export function parseTemplateExtractExtension(extension: fhir.Extension): TemplateExtractEditModel {
   const children = extension?.extension || [];
+
+  /**
+   * Read the valueString of the first child extension with the given url.
+   *
+   * @param url - Child extension url.
+   * @returns The child's valueString, or an empty string if absent.
+   */
   const getString = (url: TemplateExtractExpressionUrl): string =>
     children.find(child => child.url === url)?.valueString || '';
 
@@ -57,6 +70,10 @@ export function parseTemplateExtractExtension(extension: fhir.Extension): Templa
  * Convert the widget's edit model to a valid complex templateExtract extension.
  * Unknown child slices and metadata on known slices are retained when an imported
  * extension is edited.
+ *
+ * @param model - Edit model; empty expression fields are omitted from the result.
+ * @returns A templateExtract extension with the template child first, followed by
+ *   non-empty expression children and then any unknown children.
  */
 export function buildTemplateExtractExtension(model: TemplateExtractEditModel): fhir.Extension {
   const result: fhir.Extension = copy(model.sourceExtension || {url: EXTENSION_URL_TEMPLATE_EXTRACT});
@@ -114,6 +131,9 @@ export function buildTemplateExtractExtension(model: TemplateExtractEditModel): 
 
 /**
  * Return selectable local references for the resources already contained by a Questionnaire.
+ *
+ * @param questionnaire - Questionnaire whose contained resources are listed.
+ * @returns Options for contained resources that have both an id and a resourceType.
  */
 export function getContainedResourceOptions(questionnaire: fhir.Questionnaire): ContainedResourceOption[] {
   return (questionnaire?.contained || [])
@@ -127,12 +147,23 @@ export function getContainedResourceOptions(questionnaire: fhir.Questionnaire): 
 /**
  * Check whether a contained resource is targeted by a templateExtract extension
  * at the Questionnaire root or on any Questionnaire item.
+ *
+ * @param questionnaire - Questionnaire to search.
+ * @param resourceId - Contained resource id, without the leading '#'.
+ * @returns True when any templateExtract extension's template child references '#resourceId'.
  */
 export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, resourceId?: string): boolean {
   if(!questionnaire || !resourceId) {
     return false;
   }
   const reference = `#${resourceId}`;
+
+  /**
+   * Check whether any extension in a list is a templateExtract targeting the resource.
+   *
+   * @param extensions - Extensions of the Questionnaire or of an item.
+   * @returns True when a templateExtract extension references the resource.
+   */
   const referencesResource = (extensions: fhir.Extension[] = []): boolean =>
     extensions.some(extension =>
       extension.url === EXTENSION_URL_TEMPLATE_EXTRACT &&
@@ -140,8 +171,94 @@ export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, r
         child.url === 'template' && child.valueReference?.reference === reference
       )
     );
+
+  /**
+   * Recursively check items and their descendants for a templateExtract reference.
+   *
+   * @param items - Questionnaire items to search.
+   * @returns True when any item in the subtree references the resource.
+   */
   const searchItems = (items: fhir.QuestionnaireItem[] = []): boolean =>
     items.some(item => referencesResource(item.extension) || searchItems(item.item));
 
   return referencesResource(questionnaire.extension) || searchItems(questionnaire.item);
 }
+
+/**
+ * Build a key that identifies the extraction instruction of a templateExtract occurrence.
+ * Only the template reference and the trimmed expressions are compared; unknown child
+ * extensions and metadata do not change what is extracted.
+ *
+ * @param model - Parsed templateExtract occurrence.
+ * @returns Comparison key; equal keys denote duplicate extraction instructions.
+ */
+export function getTemplateExtractSignature(model: TemplateExtractEditModel): string {
+  return JSON.stringify([
+    model?.templateReference || '',
+    ...EXPRESSION_URLS.map(url => model?.[url]?.trim() || '')
+  ]);
+}
+
+/**
+ * Group the templateExtract occurrences of one scope that use the same template and
+ * identical expressions.
+ *
+ * @param extensions - templateExtract extensions at a single Questionnaire or item scope.
+ * @returns Groups of zero-based indexes, in row order; only groups with two or more rows.
+ */
+export function findDuplicateTemplateExtractGroups(extensions: fhir.Extension[] = []): number[][] {
+  const groups = new Map<string, number[]>();
+  extensions.forEach((extension, index) => {
+    const key = getTemplateExtractSignature(parseTemplateExtractExtension(extension));
+    groups.set(key, [...(groups.get(key) || []), index]);
+  });
+  return Array.from(groups.values()).filter(group => group.length > 1);
+}
+
+/**
+ * Format one-based row numbers as readable text, e.g. "Row 2" or "Rows 1, 2, and 4".
+ *
+ * @param rowNumbers - One-based row numbers; at least one is expected.
+ * @returns Row label followed by the numbers.
+ */
+export function formatRowNumbers(rowNumbers: number[]): string {
+  if(rowNumbers.length <= 1) {
+    return `Row ${rowNumbers[0]}`;
+  }
+  if(rowNumbers.length === 2) {
+    return `Rows ${rowNumbers[0]} and ${rowNumbers[1]}`;
+  }
+  return `Rows ${rowNumbers.slice(0, -1).join(', ')}, and ${rowNumbers[rowNumbers.length - 1]}`;
+}
+
+/**
+ * Build the summary-table warning for duplicate templateExtract occurrences.
+ *
+ * @param groups - Duplicate groups returned by findDuplicateTemplateExtractGroups().
+ * @returns Warning text, or an empty string when there are no duplicates.
+ */
+export function getDuplicateTemplateExtractTableWarning(groups: number[][]): string {
+  if(!groups.length) {
+    return '';
+  }
+  const duplicates = groups
+    .map(group => `${formatRowNumbers(group.map(index => index + 1))} use the same template with identical expressions.`)
+    .join(' ');
+  return `${duplicates} ${DUPLICATE_CONSEQUENCE}`;
+}
+
+/**
+ * Build the dialog warning shown when the occurrence being edited duplicates other rows.
+ *
+ * @param rowNumbers - One-based numbers of the other rows with the same extraction instruction.
+ * @returns Warning text, or an empty string when there are no duplicates.
+ */
+export function getDuplicateTemplateExtractDialogWarning(rowNumbers: number[]): string {
+  if(!rowNumbers.length) {
+    return '';
+  }
+  const verb = rowNumbers.length === 1 ? 'uses' : 'use';
+  return `${formatRowNumbers(rowNumbers)} at this level already ${verb} the same template with identical expressions. ` +
+    DUPLICATE_CONSEQUENCE;
+}
+

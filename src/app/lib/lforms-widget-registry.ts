@@ -83,6 +83,9 @@ import {QuestionnaireHiddenComponent} from './widgets/questionnaire-hidden/quest
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
+  /**
+   * Register Form Builder's custom widgets by the widget ids used in the layout and schema files.
+   */
   constructor() {
     super();
     this.register('answer-value-set', AnswerValueSetComponent);

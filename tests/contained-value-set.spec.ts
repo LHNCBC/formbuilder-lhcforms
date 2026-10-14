@@ -49,8 +49,14 @@ test.describe('Contained resources table in form level page', () => {
 
     await dialog.getByLabel('Version', {exact: true}).fill('A version');
     await dialog.getByLabel('Name', {exact: true}).fill('A name');
-    await dialog.getByLabel('Description', {exact: true}).fill('A description');
-    await dialog.getByLabel('Purpose', {exact: true}).fill('A purpose');
+    const descriptionField = dialog.getByLabel('Description', {exact: true});
+    const purposeField = dialog.getByLabel('Purpose', {exact: true});
+    await expect(descriptionField).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(purposeField).toHaveJSProperty('tagName', 'TEXTAREA');
+    await expect(descriptionField).toHaveAttribute('rows', '1');
+    await expect(purposeField).toHaveAttribute('rows', '1');
+    await descriptionField.fill('A description\nwith a second line');
+    await purposeField.fill('A purpose\nwith a second line');
 
     await dialog.getByLabel('Publisher', {exact: true}).fill('A publisher');
     await dialog.getByLabel('Copyright', {exact: true}).fill('A copyright');
@@ -74,8 +80,8 @@ test.describe('Contained resources table in form level page', () => {
     expect(vs.status).toBe('active');
     expect(vs.version).toBe('A version');
     expect(vs.name).toBe('A name');
-    expect(vs.description).toBe('A description');
-    expect(vs.purpose).toBe('A purpose');
+    expect(vs.description).toBe('A description\nwith a second line');
+    expect(vs.purpose).toBe('A purpose\nwith a second line');
     expect(vs.publisher).toBe('A publisher');
     expect(vs.copyright).toBe('A copyright');
     expect(vs.expansion.contains).toStrictEqual([{
@@ -143,8 +149,8 @@ test.describe(() => {
 
     await expect(dialog.getByLabel('Version', {exact: true})).toHaveValue('2.0.0');
     await expect(dialog.getByLabel('Name', {exact: true})).toHaveValue('Name - Contained Value Set Two');
-    await expect(dialog.getByLabel('Description', {exact: true})).toHaveValue('Some description2');
-    await expect(dialog.getByLabel('Purpose', {exact: true})).toHaveValue('Some purpose2');
+    await expect(dialog.getByLabel('Description', {exact: true})).toHaveValue('Some description2\nwith a second line');
+    await expect(dialog.getByLabel('Purpose', {exact: true})).toHaveValue('Some purpose2\nwith a second line');
 
     const metaTags = PWUtils.getTableByFieldLabel(dialog, 'Tags');
     await expect(PWUtils.getTableCellInput(metaTags, 1, 1)).toHaveValue('Example tag21');
@@ -267,6 +273,71 @@ test.describe('Contained resource local-file import', () => {
     });
     await page.getByRole('tab', {name: 'R5 Version'}).click();
     await expect(page.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toBeVisible();
+  });
+
+  test('rejects a resource whose id is not a JSON string', async ({page}) => {
+    const containedTable = PWUtils.getTableByFieldLabel(
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    const chooserPromise = page.waitForEvent('filechooser');
+    await page.getByRole('button', {name: 'Add contained resource'}).click();
+    await page.getByRole('button', {name: 'Upload from a local file…'}).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles({
+      name: 'numeric-id-patient.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify({resourceType: 'Patient', id: 123}))
+    });
+
+    const errorDialog = page.getByRole('dialog', {name: 'Unable to import contained resource'});
+    await expect(errorDialog).toContainText('The resource id 123 must be a JSON string.');
+    await errorDialog.getByRole('button', {name: 'Close'}).last().click();
+    await expect(errorDialog).not.toBeVisible();
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(0);
+  });
+});
+
+test.describe('Contained resource versions in an imported Questionnaire', () => {
+  test.beforeEach(async ({page}) => {
+    await page.goto('/');
+    const mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+    await PWUtils.uploadFile(page, 'contained-unprofiled-r4-questionnaire.json', false);
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+  });
+
+  test('records the imported Questionnaire version for an unprofiled contained resource', async ({page}) => {
+    const containedTable = PWUtils.getTableByFieldLabel(
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(1);
+    await expect(PWUtils.getTableCell(containedTable, 1, 1)).toHaveText('Patient');
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('patient-1');
+    // The Questionnaire is converted to R5 on import; the resource keeps the source version.
+    await expect(PWUtils.getTableCell(containedTable, 1, 4)).toHaveText('R4');
+
+    await page.getByRole('button', {name: 'Preview'}).click();
+    await expect(page.locator('.contained-resource-version-warning'))
+      .toContainText('Patient #patient-1 was imported as FHIR R4');
+  });
+
+  test('keeps the imported version after a form-level edit', async ({page}) => {
+    const titleField = page.locator('lfb-form-fields').getByLabel('Title', {exact: true});
+    await titleField.fill('Edited title');
+    await PWUtils.waitUntilLocalStorageItemIsUpdated(page, 'fhirQuestionnaire', 'Edited title');
+
+    const records = await page.evaluate(() => JSON.parse(window.localStorage.getItem('containedResourceVersions')));
+    expect(records).toEqual([{
+      resourceType: 'Patient',
+      id: 'patient-1',
+      info: {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
+    }]);
+
+    await page.getByRole('button', {name: 'Preview'}).click();
+    await expect(page.locator('.contained-resource-version-warning'))
+      .toContainText('Patient #patient-1 was imported as FHIR R4');
   });
 });
 

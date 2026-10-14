@@ -2,7 +2,7 @@
  * Util functions for playwright scripts
  */
 
-import { Locator, Page, expect } from "@playwright/test";
+import { Locator, Page, TestInfo, expect } from "@playwright/test";
 import { JsonPointer } from "json-ptr";
 import fhir from "fhir/r4";
 import path from "path";
@@ -1486,6 +1486,50 @@ export class PWUtils {
   static ignorePageCloseError(error: Error) {
     if(!(error instanceof Error) || !(error.message.includes('Target page, context or browser has been closed'))) {
       throw error;
+    }
+  }
+
+  /**
+   * Capture the browser console messages and uncaught errors of the page, including those of its frames, such
+   * as an embedded iframe. Use attachBrowserConsoleOnFailure() to attach them to the result of a failed test.
+   * If the PW_BROWSER_CONSOLE environment variable is set, they are also printed while the test runs, for
+   * debugging.
+   *
+   * @param page - Page to capture the browser console of.
+   * @returns Captured lines, appended as the page logs messages, in the form '[type] text'.
+   */
+  static captureBrowserConsole(page: Page): string[] {
+    const lines: string[] = [];
+    const printLive = !!process.env.PW_BROWSER_CONSOLE;
+
+    const capture = (type: string, text: string) => {
+      const line = `[${type}] ${text}`;
+      lines.push(line);
+      if(printLive) {
+        if(type === 'error' || type === 'pageerror') {
+          console.error(line);
+        }
+        else {
+          console.log(line);
+        }
+      }
+    };
+
+    page.on('console', (msg) => capture(msg.type(), msg.text()));
+    page.on('pageerror', (error) => capture('pageerror', error.stack || error.message));
+    return lines;
+  }
+
+  /**
+   * Attach the captured browser console lines to the test result as 'browser-console.txt', if the test did not
+   * end with its expected status. Nothing is attached for a passing test, or if nothing was captured.
+   *
+   * @param testInfo - Info of the test that is ending, typically from an afterEach hook.
+   * @param lines - Lines returned by captureBrowserConsole().
+   */
+  static async attachBrowserConsoleOnFailure(testInfo: TestInfo, lines: string[]): Promise<void> {
+    if(testInfo.status !== testInfo.expectedStatus && lines.length > 0) {
+      await testInfo.attach('browser-console.txt', {body: lines.join('\n'), contentType: 'text/plain'});
     }
   }
 }

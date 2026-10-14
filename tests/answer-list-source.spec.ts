@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import {test, expect, Page, Locator} from '@playwright/test';
 import { MainPO, SNOMED_URL } from './po/main-po';
 import { PWUtils } from './pw-utils';
 
@@ -39,6 +39,22 @@ const checkReferencedOptionDialog = async (page: Page, expectedText: string, but
   expect(msgText.replace(/\s+/g, ' ').trim()).toEqual(expectedText);
 
   await PWUtils.clickDialogButton(page, { title: "Option referenced by other item's text and linkId." }, buttonName);
+};
+
+/**
+ * Click an answer option input until the referenced-option warning dialog opens.
+ * AnswerOptionComponent ignores focus for 300 ms after a warning closes (to skip the
+ * focus ngb restores to the input), so a click arriving sooner opens no warning.
+ *
+ * @param page - The Playwright page.
+ * @param input - The answer option input that references another item's enableWhen.
+ */
+const clickUntilReferencedWarning = async (page: Page, input: Locator) => {
+  await expect(async () => {
+    await input.blur();
+    await input.click();
+    await expect(page.locator('lfb-message-dlg')).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10000 });
 };
 
 const removeAndCheckReferencedOption = async (page: Page, type: string, index: number, msg: string, buttonLabel: string) => {
@@ -87,6 +103,19 @@ const getReferencedOptionMsgMultiple = (
   refs.map(ref => ` • '${ref.enableWhenItemName}' (linkId: '${ref.enableWhenItemLinkId}')`).join('') +
   `for conditional display. ${action} this option may affect their behavior.`;
 
+/**
+ * Edit a referenced answer option after accepting the warning, and check that the
+ * enableWhen item referencing it then shows a validation error.
+ *
+ * @param page - The Playwright page.
+ * @param type - Answer option data type, e.g. 'integer', 'time', or 'coding'.
+ * @param enableWhenNodeName - Tree node name of the item whose enableWhen references the option.
+ * @param answerOptionNodeName - Tree node name of the item that owns the answer options.
+ * @param answerOptionSelector - Selector of the referenced answer option input.
+ * @param referencedMsg - Expected warning dialog message.
+ * @param buttonText - Warning dialog button to click.
+ * @param editValue - New value for the answer option.
+ */
 const modifyReferencedData = async (
   page: Page,
   type: string,
@@ -103,7 +132,7 @@ const modifyReferencedData = async (
 
   await PWUtils.getTreeNode(page, answerOptionNodeName);
   const input = page.locator(answerOptionSelector);
-  await input.click();
+  await clickUntilReferencedWarning(page, input);
   await checkReferencedOptionDialog(page, referencedMsg, buttonText);
 
   if (type !== 'time') {
@@ -565,33 +594,36 @@ test.describe('Home page', () => {
     });
 
     test('should create answerOptions lookup', async ({ page }) => {
+      let loincLookupRequestCount = 0;
+      await page.route(/loinc_items\/v3\/search/, async (route) => {
+        loincLookupRequestCount++;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([0, [], null, []])
+        });
+      });
       await MainPO.mockAnswerOptionLookup(page);
 
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
 
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').click();
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').press('ArrowDown');
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').press('ArrowDown');
-      await page.locator('[id^="answerOption.0.valueCoding.system"]').press('Enter');
+      await PWUtils.typeAndSelect(page.locator('[id^="answerOption.0.valueCoding.system"]'),
+                                  'http://loinc.org',
+                                  {arrowDownCount: 0});
       await expect(page.locator('[id^="answerOption.0.valueCoding.system"]')).toHaveValue('http://loinc.org');
+      await expect(page.locator('[id^="answerOption.0.valueCoding.display"]'))
+        .toHaveAttribute('placeholder', 'Type your own');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'Underwear or less');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.code"]'), 'LA11871-3');
 
-      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'heart');
       const options = page.locator('span#completionOptions > ul > li');
-      await expect.poll(async () => await options.count()).toBeGreaterThan(0);
-      const displayInput = page.locator('[id^="answerOption.0.valueCoding.display"]');
-      await displayInput.press('ArrowDown');
-      await displayInput.press('ArrowDown');
-      await displayInput.press('ArrowDown');
-      await displayInput.press('Enter');
-
-      await PWUtils.expectValueCoding(page, 'answerOption', 0, 'http://loinc.org', 'Heart rate', '18708-8');
+      await PWUtils.expectValueCoding(page, 'answerOption', 0, 'http://loinc.org', 'Underwear or less', 'LA11871-3');
 
       await page.getByRole('button', { name: 'Add another answer' }).click();
 
       await page.locator('[id^="answerOption.1.valueCoding.system"]').click();
-      await page.locator('[id^="answerOption.1.valueCoding.system"]').press('ArrowDown');
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('ArrowDown');
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('ArrowDown');
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('Enter');
@@ -625,11 +657,12 @@ test.describe('Home page', () => {
       await page.locator('[id^="answerOption.3.valueCoding.display"]').press('Enter');
 
       await PWUtils.expectValueCoding(page, 'answerOption', 3, 'http://snomed.info/sct', 'Intersex', '32570691000036108');
+      expect(loincLookupRequestCount).toBe(0);
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].answerOption[0].valueCoding.system).toEqual('http://loinc.org');
-      expect(qJson.item[0].answerOption[0].valueCoding.display).toEqual('Heart rate');
-      expect(qJson.item[0].answerOption[0].valueCoding.code).toEqual('18708-8');
+      expect(qJson.item[0].answerOption[0].valueCoding.display).toEqual('Underwear or less');
+      expect(qJson.item[0].answerOption[0].valueCoding.code).toEqual('LA11871-3');
 
       expect(qJson.item[0].answerOption[1].valueCoding.system).toEqual('http://unitsofmeasure.org');
       expect(qJson.item[0].answerOption[1].valueCoding.display).toEqual('kat - katal');
@@ -852,7 +885,7 @@ test.describe('Home page', () => {
 
       await PWUtils.clickTreeNode(page, 'coding answerOptions');
       await PWUtils.expectDataTypeValue(page, /coding/);
-      await page.locator('[id^="answerOption.1.valueCoding.system"]').click();
+      await clickUntilReferencedWarning(page, page.locator('[id^="answerOption.1.valueCoding.system"]'));
 
       enableWhenItems = [
         { enableWhenItemName: 'Reference coding option value d2 (c2)', enableWhenItemLinkId: '321543291333' },

@@ -19,7 +19,9 @@ import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {TemplateExtractDlgComponent} from './template-extract-dlg.component';
 import {
   ContainedResourceOption,
+  findDuplicateTemplateExtractGroups,
   getContainedResourceOptions,
+  getDuplicateTemplateExtractTableWarning,
   parseTemplateExtractExtension,
   TemplateExtractEditModel
 } from './template-extract.util';
@@ -55,6 +57,7 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
 
   containedResources: ContainedResourceOption[] = [];
 
+  /** Use the template extraction dialog to add and edit table rows. */
   constructor() {
     super();
     this.dialogComponentType = TemplateExtractDlgComponent;
@@ -224,7 +227,7 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
     this.cdr.markForCheck();
   }
 
-  /** Refresh this derived field when another extension editor changes the canonical array. */
+  /** Refresh this derived field and its duplicate-row warning when another extension editor changes the canonical array. */
   private syncFromExtensions(): void {
     const extensions = (this.extensionsService.extensionsProp?.value || [])
       .filter(extension => extension?.url === EXTENSION_URL_TEMPLATE_EXTRACT);
@@ -232,10 +235,24 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
       this.formProperty.reset(extensions, false);
       this.cdr.markForCheck();
     }
+    this.updateDuplicateWarning();
   }
 
   /**
-   * Persist the table rows as repeatable templateExtract extensions at the current scope.
+   * Show a non-blocking table warning when rows at this scope use the same template with
+   * identical expressions, since each row is extracted separately.
+   */
+  private updateDuplicateWarning(): void {
+    const extensions = (this.formProperty.properties as FormProperty[])
+      .map(property => property.value as fhir.Extension);
+    const message = getDuplicateTemplateExtractTableWarning(findDuplicateTemplateExtractGroups(extensions));
+    this.tableStatus = message ? {type: 'warning', message} : null;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Persist the table rows as repeatable templateExtract extensions at the current scope,
+   * then refresh the duplicate-row warning.
    * @param extensions - Exact extension values to persist; defaults to the current table rows.
    */
   private persistExtensions(
@@ -251,5 +268,6 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
     finally {
       this.updatingExtensions = false;
     }
+    this.updateDuplicateWarning();
   }
 }

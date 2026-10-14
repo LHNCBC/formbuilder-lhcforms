@@ -108,6 +108,11 @@ export class FhirSearchDlgComponent {
     resourceType: 'Questionnaire'
   };
 
+  /**
+   * Set up the search pipeline, which reports request errors, and the bundle pipeline,
+   * which captures paging links and keeps summaries of entries matching the selected
+   * resource type.
+   */
   constructor() {
     // Set up search pipeline
     this._search$.pipe(
@@ -205,8 +210,21 @@ export class FhirSearchDlgComponent {
   set searchTerm(searchTerm: string) { this._set({searchTerm}); }
   get searchField() { return this._state.searchField; }
   set searchField(searchField: SearchField) { this._set({searchField});}
+
+  /**
+   * Get the resource type being searched.
+   *
+   * @returns 'Questionnaire' in questionnaire mode, or the selected type in contained-resource mode.
+   */
   get resourceType() { return this._state.resourceType; }
+
+  /**
+   * Set the resource type being searched.
+   *
+   * @param resourceType - FHIR resource type used in the search request path.
+   */
   set resourceType(resourceType: string) { this._set({resourceType}); }
+
   get selectedFHIRServer() {return this._state.fhirServer;}
 
   /**
@@ -269,7 +287,9 @@ export class FhirSearchDlgComponent {
   }
 
   /**
-   * Invoke search with inputs
+   * Invoke search with inputs: a Questionnaire search in questionnaire mode, otherwise
+   * a search of the selected resource type.
+   * @returns Search-set Bundle returned by the selected FHIR server.
    * @private
    */
   private _search(): Observable<fhir.Bundle> {

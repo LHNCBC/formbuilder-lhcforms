@@ -21,6 +21,7 @@ import {
   ContainedResourceService,
   PreparedContainedResource
 } from '../../../services/contained-resource.service';
+import {SharedObjectService} from '../../../services/shared-object.service';
 import {Util} from '../../util';
 import {faEye} from '@fortawesome/free-solid-svg-icons';
 import {FhirServersDlgComponent} from '../fhir-servers-dlg/fhir-servers-dlg.component';
@@ -66,12 +67,14 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   private readonly containedResourceService = inject(ContainedResourceService);
   private readonly modalService = inject(NgbModal);
   private readonly fhirService = inject(FhirService);
+  private readonly sharedObjectService = inject(SharedObjectService);
 
   matDialogService: MatDialog = inject(MatDialog);
   faView = faEye;
 
   /**
-   * Ng OnInit lifecycle hook.
+   * Ng OnInit lifecycle hook. Configure the Add menu choices (create a ValueSet, upload
+   * a file, or import from a FHIR server) and suppress the default empty row.
    */
   ngOnInit() {
     this.addDefaultItemIfEmpty = false; // Avoid adding default row.
@@ -191,7 +194,8 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   /**
-   * Prevent deletion from leaving a dangling local Usage Context reference.
+   * Prevent deletion from leaving a dangling local Usage Context or template-based
+   * extraction reference. Referenced rows show a warning instead of the confirmation.
    *
    * @param index - Index of the contained resource to delete.
    * @param message - Standard confirmation message used for unreferenced rows.
@@ -222,6 +226,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
 
   /**
    * Override the default add behavior to create a ValueSet in the existing resource editor.
+   * The saved ValueSet is marked as an internal R5 resource before it is added.
    *
    * @param popover - Unused standard table popover reference.
    */
@@ -393,6 +398,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
    * Check if the edit button should be disabled for a given row.
    * @param arrayProperty - The ArrayProperty containing the rows.
    * @param index - Row index in the table.
+   * @returns True when the row has no resourceType, so there is nothing to view or edit.
    */
   _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     return !arrayProperty?.properties[index]?.value?.resourceType;
@@ -415,12 +421,17 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   /**
-   * Check whether template-based extraction targets a contained resource id.
+   * Check whether template-based extraction targets a contained resource id, at the
+   * Questionnaire root or on any item. This table is in the form-level editor, whose
+   * model excludes items, so items are read from the current Questionnaire.
    *
    * @param resourceId - Contained resource id.
    * @returns True when a template extraction targets the resource.
    */
   private isReferencedByTemplateExtraction(resourceId: string | undefined): boolean {
-    return hasTemplateExtractReference(this.formProperty?.findRoot()?.value, resourceId);
+    return hasTemplateExtractReference(
+      this.sharedObjectService.composeQuestionnaire(this.formProperty?.findRoot()?.value),
+      resourceId
+    );
   }
 }
