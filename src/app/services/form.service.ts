@@ -75,6 +75,8 @@ export class FormService {
 
   private _loading = false;
   private windowOpenerNotificationError = '';
+  // Set when the window-open API session ended with a 'closed' or 'canceled' message.
+  private windowOpenerSessionEnded = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
@@ -99,6 +101,8 @@ export class FormService {
   _lformsVersion = '';
   _lformsErrorMessage = null;
   _windowOpenerUrl: string = null;
+  // Origin of _windowOpenerUrl, the only origin messages are exchanged with.
+  private _windowOpenerOrigin: string = null;
   _windowOpenerFhirVersion: FHIR_VERSION_TYPE = "R4";
 
   fetchService = inject(FetchService);
@@ -671,12 +675,100 @@ export class FormService {
     referenceSchema.properties.identifier = scopedIdentifier;
   }
 
+  /**
+   * URL of the application using the window-open API (the referrer parameter).
+   *
+   * @returns The URL, or null if the window-open API is not used.
+   */
   get windowOpenerUrl(): string {
     return this._windowOpenerUrl;
   }
 
+  /**
+   * Set the URL of the application using the window-open API, and its origin. Only an absolute http or https
+   * URL is accepted. Otherwise, an error is logged and the URL is set to null, so that the form builder runs
+   * without the window-open API, as if the referrer parameter was missing.
+   *
+   * @param url - URL of the application, i.e. the referrer parameter, or null to reset it.
+   */
   set windowOpenerUrl(url: string) {
+    this._windowOpenerUrl = null;
+    this._windowOpenerOrigin = null;
+    if(!url) {
+      return;
+    }
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch (e) {
+      parsedUrl = null;
+    }
+    if(parsedUrl?.protocol !== 'http:' && parsedUrl?.protocol !== 'https:') {
+      console.error(`Ignoring the referrer parameter "${url}": it must be an absolute http or https URL.`);
+      return;
+    }
     this._windowOpenerUrl = url;
+    this._windowOpenerOrigin = parsedUrl.origin;
+  }
+
+  /**
+   * Origin of the application using the window-open API. Messages are only accepted from, and sent to, this
+   * origin.
+   *
+   * @returns The origin of windowOpenerUrl, or null if the window-open API is not used.
+   */
+  get windowOpenerOrigin(): string {
+    return this._windowOpenerOrigin;
+  }
+
+  /**
+   * Window of the application using the window-open API: window.opener if the form builder was opened
+   * with window.open(), or window.parent if it is embedded in an iframe.
+   *
+   * @returns The host window, or null if there is none.
+   */
+  getHostWindow(): Window | null {
+    if(window.opener) {
+      return window.opener;
+    }
+    return this.isEmbedded() ? window.parent : null;
+  }
+
+  /**
+   * Check whether the form builder is embedded in an iframe (and not opened with window.open()).
+   *
+   * @returns True if embedded in an iframe, false otherwise.
+   */
+  isEmbedded(): boolean {
+    return !window.opener && window.parent !== window;
+  }
+
+  /**
+   * End the window-open API session, after the 'closed' or 'canceled' message was sent. Nothing is sent to
+   * the host window afterwards, e.g. a pending questionnaire update of the last edit. Otherwise, a host that
+   * only hides the embedded form builder would receive updates after the final message.
+   */
+  endWindowOpenerSession() {
+    this.windowOpenerSessionEnded = true;
+  }
+
+  /**
+   * Check whether the window-open API session has ended.
+   *
+   * @returns True if the 'closed' or 'canceled' message was sent, false otherwise.
+   */
+  isWindowOpenerSessionEnded(): boolean {
+    return this.windowOpenerSessionEnded;
+  }
+
+  /**
+   * Get the error of the last attempt to send a questionnaire to the window-open API application.
+   *
+   * @returns The error message if the questionnaire could not be converted to the requested FHIR version, or
+   *   an empty string if it was sent.
+   */
+  getWindowOpenerNotificationError(): string {
+    return this.windowOpenerNotificationError;
   }
 
   /**
@@ -1196,7 +1288,7 @@ export class FormService {
    * Remove treeNodeStatusMap from local storage.
    */
   clearAutoSavedTreeNodeStatusMap() {
-    localStorage.removeItem('treeMap');
+    this.removeStorageItem('localStorage', 'treeMap');
     this.treeNodeStatusMap = {};
   }
 
@@ -1557,12 +1649,24 @@ export class FormService {
 
 
   /**
-   * Send data to parent window (window that opened this page).
+   * Send data to parent window (window that opened this page, or the page embedding it in an iframe). The data
+   * is only delivered if the parent window has the origin of the referrer (windowOpenerOrigin).
+   *
+   * If the questionnaire cannot be converted to the requested FHIR version, nothing is sent and an error
+   * dialog is shown. The dialog is not repeated for the same error, unless alwaysReportError is true.
+   * Nothing is sent after the session ended (see endWindowOpenerSession()).
    *
    * @param data - Data to post.
+   * @param alwaysReportError - Show the error dialog even if the same error was already reported. Use it when
+   *   the user explicitly requested the notification, e.g. with "Save & Close".
+   * @returns True if the data was posted, false otherwise.
    */
-  notifyWindowOpener(data: any): boolean {
-    if(this._windowOpenerUrl) {
+  notifyWindowOpener(data: any, alwaysReportError = false): boolean {
+    if(this.windowOpenerSessionEnded) {
+      return false;
+    }
+    const hostWindow = this.getHostWindow();
+    if(this._windowOpenerOrigin && hostWindow) {
       // Return the data in the requested format
       if(data.questionnaire) {
         try {
@@ -1572,13 +1676,13 @@ export class FormService {
           );
         }
         catch(error) {
-          console.error('Unable to send the questionnaire to the opener window.', error);
+          console.error('Unable to send the questionnaire to the parent window.', error);
           const errorMessage = error instanceof Error ? error.message : String(error);
-          if(this.windowOpenerNotificationError !== errorMessage) {
+          if(alwaysReportError || this.windowOpenerNotificationError !== errorMessage) {
             this.windowOpenerNotificationError = errorMessage;
             this.showMessage(
               'Questionnaire update not sent',
-              `${errorMessage} The opener application has not received the latest Questionnaire.`,
+              `${errorMessage} The parent application has not received the latest Questionnaire.`,
               MessageType.DANGER
             );
           }
@@ -1586,7 +1690,7 @@ export class FormService {
         }
         this.windowOpenerNotificationError = '';
       }
-      window.opener.postMessage(data, this._windowOpenerUrl);
+      hostWindow.postMessage(data, this._windowOpenerOrigin);
       return true;
     }
     return false;
@@ -1687,9 +1791,59 @@ export class FormService {
 
   /**
    * Check if a questionnaire is saved in local storage.
+   *
+   * @returns True if a questionnaire is saved, false otherwise, including when local storage is not accessible.
    */
   isAutoSaved(): boolean {
-    return !!localStorage.getItem('fhirQuestionnaire');
+    return !!this.getStorageItem('localStorage', 'fhirQuestionnaire');
+  }
+
+  /**
+   * Get an item from the browser storage. Accessing the storage throws a SecurityError, for example, in an iframe
+   * of another site if the browser blocks third-party storage.
+   *
+   * @param type - localStorage | sessionStorage
+   * @param key - Key of the item.
+   * @returns The item, or null if it does not exist or the storage is not accessible.
+   */
+  getStorageItem(type: 'localStorage' | 'sessionStorage', key: string): string | null {
+    try {
+      return window[type].getItem(key);
+    } catch (e) {
+      console.error(`Unable to read "${key}" from ${type}.`, e);
+      return null;
+    }
+  }
+
+  /**
+   * Store an item in the browser storage. Nothing is stored if the storage is not accessible (see
+   * getStorageItem()).
+   *
+   * @param type - localStorage | sessionStorage
+   * @param key - Key of the item.
+   * @param value - Value of the item.
+   */
+  setStorageItem(type: 'localStorage' | 'sessionStorage', key: string, value: string) {
+    try {
+      window[type].setItem(key, value);
+    } catch (e) {
+      console.error(`Unable to store "${key}" in ${type}.`, e);
+    }
+  }
+
+  /**
+   * Remove an item from the browser storage. Nothing is removed if the storage is not accessible (see
+   * getStorageItem()).
+   *
+   * @param type - localStorage | sessionStorage
+   * @param key - Key of the item.
+   */
+  removeStorageItem(type: 'localStorage' | 'sessionStorage', key: string) {
+    try {
+      window[type].removeItem(key);
+    } catch (e) {
+      console.error(`Unable to remove "${key}" from ${type}.`, e);
+    }
   }
 
   /**

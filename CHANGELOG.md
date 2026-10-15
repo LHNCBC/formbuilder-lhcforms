@@ -2,10 +2,66 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.7.0] 2026-09-19
+## [12.10.0] 2026-10-15
 ### Added
 - Added form-level support for Questionnaire `jurisdiction` in the advanced fields,
   including multiple jurisdictions with text and multiple codings per jurisdiction.
+
+## [12.9.0] 2026-10-06
+### Added
+- Support for embedding the form builder in an iframe of the parent page, using
+  the same `/window-open` messages as a window opened with `window.open()`. See
+  API.md.
+- An `aborted` message with the conversion error, sent when the user closes the
+  form builder window while the questionnaire cannot be converted to the
+  requested FHIR version. Previously, no message was sent in that case.
+
+### Security
+- The form builder accepts messages only from the window that opened it, or
+  the page embedding it, and only if their origin exactly matches the origin of
+  the `referrer` parameter. Previously, messages from any window and origin were
+  accepted. Integrations that post from another window (e.g. a helper iframe),
+  or from an origin that differs from the `referrer` (e.g. `localhost` vs.
+  `127.0.0.1`), must be updated.
+- The `referrer` parameter must be an absolute `http` or `https` URL, and
+  messages are sent to its origin. Otherwise, it is ignored and the form
+  builder runs without the window-open API.
+
+### Changed
+- The `closed` and `canceled` messages end the session. The form builder sends
+  no further messages, including a pending `updateQuestionnaire` of the last
+  edit, and ignores incoming messages.
+
+### Fixed
+- `Save & Close` no longer closes the form builder without sending the final
+  questionnaire when it cannot be converted to the requested FHIR version. The
+  error is shown again, and the form builder stays open so that it can be
+  corrected.
+- The form builder no longer fails to start when the browser blocks access to
+  its storage, e.g. in a third-party iframe.
+
+## [12.8.0] 2026-10-01
+### Changed
+- Changed the Questionnaire and contained ValueSet Description and Purpose
+  fields to inline textareas to support multiline text.
+
+### Fixed
+- Removed LOINC from the Answer Choices System suggestions while preserving
+  manually entered and imported LOINC-coded answers.
+- Limited SNOMED System suggestions and answer lookup to users who enabled
+  SNOMED support and accepted the SNOMED International Browser License Agreement.
+- Updated the Answer Choices System field guidance to clarify that users can
+  select a suggested system or enter their own.
+- Cleared SNOMED license acceptance when SNOMED terminology support is disabled.
+
+## [12.7.0] 2026-09-22
+### Changed
+- Changed the item-level Question text and Help text fields to inline textareas
+  while preserving their CSS and XHTML controls.
+
+### Fixed
+- Fixed a crash when loading non-string primitive extensions in the
+  string-with-css control.
 
 ## [12.6.0] 2026-09-16
 ### Added

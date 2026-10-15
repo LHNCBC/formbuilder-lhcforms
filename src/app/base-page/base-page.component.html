@@ -1,4 +1,4 @@
-@if (openerUrl) {
+@if (openerUrl && !embedded) {
   <div class="bg-warning-subtle border border-black text-center">Notice: This page is sending changes back to the page that opened it, <span class="text-primary">{{openerUrl}}</span></div>
 }
 <div class="page-defaults container bg-white shadow">

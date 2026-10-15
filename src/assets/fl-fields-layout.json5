@@ -69,6 +69,7 @@
   widgetPresetMap: {
     inputBox: 'formStringField',
     textArea: 'formTextareaField',
+    inlineTextArea: 'formInlineTextareaField',
     jurisdictionCoding: 'dialogCodingTable',
     instant: 'formInstantField',
     'positive-integer': 'formPositiveIntegerField',
@@ -311,8 +312,6 @@
       '$.properties.title',
       '$.properties.name',
       '$.properties.publisher',
-      '$.properties.description',
-      '$.properties.purpose',
       '$.definitions.Meta.properties.versionId',
       '$.definitions.Meta.properties.lastUpdated',
       '$.properties.jurisdiction.items.properties.text',
@@ -322,6 +321,10 @@
     url: [
       '$.definitions.Meta.properties.source',
       '$.properties.jurisdiction.items.properties.coding.items.properties.system',
+    ],
+    inlineTextArea: [
+      '$.properties.description',
+      '$.properties.purpose',
     ],
     textArea: [
       '$.properties.copyright',
