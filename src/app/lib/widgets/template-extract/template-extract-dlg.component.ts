@@ -15,9 +15,11 @@ import {NgbCollapseModule, NgbModal, NgbModalOptions} from '@ng-bootstrap/ng-boo
 import fhir from 'fhir/r4';
 import {ArrayProperty} from '@lhncbc/ngx-schema-form';
 import {SharedObjectService} from '../../../services/shared-object.service';
+import {DialogService} from '../../../services/dialog.service';
 import {Util} from '../../util';
 import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {ExpressionEditorDlgComponent} from '../expression-editor-dlg/expression-editor-dlg.component';
+import {MessageType} from '../message-dlg/message-dlg.component';
 import {
   buildTemplateExtractExtension,
   ContainedResourceOption,
@@ -42,6 +44,8 @@ interface TemplateExtractExpressionField {
 
 interface TemplateExtractExpressionContext {
   questionnaire: fhir.Questionnaire;
+  // True when editing Questionnaire.extension; the editor then receives an empty linkId.
+  isFormLevel: boolean;
   linkId: string;
   expressionParentIndex: number;
 }
@@ -77,6 +81,7 @@ export class TemplateExtractDlgComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<TemplateExtractDlgComponent>);
   private readonly modalService = inject(NgbModal);
   private readonly sharedObjectService = inject(SharedObjectService);
+  private readonly dialogService = inject(DialogService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   readonly expressionFields = EXPRESSION_FIELDS;
@@ -146,11 +151,19 @@ export class TemplateExtractDlgComponent implements OnInit {
 
   /**
    * Open the established expression editor for one string-valued FHIRPath slice.
+   * Problems locating the item or occurrence are reported in an error dialog.
    * @param field - templateExtract child slice to edit.
    */
   editExpression(field: TemplateExtractExpressionUrl): void {
     const expressionField = this.expressionFields.find(candidate => candidate.id === field);
-    const context = this.createEditorContext();
+    let context: TemplateExtractExpressionContext;
+    try {
+      context = this.createEditorContext();
+    }
+    catch(error) {
+      this.showExpressionError(error);
+      return;
+    }
     const modalConfig: NgbModalOptions = {size: 'lg', fullscreen: 'lg'};
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
 
@@ -169,10 +182,28 @@ export class TemplateExtractDlgComponent implements OnInit {
 
     modalRef.closed.subscribe((result: fhir.Questionnaire | false) => {
       if(result) {
-        this.model[field] = this.extractEditedExpression(result, context, field);
+        try {
+          this.model[field] = this.extractEditedExpression(result, context, field);
+        }
+        catch(error) {
+          this.showExpressionError(error);
+          return;
+        }
         this.cdr.detectChanges();
       }
     });
+  }
+
+  /**
+   * Report a failure to open or read the expression editor, leaving the draft unchanged.
+   * @param error - Error thrown while preparing or reading the editor Questionnaire.
+   */
+  private showExpressionError(error: unknown): void {
+    this.dialogService.showDialog(
+      MessageType.DANGER,
+      'Unable to edit expression',
+      error instanceof Error ? error.message : String(error)
+    );
   }
 
   /**
@@ -227,18 +258,18 @@ export class TemplateExtractDlgComponent implements OnInit {
 
   /**
    * Seed the current draft occurrence in a clean Questionnaire for native valueString editing.
-   * An empty linkId selects Questionnaire.extension rather than an item's extensions.
+   * The form-level model targets Questionnaire.extension, passed to the editor with an empty
+   * linkId; an item-level model targets the one item with the model's linkId.
    * @returns Isolated Questionnaire, target linkId, and owning extension index.
-   * @throws Error when the current item or existing occurrence cannot be found.
+   * @throws Error when the item's linkId is empty, duplicated, or not found, or when the
+   *   existing occurrence cannot be found.
    */
   private createEditorContext(): TemplateExtractExpressionContext {
     const questionnaire = this.getQuestionnaire();
-    const linkId: string = this.data.arrayProperty.findRoot().getProperty('linkId')?.value || '';
-    const target = linkId ? this.findItem(questionnaire.item, linkId) : questionnaire;
-    if(!target) {
-      throw new Error(`Cannot edit template extraction: item "${linkId}" was not found.`);
-    }
-
+    const root = this.data.arrayProperty.findRoot();
+    const isFormLevel = root?.value?.resourceType === 'Questionnaire';
+    const linkId: string = isFormLevel ? '' : root?.getProperty('linkId')?.value || '';
+    const target = isFormLevel ? questionnaire : this.findUniqueItem(questionnaire.item, linkId);
     target.extension = target.extension || [];
     let expressionParentIndex = target.extension.length;
     if(!this.isNew) {
@@ -251,42 +282,68 @@ export class TemplateExtractDlgComponent implements OnInit {
       }
     }
     target.extension[expressionParentIndex] = buildTemplateExtractExtension(this.model);
-    return {questionnaire, linkId, expressionParentIndex};
+    return {questionnaire, isFormLevel, linkId, expressionParentIndex};
   }
 
   /**
-   * Find an item recursively by linkId.
+   * Find the single item with a linkId, searching recursively.
    * @param items - Questionnaire items to search.
    * @param linkId - Target linkId.
-   * @returns Matching item, if present.
+   * @returns The matching item.
+   * @throws Error when the linkId is empty, not found, or used by more than one item.
    */
-  private findItem(items: fhir.QuestionnaireItem[] = [], linkId: string): fhir.QuestionnaireItem | undefined {
+  private findUniqueItem(items: fhir.QuestionnaireItem[] | undefined, linkId: string): fhir.QuestionnaireItem {
+    if(!linkId) {
+      throw new Error('Cannot edit template extraction: this item has no Link Id. Enter a unique Link Id, then try again.');
+    }
+    const matches = this.findItems(items, linkId);
+    if(!matches.length) {
+      throw new Error(`Cannot edit template extraction: item "${linkId}" was not found.`);
+    }
+    if(matches.length > 1) {
+      throw new Error(
+        `Cannot edit template extraction: Link Id "${linkId}" is used by ${matches.length} items. ` +
+        'Make it unique, then try again.'
+      );
+    }
+    return matches[0];
+  }
+
+  /**
+   * Collect every item with a linkId, searching recursively.
+   * @param items - Questionnaire items to search.
+   * @param linkId - Target linkId.
+   * @param matches - Accumulated matches.
+   * @returns All matching items, in document order.
+   */
+  private findItems(
+    items: fhir.QuestionnaireItem[] = [],
+    linkId: string,
+    matches: fhir.QuestionnaireItem[] = []
+  ): fhir.QuestionnaireItem[] {
     for(const item of items) {
       if(item.linkId === linkId) {
-        return item;
+        matches.push(item);
       }
-      const nested = this.findItem(item.item, linkId);
-      if(nested) {
-        return nested;
-      }
+      this.findItems(item.item, linkId, matches);
     }
-    return undefined;
+    return matches;
   }
 
   /**
    * Read only the selected field from the exact Questionnaire or item occurrence sent to the editor.
    * @param questionnaire - Questionnaire returned by the expression editor.
-   * @param context - Target linkId (empty for Questionnaire scope) and owning extension index.
+   * @param context - Target scope, linkId, and owning extension index.
    * @param field - templateExtract child slice being edited.
    * @returns Saved FHIRPath string, or an empty string when removed in the editor.
-   * @throws Error when the editor result is missing the selected occurrence.
+   * @throws Error when the editor result is missing the selected item or occurrence.
    */
   private extractEditedExpression(
     questionnaire: fhir.Questionnaire,
     context: TemplateExtractExpressionContext,
     field: TemplateExtractExpressionUrl
   ): string {
-    const target = context.linkId ? this.findItem(questionnaire.item, context.linkId) : questionnaire;
+    const target = context.isFormLevel ? questionnaire : this.findUniqueItem(questionnaire.item, context.linkId);
     const parent = target?.extension?.[context.expressionParentIndex];
     if(parent?.url !== EXTENSION_URL_TEMPLATE_EXTRACT) {
       throw new Error('Cannot read template extraction expression: the selected occurrence was not returned.');

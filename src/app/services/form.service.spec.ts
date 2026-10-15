@@ -103,6 +103,40 @@ describe('FormService', () => {
     });
   });
 
+  describe('contained-resource versions of a legacy autosave', () => {
+    let containedResourceService: ContainedResourceService;
+
+    beforeEach(() => {
+      containedResourceService = TestBed.inject(ContainedResourceService);
+    });
+
+    it('uses only resource evidence, not the autosaved R5 Questionnaire, when no records are stored', () => {
+      // Autosaved before version records were stored: an R5 Questionnaire and no records.
+      spyOn(service, 'autoLoad').and.callFake((key: string) => key === 'fhirQuestionnaire'
+        ? {
+          resourceType: 'Questionnaire',
+          status: 'draft',
+          meta: {profile: [Util.R5_PROFILE_URL]},
+          contained: [
+            {resourceType: 'Patient', id: 'unprofiled'},
+            {
+              resourceType: 'Patient',
+              id: 'profiled',
+              meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Patient']}
+            }
+          ]
+        }
+        : null);
+
+      const loaded = service.convertToR5(service.autoLoadForm());
+
+      expect(containedResourceService.getVersionInfo(loaded.contained[0]))
+        .toEqual({version: null, confidence: 'unknown', source: 'unknown'});
+      expect(containedResourceService.getVersionInfo(loaded.contained[1]))
+        .toEqual({version: 'R4', confidence: 'inferred', source: 'meta.profile'});
+    });
+  });
+
   it('should apply explicitly requested widget presets without sharing mutable objects', () => {
     const layout: any = {
       widgetPresetMap: {

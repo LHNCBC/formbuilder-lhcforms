@@ -1,4 +1,4 @@
-import {test, expect, Locator} from '@playwright/test';
+import {test, expect, Locator, Page} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 import fhir from "fhir/r4";
@@ -349,6 +349,92 @@ test.describe('Contained resource versions in an imported Questionnaire', () => 
     await page.getByRole('button', {name: 'Preview'}).click();
     await expect(page.locator('.contained-resource-version-warning'))
       .toContainText('Patient #patient-1 was imported as FHIR R4');
+  });
+});
+
+test.describe('Contained ValueSet version compatibility', () => {
+  /**
+   * Check that Preview shows no contained-resource warning on any tab, and that each export
+   * format downloads without the contained-resource compatibility dialog.
+   *
+   * @param page - Browser page with the form-level editor.
+   */
+  async function expectNoContainedResourceWarnings(page: Page): Promise<void> {
+    await page.getByRole('button', {name: 'Preview'}).click();
+    const preview = page.locator('lfb-preview-dlg');
+    await expect(preview.getByRole('tab', {name: 'View Rendered Form'})).toHaveAttribute('aria-selected', 'true');
+    await expect(preview.locator('wc-lhc-form')).toBeVisible();
+    await expect(preview.locator('.contained-resource-version-warning')).toHaveCount(0);
+    await preview.getByRole('tab', {name: 'View/Validate Questionnaire JSON'}).click();
+    for(const format of ['R4', 'STU3', 'R5']) {
+      const tab = preview.getByRole('tab', {name: `${format} Version`});
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      await expect(preview.locator('ngb-alert').filter({hasText: 'may not be compatible'})).toHaveCount(0);
+    }
+    await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
+
+    for(const format of ['R4', 'STU3', 'R5']) {
+      const exportItem = await PWUtils.getMenuBarDropDownItem(page, 'Export', `Export to file in FHIR ${format} format`);
+      // A compatibility dialog would block the download and fail this wait.
+      const [download] = await Promise.all([page.waitForEvent('download'), exportItem.click()]);
+      expect(download.suggestedFilename()).toMatch(new RegExp(`\\.${format}\\.json$`));
+      await expect(page.getByRole('dialog', {name: 'Contained resource compatibility'})).toHaveCount(0);
+    }
+  }
+
+  test.beforeEach(async ({page}) => {
+    await page.goto('/');
+    const mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+  });
+
+  test('does not warn about a ValueSet created in the editor', async ({page}) => {
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+    await PWUtils.clickButton(page, null, 'Add contained resource');
+    await page.getByRole('button', {name: 'Create a ValueSet…'}).click();
+    const dialog = page.locator('mat-dialog-container');
+    await dialog.getByLabel('Id', {exact: true}).fill('vs1');
+    const table = PWUtils.getTableByFieldLabel(dialog, 'Contains');
+    await PWUtils.getTableCellInput(table, 1, 1).fill('d1');
+    await PWUtils.getTableCellInput(table, 1, 2).fill('c1');
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toBeHidden();
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    await expect(PWUtils.getTableCell(containedTable, 1, 4)).toHaveText('R5');
+
+    await expectNoContainedResourceWarnings(page);
+  });
+
+  test('does not warn about a ValueSet in an imported R4 Questionnaire', async ({page}) => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      status: 'draft',
+      title: 'R4 form with a contained answer list',
+      contained: [{
+        resourceType: 'ValueSet',
+        id: 'answers',
+        status: 'active',
+        expansion: {
+          timestamp: '2026-01-01T00:00:00Z',
+          contains: [{system: 'http://example.org', code: 'a', display: 'A'}]
+        }
+      }],
+      item: [{linkId: 'q1', text: 'Question 1', type: 'choice', answerValueSet: '#answers'}]
+    };
+    const chooserPromise = page.waitForEvent('filechooser');
+    await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+    await (await chooserPromise).setFiles({
+      name: 'r4-contained-value-set.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(questionnaire))
+    });
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    await expect(PWUtils.getTableCell(containedTable, 1, 4)).toHaveText('R4');
+
+    await expectNoContainedResourceWarnings(page);
   });
 });
 

@@ -70,6 +70,21 @@ async function importRepeatedExtractionQuestionnaire(page: Page): Promise<void> 
   await expect(page.locator('lfb-form-fields lfb-template-extract tbody > tr')).toHaveCount(2);
 }
 
+/**
+ * Upload one resource with the contained-resource table's Add menu.
+ * @param page - Browser page displaying the form-level editor with advanced fields expanded.
+ * @param file - Path of the file, or an in-memory file.
+ */
+async function uploadContainedResource(
+  page: Page,
+  file: string | {name: string; mimeType: string; buffer: Buffer}
+): Promise<void> {
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.getByRole('button', {name: 'Add contained resource'}).click();
+  await page.getByRole('button', {name: 'Upload from a local file…'}).click();
+  await (await chooserPromise).setFiles(file);
+}
+
 test.describe('Template-based extraction', () => {
   test.beforeEach(async ({page}) => {
     const mainPO = new MainPO(page);
@@ -78,6 +93,62 @@ test.describe('Template-based extraction', () => {
     await mainPO.loadHomePage();
     await page.locator('input[type="radio"][value="scratch"]').click();
     await page.getByRole('button', {name: 'Continue'}).click();
+  });
+
+  test('enables Add after the first contained resource is uploaded to a new form, and disables it after deletion', async ({page}) => {
+    await PWUtils.expandAdvancedFields(page);
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    const addExtraction = formWidget.getByRole('button', {name: 'Add new template extraction', exact: true});
+    await expect(addExtraction).toBeDisabled();
+
+    await uploadContainedResource(page, 'tests/fixtures/contained-patient-r4.json');
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(1);
+    await expect(addExtraction).toBeEnabled();
+
+    await addExtraction.click();
+    const templateDialog = page.getByRole('dialog', {name: 'Add template extraction'});
+    await expect(templateDialog.getByLabel('Contained resource template')).toHaveValue('#patient-template');
+    await templateDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(formWidget.locator('tbody > tr')).toHaveCount(1);
+    await expect(formWidget.locator('tbody > tr')).toContainText('Patient #patient-template');
+
+    // Delete the extraction, then its template; Add is disabled again.
+    await formWidget.getByRole('button', {name: 'Remove this row'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+    await expect(formWidget.locator('tbody > tr')).toHaveCount(0);
+    await containedTable.getByRole('button', {name: 'Remove this row'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(0);
+    await expect(addExtraction).toBeDisabled();
+  });
+
+  test('replaces the contents of a referenced template and keeps its id', async ({page}) => {
+    await PWUtils.uploadFile(page, 'template-extract.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const replacement = {resourceType: original.contained[0].resourceType, id: 'patient-template', status: 'active'};
+
+    await uploadContainedResource(page, {
+      name: 'replacement.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(replacement))
+    });
+    const replaceDialog = page.getByRole('dialog', {name: 'Replace contained resource'});
+    await expect(replaceDialog).toContainText(
+      `A contained ${replacement.resourceType} with id patient-template already exists.`
+    );
+    await replaceDialog.getByRole('button', {name: 'Replace'}).click();
+    await expect(replaceDialog).toHaveCount(0);
+
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(original.contained.length);
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.contained[0]).toEqual(replacement);
+    expect(questionnaire.contained.slice(1)).toEqual(original.contained.slice(1));
+    // The extractions that use the template are unchanged.
+    expect(questionnaire.extension).toEqual(original.extension);
+    expect(questionnaire.item).toEqual(original.item);
   });
 
   test('edits repeatable form- and item-level references to existing contained resources', async ({page}) => {

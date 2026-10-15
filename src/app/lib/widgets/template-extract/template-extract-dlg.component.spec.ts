@@ -8,8 +8,10 @@ import copy from 'fast-copy';
 import fhir from 'fhir/r4';
 import {Subject} from 'rxjs';
 import {SharedObjectService} from '../../../services/shared-object.service';
+import {DialogService} from '../../../services/dialog.service';
 import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {ExpressionEditorDlgComponent} from '../expression-editor-dlg/expression-editor-dlg.component';
+import {MessageType} from '../message-dlg/message-dlg.component';
 import {TemplateExtractDialogData, TemplateExtractDlgComponent} from './template-extract-dlg.component';
 import {TemplateExtractExpressionUrl} from './template-extract.util';
 
@@ -46,6 +48,7 @@ describe('TemplateExtractDlgComponent', () => {
   let data: TemplateExtractDialogData;
   let sharedObjectService: SharedObjectService;
   let modalService: jasmine.SpyObj<NgbModal>;
+  let dialogService: jasmine.SpyObj<DialogService>;
   let dialogRef: jasmine.SpyObj<MatDialogRef<TemplateExtractDlgComponent>>;
   let editorInputs: EditorInputs;
   let modalResult: Subject<fhir.Questionnaire | false>;
@@ -83,6 +86,7 @@ describe('TemplateExtractDlgComponent', () => {
     };
     data = {arrayProperty: jasmine.createSpyObj<ArrayProperty>('arrayProperty', ['findRoot']), rowIndex: 1};
     dialogRef = jasmine.createSpyObj('dialogRef', ['close']);
+    dialogService = jasmine.createSpyObj('dialogService', ['showDialog']);
     modalService = jasmine.createSpyObj('modalService', ['open']);
     modalService.open.and.callFake(() => {
       editorInputs = {};
@@ -98,7 +102,8 @@ describe('TemplateExtractDlgComponent', () => {
         SharedObjectService,
         {provide: MAT_DIALOG_DATA, useValue: data},
         {provide: MatDialogRef, useValue: dialogRef},
-        {provide: NgbModal, useValue: modalService}
+        {provide: NgbModal, useValue: modalService},
+        {provide: DialogService, useValue: dialogService}
       ]
     }).compileComponents();
     sharedObjectService = TestBed.inject(SharedObjectService);
@@ -109,16 +114,26 @@ describe('TemplateExtractDlgComponent', () => {
   afterEach(() => modalResult?.complete());
 
   /**
+   * Check that an expression-editor problem is shown to the user and the editor is not opened.
+   * @param message - Expected error message.
+   */
+  function expectExpressionError(message: string): void {
+    expect(dialogService.showDialog).toHaveBeenCalledOnceWith(MessageType.DANGER, 'Unable to edit expression', message);
+    expect(modalService.open).not.toHaveBeenCalled();
+  }
+
+  /**
    * Create the dialog with the same form-property scope and filtered rows as the table.
    * @param scope - Questionnaire root or nested item being edited.
    * @param rowIndex - Filtered occurrence index, or -1 for a new occurrence.
+   * @param linkId - Item-level model linkId, e.g. '' for a cleared Link Id.
    */
-  async function createDialog(scope: 'form' | 'item' = 'item', rowIndex = 1): Promise<void> {
+  async function createDialog(scope: 'form' | 'item' = 'item', rowIndex = 1, linkId = 'target'): Promise<void> {
     const scopeValue = scope === 'form' ? questionnaire : questionnaire.item[0].item[0];
     const root = jasmine.createSpyObj<PropertyGroup>('root', ['getProperty'], {value: scopeValue});
     if(scope === 'item') {
       root.getProperty.withArgs('linkId').and.returnValue(
-        jasmine.createSpyObj<FormProperty>('linkId', ['setValue'], {value: 'target'})
+        jasmine.createSpyObj<FormProperty>('linkId', ['setValue'], {value: linkId})
       );
     }
     const rows = (scopeValue.extension || [])
@@ -347,9 +362,47 @@ describe('TemplateExtractDlgComponent', () => {
     await createDialog();
     questionnaire.item[0].item = [];
 
-    expect(() => component.editExpression('fullUrl'))
-      .toThrowError('Cannot edit template extraction: item "target" was not found.');
-    expect(modalService.open).not.toHaveBeenCalled();
+    component.editExpression('fullUrl');
+
+    expectExpressionError('Cannot edit template extraction: item "target" was not found.');
+  });
+
+  it('reports an empty item linkId rather than editing Questionnaire-level extensions', async () => {
+    await createDialog('item', 1, '');
+
+    component.editExpression('fullUrl');
+
+    expectExpressionError(
+      'Cannot edit template extraction: this item has no Link Id. Enter a unique Link Id, then try again.'
+    );
+  });
+
+  it('reports a duplicated item linkId rather than editing the first match', async () => {
+    questionnaire.item[1].linkId = 'target';
+    await createDialog();
+
+    component.editExpression('fullUrl');
+
+    expectExpressionError(
+      'Cannot edit template extraction: Link Id "target" is used by 2 items. Make it unique, then try again.'
+    );
+  });
+
+  it('reports an editor result without the selected occurrence and keeps the draft', async () => {
+    await createDialog();
+    const originalModel = copy(component.model);
+    component.editExpression('fullUrl');
+    const result = copy(editorInputs.questionnaire);
+    result.item[0].item[0].extension.splice(3, 1);
+
+    modalResult.next(result);
+
+    expect(component.model).toEqual(originalModel);
+    expect(dialogService.showDialog).toHaveBeenCalledOnceWith(
+      MessageType.DANGER,
+      'Unable to edit expression',
+      'Cannot read template extraction expression: the selected occurrence was not returned.'
+    );
   });
 
   (['form', 'item'] as const).forEach(scope => {
@@ -357,9 +410,9 @@ describe('TemplateExtractDlgComponent', () => {
       await createDialog(scope);
       (scope === 'form' ? questionnaire : questionnaire.item[0].item[0]).extension.pop();
 
-      expect(() => component.editExpression('fullUrl'))
-        .toThrowError('Cannot edit template extraction: the selected occurrence was not found.');
-      expect(modalService.open).not.toHaveBeenCalled();
+      component.editExpression('fullUrl');
+
+      expectExpressionError('Cannot edit template extraction: the selected occurrence was not found.');
     });
   });
 

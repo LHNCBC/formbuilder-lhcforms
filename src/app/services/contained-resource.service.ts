@@ -35,6 +35,21 @@ type AnnotatedResource = fhir.Resource & {
 };
 
 /**
+ * Thrown when an imported resource's id is already used by a contained resource,
+ * so the caller can offer to replace that resource instead of adding a new one.
+ */
+export class DuplicateContainedResourceIdError extends Error {
+  /**
+   * @param resourceId - Id shared by the imported and the existing resource.
+   * @param existingIndex - Index of the existing resource in Questionnaire.contained.
+   */
+  constructor(readonly resourceId: string, readonly existingIndex: number) {
+    super(`A contained resource with id "${resourceId}" already exists.`);
+    this.name = 'DuplicateContainedResourceIdError';
+  }
+}
+
+/**
  * Handles validation, FHIR-version provenance, and output compatibility checks for contained resources.
  */
 @Injectable({providedIn: 'root'})
@@ -64,6 +79,7 @@ export class ContainedResourceService {
    * @param contentType - Browser-provided file MIME type, when available.
    * @param serverVersion - Known version of the source FHIR server, when applicable.
    * @returns Prepared resource, version information, and normalization details.
+   * @throws DuplicateContainedResourceIdError when an existing resource already uses the id.
    * @throws Error when the input is not a usable single FHIR resource.
    */
   prepareImportedResource(
@@ -106,8 +122,9 @@ export class ContainedResourceService {
     if(!/^[A-Za-z0-9\-.]{1,64}$/.test(resource.id)) {
       throw new Error(`The resource id "${resource.id}" is not a valid FHIR id.`);
     }
-    if(existingResources.some((existing) => existing?.id === resource.id)) {
-      throw new Error(`A contained resource with id "${resource.id}" already exists.`);
+    const existingIndex = existingResources.findIndex((existing) => existing?.id === resource.id);
+    if(existingIndex >= 0) {
+      throw new DuplicateContainedResourceIdError(resource.id, existingIndex);
     }
 
     const normalizedServerVersion = this.normalizeVersion(serverVersion);
@@ -230,10 +247,12 @@ export class ContainedResourceService {
 
   /**
    * Find contained-resource version issues for a target FHIR output version.
+   * ValueSets are skipped: the answer-list ValueSets that Form Builder creates and edits
+   * have the same structure in STU3, R4, and R5, so a warning would not be actionable.
    *
    * @param records - Contained-resource version records.
    * @param targetVersion - Preview or export FHIR version.
-   * @returns Mismatches and resources whose source version is unknown.
+   * @returns Mismatches and resources whose source version is unknown, excluding ValueSets.
    */
   getCompatibilityIssues(
     records: ContainedResourceVersionRecord[],
@@ -244,6 +263,9 @@ export class ContainedResourceService {
       return [];
     }
     return (records || []).reduce<ContainedResourceCompatibilityIssue[]>((issues, record) => {
+      if(record.resourceType === 'ValueSet') {
+        return issues;
+      }
       if(!record.info?.version) {
         issues.push({...record, targetVersion: normalizedTarget, kind: 'unknown'});
       }
@@ -268,8 +290,7 @@ export class ContainedResourceService {
     }
     const list = issues.map((issue) => {
       const identity = `${this.escapeHtml(issue.resourceType)}${issue.id ? ` #${this.escapeHtml(issue.id)}` : ''}`;
-      const source = issue.info.version ? `FHIR ${issue.info.version}` : 'an unknown FHIR version';
-      return `<li>${identity} was imported as ${source}.</li>`;
+      return `<li>${identity} ${this.describeVersionSource(issue.info)}.</li>`;
     }).join('');
     return `Some contained resources may not be compatible with the FHIR ${this.escapeHtml(targetVersion)} output:`
       + `<ul>${list}</ul><p>Contained resources are preserved without automatic version conversion.</p>`;
@@ -293,6 +314,21 @@ export class ContainedResourceService {
       return upper as ContainedResourceFHIRVersion;
     }
     return this.versionByToken[version] || null;
+  }
+
+  /**
+   * Describe where a contained resource's recorded FHIR version came from.
+   *
+   * @param info - Recorded version information.
+   * @returns Sentence fragment that follows the resource identity in a warning.
+   */
+  private describeVersionSource(info: ContainedResourceVersionInfo): string {
+    if(!info?.version) {
+      return 'has an unknown FHIR version';
+    }
+    return info.source === 'editor'
+      ? `was created in Form Builder as FHIR ${info.version}`
+      : `was imported as FHIR ${info.version}`;
   }
 
   /**
