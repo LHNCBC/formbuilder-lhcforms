@@ -6,8 +6,8 @@ import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageDlgOptions, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {Observable, Subject} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
+import {Observable, Subject, firstValueFrom} from 'rxjs';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {JsonPointer} from 'json-ptr';
 import {JSONPath} from 'jsonpath-plus';
 import {getSupportedLFormsVersions, loadLForms} from 'lforms-loader';
@@ -62,7 +62,9 @@ export class FormService {
   private static readonly IDENTIFIER_RECURSION_LEVELS = 10;
   static readonly R5_QUANTITY_COMPARATOR_ERROR =
     'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
-  // Oldest LHC-Forms major version with the file layout documented for a configured lforms-source.
+  // Optional deployment configuration of the LHC-Forms source, relative to the base href.
+  static readonly LFORMS_CONFIG_URL = 'assets/lforms-config.json';
+  // Oldest LHC-Forms major version with the file layout documented for a configured source.
   static readonly MIN_CONFIGURED_LFORMS_MAJOR_VERSION = 33;
   // The lforms-loader functions used by loadLFormsLib(), held here so tests can stub them; ES module
   // exports cannot be spied on.
@@ -1870,13 +1872,13 @@ export class FormService {
   }
 
   /**
-   * Load LForms library at run time, from the source configured by getConfiguredLFormsSource() if
-   * any, otherwise the latest version from the NLM server.
-   * @return - A promise which resolves to version number loaded. It rejects if the configured
-   *   lforms-version is invalid or the library fails to load.
+   * Load LForms library at run time, from the source configured in LFORMS_CONFIG_URL if any,
+   * otherwise the latest version from the NLM server.
+   * @return - A promise which resolves to version number loaded. It rejects if the configuration
+   *   file is invalid or the library fails to load.
    */
   async loadLFormsLib(): Promise<string> {
-    const configured = FormService.getConfiguredLFormsSource();
+    const configured = FormService.parseLFormsConfig(await this.fetchLFormsConfig());
     if (configured) {
       return FormService.lformsLoader.loadLForms(configured.version, undefined, configured.source)
         .then(() => configured.version)
@@ -1898,26 +1900,75 @@ export class FormService {
   }
 
   /**
-   * A deployment can serve its own copy of LHC-Forms instead of loading the latest version from the
-   * NLM server, by adding to index.html:
-   *   <meta name="lforms-source" content="(base URL of the LHC-Forms files, e.g. /lforms/44.1.0)">
-   *   <meta name="lforms-version" content="(its version, e.g. 44.1.0)">
-   * @param doc - The document to read the meta tags from.
-   * @return - The base URL and version, or null if not configured.
-   * @throws Error - If both tags are present but the version is not an X.Y.Z version of at least
-   *   MIN_CONFIGURED_LFORMS_MAJOR_VERSION. lforms-loader picks the file layout from the major version,
-   *   so an invalid version would otherwise request files that do not exist in the configured copy.
+   * Fetch the optional LHC-Forms configuration file, LFORMS_CONFIG_URL.
+   * @return - A promise which resolves to the file content, or null if the file is not available, i.e.
+   *   the request failed or the server returned its HTML fallback page (as single-page application
+   *   servers do for missing files). It does not reject.
    */
-  static getConfiguredLFormsSource(doc: Document = document): {source: string, version: string} | null {
-    const source = doc.querySelector('meta[name="lforms-source"]')?.getAttribute('content')?.trim().replace(/\/+$/, '');
-    const version = doc.querySelector('meta[name="lforms-version"]')?.getAttribute('content')?.trim();
-    if (!source || !version) {
+  async fetchLFormsConfig(): Promise<string | null> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get(FormService.LFORMS_CONFIG_URL, {observe: 'response', responseType: 'text'}));
+      return response.headers.get('Content-Type')?.includes('text/html') ? null : response.body;
+    }
+    catch (error) {
+      // A missing file is the default configuration; report other failures, which may hide a configuration.
+      if (!(error instanceof HttpErrorResponse && error.status === 404)) {
+        console.warn(`Unable to read ${FormService.LFORMS_CONFIG_URL}; loading the default LHC-Forms.`, error);
+      }
       return null;
+    }
+  }
+
+  /**
+   * Parse the content of the LHC-Forms configuration file, LFORMS_CONFIG_URL. A deployment can serve
+   * its own copy of LHC-Forms instead of loading the latest version from the NLM server, by setting:
+   *   {
+   *     "source": "(base URL of the LHC-Forms files, e.g. /lforms/44.1.0)",
+   *     "version": "(its version, e.g. 44.1.0)"
+   *   }
+   * @param content - The file content, or null if the file is not available.
+   * @return - The base URL, without trailing slashes, and the version; or null if the file is not
+   *   available, is blank, or has neither value (empty, null, or omitted).
+   * @throws Error - If the content is not a JSON object, a value is not a string, only one of the values
+   *   is set, or the version is not an X.Y.Z version of at least MIN_CONFIGURED_LFORMS_MAJOR_VERSION.
+   *   lforms-loader picks the file layout from the major version, so an invalid version would otherwise
+   *   request files that do not exist in the configured copy.
+   */
+  static parseLFormsConfig(content: string | null): {source: string, version: string} | null {
+    if (!content?.trim()) {
+      return null;
+    }
+
+    const invalid = (reason: string) => new Error(`Invalid ${FormService.LFORMS_CONFIG_URL}: ${reason}`);
+    let config: any;
+    try {
+      config = JSON.parse(content);
+    }
+    catch (error) {
+      throw invalid(`${error.message}.`);
+    }
+    if (!config || typeof config !== 'object' || Array.isArray(config)) {
+      throw invalid('expected a JSON object with "source" and "version".');
+    }
+    for (const key of ['source', 'version']) {
+      if (config[key] != null && typeof config[key] !== 'string') {
+        throw invalid(`"${key}" must be a string.`);
+      }
+    }
+
+    const source = (config.source ?? '').trim().replace(/\/+$/, '');
+    const version = (config.version ?? '').trim();
+    if (!source && !version) {
+      return null;
+    }
+    if (!source || !version) {
+      throw invalid('"source" and "version" must both be set, or both be empty.');
     }
 
     const majorVersion = /^(\d+)\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.exec(version)?.[1];
     if (!majorVersion || Number(majorVersion) < FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION) {
-      throw new Error(`Invalid lforms-version meta tag "${version}": expected the X.Y.Z version ` +
+      throw invalid(`"version" "${version}" must be the X.Y.Z version ` +
         `(${FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION}.0.0 or later) of the LHC-Forms copy at ${source}.`);
     }
     return {source, version};

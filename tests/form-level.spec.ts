@@ -126,6 +126,75 @@ test.describe('Home page accept Terms of Use notices', () => {
       expect(lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
       await expect(page.locator('.card.bg-danger-subtle')).toHaveCount(0);
     });
+
+    test.describe('with assets/lforms-config.json', () => {
+      const nlmLFormsUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
+      const configuredVersion = '44.1.0';
+
+      /**
+       * Serve the given LHC-Forms configuration file content.
+       * @param page - Playwright page used to register the route handler.
+       * @param config - The configuration file content.
+       */
+      const routeLFormsConfig = async (page: Page, config: {source?: string, version?: string}) => {
+        await page.route(/\/assets\/lforms-config\.json$/, async (route) => {
+          await route.fulfill({json: config});
+        });
+      };
+
+      test('should load LForms from the configured source', async ({ page }) => {
+        await routeLFormsConfig(page, {source: 'custom-lforms/', version: configuredVersion});
+        // Serve the configured (relative) source with the files of the same version on the NLM server.
+        const customRequests: string[] = [];
+        await page.route(/\/custom-lforms\/(.+)$/, async (route) => {
+          const filePath = new URL(route.request().url()).pathname.replace(/^.*\/custom-lforms\//, '');
+          customRequests.push(filePath);
+          const response = await route.fetch({url: `${nlmLFormsUrl}${configuredVersion}/${filePath}`});
+          await route.fulfill({response});
+        });
+        const nlmRequests: string[] = [];
+        page.on('request', (request) => {
+          if (request.url().startsWith(nlmLFormsUrl)) {
+            nlmRequests.push(request.url());
+          }
+        });
+
+        await page.goto('/');
+        const mainPO = new MainPO(page);
+        await mainPO.assertLFormsLoaded();
+        await mainPO.acceptAllTermsOfUse();
+
+        expect(await page.evaluate(() => (window as any).LForms.lformsVersion)).toBe(configuredVersion);
+        expect(customRequests.sort()).toEqual([
+          'fhir/lformsFHIRAll.min.js',
+          'webcomponent/assets/lib/zone.min.js',
+          'webcomponent/lhc-forms.js',
+          'webcomponent/styles.css'
+        ]);
+        expect(nlmRequests).toEqual([]);
+        await expect(page.locator('.card.bg-danger-subtle')).toHaveCount(0);
+      });
+
+      test('should display error message on an invalid configuration', async ({ page }) => {
+        await routeLFormsConfig(page, {source: 'custom-lforms', version: `v${configuredVersion}`});
+        const lformsRequests: string[] = [];
+        page.on('request', (request) => {
+          if (/\/(custom-lforms|lforms-versions)\//.test(request.url())) {
+            lformsRequests.push(request.url());
+          }
+        });
+
+        await page.goto('/');
+        const mainPO = new MainPO(page);
+        await mainPO.acceptAllTermsOfUse();
+
+        const errorCard = page.locator('.card').filter({ hasText: 'Error' });
+        await expect(errorCard.locator('.card-header')).toContainText('Error', { timeout: 10000 });
+        await expect(errorCard.locator('.card-body')).toContainText(
+          `Invalid assets/lforms-config.json: "version" "v${configuredVersion}" must be the X.Y.Z version`);
+        expect(lformsRequests).toEqual([]);
+      });
+    });
   });
 
   test('should make SNOMED CT available after accepting SNOMED notice', async ({ page }) => {

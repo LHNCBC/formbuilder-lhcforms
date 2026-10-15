@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { FormService } from './form.service';
 import sampleJson from '../../../tests/fixtures/help-text-sample1.json';
 import traverse from 'traverse';
-import {provideHttpClient} from '@angular/common/http';
+import {HttpErrorResponse, HttpHeaders, HttpResponse, provideHttpClient} from '@angular/common/http';
+import {of, throwError} from 'rxjs';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
@@ -329,91 +330,119 @@ describe('FormService', () => {
     }
   });
 
-  describe('configured LHC-Forms source', () => {
-    function docWithMeta(meta: {[name: string]: string}): Document {
-      const doc = document.implementation.createHTMLDocument('test');
-      Object.entries(meta).forEach(([name, content]) => {
-        const tag = doc.createElement('meta');
-        tag.setAttribute('name', name);
-        tag.setAttribute('content', content);
-        doc.head.appendChild(tag);
-      });
-      return doc;
-    }
-
-    it('should return the source and version from the meta tags', () => {
-      const doc = docWithMeta({'lforms-source': ' /fhir/r4/forms/lforms-44.1.0/ ', 'lforms-version': '44.1.0'});
-      expect(FormService.getConfiguredLFormsSource(doc))
-        .toEqual({source: '/fhir/r4/forms/lforms-44.1.0', version: '44.1.0'});
+  describe('LHC-Forms configuration file', () => {
+    it('should return the trimmed source and version', () => {
+      expect(FormService.parseLFormsConfig(JSON.stringify({
+        source: ' /fhir/r4/forms/lforms-44.1.0/ ',
+        version: ' 44.1.0 ',
+        comment: 'Other keys are ignored.'
+      }))).toEqual({source: '/fhir/r4/forms/lforms-44.1.0', version: '44.1.0'});
     });
 
-    it('should return null if the source or the version is missing', () => {
-      expect(FormService.getConfiguredLFormsSource(docWithMeta({}))).toBeNull();
-      expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '/lforms'}))).toBeNull();
-      expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-version': '44.1.0'}))).toBeNull();
-      expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '', 'lforms-version': '44.1.0'})))
-        .toBeNull();
+    it('should return null for the default configuration', () => {
+      for (const content of [null, '', ' \n', '{}', '{"source": "", "version": ""}', '{"source": " ", "version": null}']) {
+        expect(FormService.parseLFormsConfig(content)).withContext(String(content)).toBeNull();
+      }
     });
 
     it('should accept X.Y.Z versions from 33.0.0, with an optional pre-release suffix', () => {
       for (const version of ['33.0.0', '44.1.0', '44.1.0-beta.1']) {
-        expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '/lforms', 'lforms-version': version})))
+        expect(FormService.parseLFormsConfig(JSON.stringify({source: '/lforms', version})))
           .withContext(version)
           .toEqual({source: '/lforms', version});
       }
     });
 
-    it('should throw an error naming the meta tag if the version is invalid or too old', () => {
+    it('should throw an error naming the file if the version is invalid or too old', () => {
       for (const version of ['v44.1.0', 'latest', '44', '44.1', '44.1.0.1', '32.9.9']) {
-        expect(() => FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '/lforms', 'lforms-version': version})))
+        expect(() => FormService.parseLFormsConfig(JSON.stringify({source: '/lforms', version})))
           .withContext(version)
-          .toThrowError(`Invalid lforms-version meta tag "${version}": expected the X.Y.Z version (33.0.0 or later) ` +
-            'of the LHC-Forms copy at /lforms.');
+          .toThrowError(`Invalid assets/lforms-config.json: "version" "${version}" must be the X.Y.Z version ` +
+            '(33.0.0 or later) of the LHC-Forms copy at /lforms.');
       }
     });
 
+    it('should throw an error naming the file if only one value is set', () => {
+      for (const config of [{source: '/lforms'}, {source: '/lforms', version: ''}, {version: '44.1.0'}]) {
+        expect(() => FormService.parseLFormsConfig(JSON.stringify(config)))
+          .withContext(JSON.stringify(config))
+          .toThrowError('Invalid assets/lforms-config.json: "source" and "version" must both be set, or both be empty.');
+      }
+    });
+
+    it('should throw an error naming the file if the content is not a JSON object of strings', () => {
+      expect(() => FormService.parseLFormsConfig('{"source": "/lforms", "version": "44.1.0",}'))
+        .toThrowError(/^Invalid assets\/lforms-config\.json: .+\.$/);
+      for (const content of ['[]', '"44.1.0"', 'null', '42']) {
+        expect(() => FormService.parseLFormsConfig(content))
+          .withContext(content)
+          .toThrowError('Invalid assets/lforms-config.json: expected a JSON object with "source" and "version".');
+      }
+      expect(() => FormService.parseLFormsConfig('{"source": "/lforms", "version": 44}'))
+        .toThrowError('Invalid assets/lforms-config.json: "version" must be a string.');
+      expect(() => FormService.parseLFormsConfig('{"source": ["/lforms"], "version": "44.1.0"}'))
+        .toThrowError('Invalid assets/lforms-config.json: "source" must be a string.');
+    });
+
+    describe('fetchLFormsConfig()', () => {
+      it('should return the content of the file', async () => {
+        const get = spyOn(service['http'], 'get').and.returnValue(of(new HttpResponse({
+          body: '{"source": "/lforms", "version": "44.1.0"}',
+          headers: new HttpHeaders({'Content-Type': 'application/json'})
+        })));
+        await expectAsync(service.fetchLFormsConfig()).toBeResolvedTo('{"source": "/lforms", "version": "44.1.0"}');
+        expect(get).toHaveBeenCalledOnceWith('assets/lforms-config.json',
+          jasmine.objectContaining({observe: 'response', responseType: 'text'}));
+      });
+
+      it('should return null for the HTML fallback page of a single-page application server', async () => {
+        spyOn(service['http'], 'get').and.returnValue(of(new HttpResponse({
+          body: '<!doctype html><html></html>',
+          headers: new HttpHeaders({'Content-Type': 'text/html; charset=UTF-8'})
+        })));
+        await expectAsync(service.fetchLFormsConfig()).toBeResolvedTo(null);
+      });
+
+      it('should return null without a warning if the file is missing', async () => {
+        spyOn(service['http'], 'get').and.returnValue(throwError(() => new HttpErrorResponse({status: 404})));
+        spyOn(console, 'warn');
+        await expectAsync(service.fetchLFormsConfig()).toBeResolvedTo(null);
+        expect(console.warn).not.toHaveBeenCalled();
+      });
+
+      it('should return null with a warning if the file cannot be read', async () => {
+        const error = new HttpErrorResponse({status: 500});
+        spyOn(service['http'], 'get').and.returnValue(throwError(() => error));
+        spyOn(console, 'warn');
+        await expectAsync(service.fetchLFormsConfig()).toBeResolvedTo(null);
+        expect(console.warn).toHaveBeenCalledOnceWith(
+          'Unable to read assets/lforms-config.json; loading the default LHC-Forms.', error);
+      });
+    });
+
     describe('loadLFormsLib()', () => {
-      let addedTags: HTMLMetaElement[];
+      let fetchLFormsConfig: jasmine.Spy;
       let loadLForms: jasmine.Spy;
       let getSupportedLFormsVersions: jasmine.Spy;
 
-      /**
-       * Adds lforms-source and lforms-version meta tags to the test page's document.
-       * @param source - The lforms-source content.
-       * @param version - The lforms-version content.
-       */
-      function configureSource(source: string, version: string) {
-        Object.entries({'lforms-source': source, 'lforms-version': version}).forEach(([name, content]) => {
-          const tag = document.createElement('meta');
-          tag.setAttribute('name', name);
-          tag.setAttribute('content', content);
-          document.head.appendChild(tag);
-          addedTags.push(tag);
-        });
-      }
-
       beforeEach(() => {
-        addedTags = [];
         // The common testing setup stubs loadLFormsLib(); exercise the real method with a stubbed loader.
         (service.loadLFormsLib as jasmine.Spy).and.callThrough();
+        fetchLFormsConfig = spyOn(service, 'fetchLFormsConfig').and.resolveTo(null);
         loadLForms = spyOn(FormService.lformsLoader, 'loadLForms').and.resolveTo('44.1.0');
         getSupportedLFormsVersions = spyOn(FormService.lformsLoader, 'getSupportedLFormsVersions')
           .and.resolveTo(['45.0.0', '44.1.0']);
       });
 
-      afterEach(() => {
-        addedTags.forEach((tag) => tag.remove());
-      });
-
       it('should load the configured copy without querying the NLM version list', async () => {
-        configureSource('/lforms-44.1.0/', '44.1.0');
+        fetchLFormsConfig.and.resolveTo('{"source": "/lforms-44.1.0/", "version": "44.1.0"}');
         await expectAsync(service.loadLFormsLib()).toBeResolvedTo('44.1.0');
         expect(loadLForms).toHaveBeenCalledOnceWith('44.1.0', undefined, '/lforms-44.1.0');
         expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
       });
 
       it('should reject with an error naming the configured source if it fails to load', async () => {
-        configureSource('/no-such-dir', '44.1.0');
+        fetchLFormsConfig.and.resolveTo('{"source": "/no-such-dir", "version": "44.1.0"}');
         loadLForms.and.rejectWith(new Event('error'));
         spyOn(console, 'error');
         await expectAsync(service.loadLFormsLib()).toBeRejectedWithError('Failed to load LHC-Forms from /no-such-dir');
@@ -421,18 +450,25 @@ describe('FormService', () => {
           'lforms-loader.loadLForms() failed to load LHC-Forms from /no-such-dir');
       });
 
-      it('should reject an invalid configured version without loading LHC-Forms', async () => {
-        configureSource('/lforms-44.1.0', 'v44.1.0');
-        await expectAsync(service.loadLFormsLib()).toBeRejectedWithError(/^Invalid lforms-version meta tag "v44\.1\.0"/);
+      it('should reject an invalid configuration without loading LHC-Forms', async () => {
+        fetchLFormsConfig.and.resolveTo('{"source": "/lforms-44.1.0", "version": "v44.1.0"}');
+        await expectAsync(service.loadLFormsLib())
+          .toBeRejectedWithError(/^Invalid assets\/lforms-config\.json: "version" "v44\.1\.0"/);
         expect(loadLForms).not.toHaveBeenCalled();
         expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
       });
 
-      it('should load the latest NLM version if no source is configured', async () => {
-        await expectAsync(service.loadLFormsLib()).toBeResolvedTo('45.0.0');
-        expect(getSupportedLFormsVersions).toHaveBeenCalledTimes(1);
-        expect(loadLForms).toHaveBeenCalledOnceWith('45.0.0');
-      });
+      for (const [description, content] of [
+        ['is not available', null],
+        ['has empty values', '{"source": "", "version": ""}']
+      ]) {
+        it(`should load the latest NLM version if the configuration file ${description}`, async () => {
+          fetchLFormsConfig.and.resolveTo(content);
+          await expectAsync(service.loadLFormsLib()).toBeResolvedTo('45.0.0');
+          expect(getSupportedLFormsVersions).toHaveBeenCalledTimes(1);
+          expect(loadLForms).toHaveBeenCalledOnceWith('45.0.0');
+        });
+      }
     });
   });
 
