@@ -89,18 +89,20 @@ export class BasePageComponent implements OnInit, OnDestroy {
       this.startOption = 'from_autosave';
     }
 
-    const localStorageTerms = JSON.parse(localStorage.getItem("acceptedTermsOfUse"));
+    // Storage is not accessible, e.g., in an iframe of another site if the browser blocks third-party storage.
+    // Then, the terms are not remembered.
+    const localStorageTerms = JSON.parse(this.formService.getStorageItem('localStorage', 'acceptedTermsOfUse'));
     if (localStorageTerms) {
       const acceptedTermsExpired = Date.now() - localStorageTerms.timestamp > this.weekInMilliseconds;
       if (acceptedTermsExpired) {
-        localStorage.removeItem("acceptedTermsOfUse");
+        this.formService.removeStorageItem('localStorage', 'acceptedTermsOfUse');
       } else {
         this.acceptedTermsOfUse = localStorageTerms.acceptedLoinc;
         this.acceptedSnomed = localStorageTerms.acceptedSnomed;
       }
     } else {
-      this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
-      this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+      this.acceptedTermsOfUse = this.formService.getStorageItem('sessionStorage', 'acceptedLoinc') === 'true';
+      this.acceptedSnomed = this.formService.getStorageItem('sessionStorage', 'acceptedSnomed') === 'true';
     }
     this.formService.setSnomedUser(this.acceptedSnomed);
 
@@ -154,14 +156,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
           (result) => {
             this.acceptedTermsOfUse = result.acceptedLoinc;
             if (result.acceptedLoinc && result.acceptedSnomed) {
-              localStorage.setItem('acceptedTermsOfUse', JSON.stringify({
+              this.formService.setStorageItem('localStorage', 'acceptedTermsOfUse', JSON.stringify({
                 acceptedLoinc: result.acceptedLoinc,
                 acceptedSnomed: result.acceptedSnomed,
                 timestamp: Date.now()
               }));
             } else {
-              sessionStorage.acceptedLoinc = result.acceptedLoinc;
-              sessionStorage.acceptedSnomed = result.acceptedSnomed;
+              this.formService.setStorageItem('sessionStorage', 'acceptedLoinc', String(result.acceptedLoinc));
+              this.formService.setStorageItem('sessionStorage', 'acceptedSnomed', String(result.acceptedSnomed));
             }
             this.formService.setSnomedUser(result.acceptedSnomed);
           },
@@ -170,7 +172,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
           });
     }
 
-    if(window.opener) {
+    if(this.formService.getHostWindow()) {
       this.parseOpenerUrl(window.location);
     }
     this.addWindowListeners();
@@ -181,11 +183,12 @@ export class BasePageComponent implements OnInit, OnDestroy {
  * Parse location object for url of window.opener.
  * window.location.href is expected to have url path of the form
  * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
- * of the parent window (window.opener). If the referrer parameter is missing,
- * it reads referrer or origin header for the url.
+ * of the parent window (window.opener, or window.parent if embedded in an iframe). The referrer must be an
+ * absolute http or https URL. Otherwise, it is ignored as if it was missing, and the window-open API is not
+ * used (see FormService.windowOpenerUrl).
  *
  * @param location - Window location object
- * @returns string - window.opener url.
+ * @returns Always null. The referrer and fhirVersion parameters are stored in FormService.
  */
   private parseOpenerUrl(location: Location): string {
     let ret = null;
@@ -206,11 +209,24 @@ export class BasePageComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * True if embedded in an iframe of the host page. The notice about sending changes to the opener is not shown
+   * then, because the form builder is displayed within the host page.
+   *
+   * @returns True if embedded in an iframe, false otherwise.
+   */
+  get embedded(): boolean {
+    return this.formService.isEmbedded();
+  }
+
+  /**
    * Add window listeners, mainly to handle messaging with other browser windows.
    */
   addWindowListeners() {
     if (this.openerUrl) {
-      const msgListener = (event) => {
+      const msgListener = (event: MessageEvent) => {
+        if(!this.isFromHostWindow(event)) {
+          return;
+        }
         let message = null;
         try {
           message = JSON.parse(JSON.stringify(event.data)); // Sanitize input.
@@ -219,9 +235,6 @@ export class BasePageComponent implements OnInit, OnDestroy {
           return;
         }
         const parentUrl = this.formService.windowOpenerUrl;
-        if(!parentUrl.startsWith(event.origin)) {
-          return;
-        }
         switch (message?.type) {
           case 'initialQuestionnaire':
             try {
@@ -245,17 +258,82 @@ export class BasePageComponent implements OnInit, OnDestroy {
         }
       }
       window.addEventListener('message', msgListener);
-      window.addEventListener('beforeunload', (event) => {
+      if(!this.formService.isEmbedded()) {
+        // Notify the opener when the user closes the window without "Save & Close" or "Cancel". After those,
+        // the session has ended and nothing is sent.
+        window.addEventListener('beforeunload', (event) => {
+          this.notifyHostWindowClosed();
+        });
+      }
+    }
+  }
 
-        const messageObj: any = {};
-        if(this.canceledEvent) {
-          messageObj.type = 'canceled';
-        } else {
-          messageObj.type = 'closed';
-          messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
-        }
-        this.formService.notifyWindowOpener(messageObj);
-      });
+  /**
+   * Check whether a message comes from the window using the window-open API: the sender must be the host
+   * window (window.opener, or window.parent when embedded), and its origin must equal the origin of the
+   * referrer URL. Messages are ignored after the session ended.
+   *
+   * @param event - Message event received by this window.
+   * @returns True if the message is from the host window and the session is active, false otherwise.
+   */
+  private isFromHostWindow(event: MessageEvent): boolean {
+    if(this.formService.isWindowOpenerSessionEnded()) {
+      return false;
+    }
+    const hostOrigin = this.formService.windowOpenerOrigin;
+    return !!hostOrigin && event.origin === hostOrigin && event.source === this.formService.getHostWindow();
+  }
+
+  /**
+   * Send 'canceled', or 'closed' with the current questionnaire, to the window using the window-open API.
+   *
+   * @param alwaysReportError - Show the error dialog even if the same conversion error was already reported.
+   * @returns True if the message was sent, false otherwise.
+   */
+  private notifyHostClosing(alwaysReportError = false): boolean {
+    const messageObj: any = {};
+    if(this.canceledEvent) {
+      messageObj.type = 'canceled';
+    } else {
+      messageObj.type = 'closed';
+      messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
+    }
+    return this.formService.notifyWindowOpener(messageObj, alwaysReportError);
+  }
+
+  /**
+   * Notify the opener that the user closes the window (window.open()) without "Save & Close" or "Cancel": send
+   * 'closed' with the current questionnaire. If the questionnaire cannot be converted to the requested FHIR
+   * version, send 'aborted' with the conversion error instead, so that the opener still learns that the
+   * session ended. Nothing is sent after the session ended.
+   */
+  private notifyHostWindowClosed() {
+    if(this.notifyHostClosing()) {
+      return;
+    }
+    const error = this.formService.getWindowOpenerNotificationError();
+    if(error) {
+      this.formService.notifyWindowOpener({type: 'aborted', error});
+    }
+  }
+
+  /**
+   * End the window-open API session. The host window is notified first. If the notification fails, for
+   * example because the questionnaire cannot be converted to the requested FHIR version, an error dialog is
+   * shown and the form builder stays open. Otherwise, the session ends, so that nothing more is sent, such as
+   * a pending update of the last edit. A window opened with window.open() is closed. An embedded form builder
+   * (iframe) cannot close itself, so the embedding page is expected to remove or hide the iframe.
+   *
+   * @param canceled - True for "Cancel", false for "Save & Close".
+   */
+  private closeHostSession(canceled: boolean) {
+    this.canceledEvent = canceled;
+    if(!this.notifyHostClosing(true)) {
+      return;
+    }
+    this.formService.endWindowOpenerSession();
+    if(!this.formService.isEmbedded()) {
+      window.close();
     }
   }
 
@@ -616,8 +694,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
    */
   close() {
     if(this.openerUrl) {
-      this.canceledEvent = false;
-      window.close();
+      this.closeHostSession(false);
     }
     else {
       this.setStep('home');
@@ -636,8 +713,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(this.openerUrl) {
       this.modalService.open(this.cancelDlg).result.then((result) => {
         if(result) {
-          this.canceledEvent = true;
-          window.close();
+          this.closeHostSession(true);
         }
       });
     }
