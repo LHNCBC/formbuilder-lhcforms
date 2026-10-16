@@ -21,6 +21,7 @@ import {ISchema} from "@lhncbc/ngx-schema-form";
 import {ImportQuestionnaireService} from "./import.questionnaire.service";
 import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
 import {AttachmentUtil} from '../lib/attachment-util';
+import JSON5 from 'json5';
 
 declare var LForms: any;
 
@@ -63,7 +64,7 @@ export class FormService {
   static readonly R5_QUANTITY_COMPARATOR_ERROR =
     'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
   // Optional deployment configuration of the LHC-Forms source, relative to the base href.
-  static readonly LFORMS_CONFIG_URL = 'assets/lforms-config.json';
+  static readonly LFORMS_CONFIG_URL = 'assets/lforms-config.json5';
   // Oldest LHC-Forms major version with the file layout documented for a configured source.
   static readonly MIN_CONFIGURED_LFORMS_MAJOR_VERSION = 33;
   // The lforms-loader functions used by loadLFormsLib(), held here so tests can stub them; ES module
@@ -1921,16 +1922,16 @@ export class FormService {
   }
 
   /**
-   * Parse the content of the LHC-Forms configuration file, LFORMS_CONFIG_URL. A deployment can serve
-   * its own copy of LHC-Forms instead of loading the latest version from the NLM server, by setting:
+   * Parse the JSON5 content of the LHC-Forms configuration file, LFORMS_CONFIG_URL. A deployment can
+   * serve its own copy of LHC-Forms instead of loading the latest version from the NLM server, by setting:
    *   {
-   *     "source": "(base URL of the LHC-Forms files, e.g. /lforms/44.1.0)",
-   *     "version": "(its version, e.g. 44.1.0)"
+   *     source: "(base URL of the LHC-Forms files, e.g. /lforms/44.1.0)",
+   *     version: "(its version, e.g. 44.1.0)"
    *   }
    * @param content - The file content, or null if the file is not available.
    * @return - The base URL, without trailing slashes, and the version; or null if the file is not
    *   available, is blank, or has neither value (empty, null, or omitted).
-   * @throws Error - If the content is not a JSON object, a value is not a string, only one of the values
+   * @throws Error - If the content is not a JSON5 object, a value is not a string, only one of the values
    *   is set, or the version is not an X.Y.Z version of at least MIN_CONFIGURED_LFORMS_MAJOR_VERSION.
    *   lforms-loader picks the file layout from the major version, so an invalid version would otherwise
    *   request files that do not exist in the configured copy.
@@ -1943,13 +1944,13 @@ export class FormService {
     const invalid = (reason: string) => new Error(`Invalid ${FormService.LFORMS_CONFIG_URL}: ${reason}`);
     let config: any;
     try {
-      config = JSON.parse(content);
+      config = JSON5.parse(content);
     }
     catch (error) {
       throw invalid(`${error.message}.`);
     }
     if (!config || typeof config !== 'object' || Array.isArray(config)) {
-      throw invalid('expected a JSON object with "source" and "version".');
+      throw invalid('expected a JSON5 object with "source" and "version".');
     }
     for (const key of ['source', 'version']) {
       if (config[key] != null && typeof config[key] !== 'string') {

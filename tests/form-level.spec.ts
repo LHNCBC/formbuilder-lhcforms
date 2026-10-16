@@ -127,23 +127,27 @@ test.describe('Home page accept Terms of Use notices', () => {
       await expect(page.locator('.card.bg-danger-subtle')).toHaveCount(0);
     });
 
-    test.describe('with assets/lforms-config.json', () => {
+    test.describe('with assets/lforms-config.json5', () => {
       const nlmLFormsUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
       const configuredVersion = '44.1.0';
 
       /**
-       * Serve the given LHC-Forms configuration file content.
+       * Serve an LHC-Forms configuration file, in JSON5 with a comment, with the given values.
        * @param page - Playwright page used to register the route handler.
-       * @param config - The configuration file content.
+       * @param source - The configured source.
+       * @param version - The configured version.
        */
-      const routeLFormsConfig = async (page: Page, config: {source?: string, version?: string}) => {
-        await page.route(/\/assets\/lforms-config\.json$/, async (route) => {
-          await route.fulfill({json: config});
+      const routeLFormsConfig = async (page: Page, source: string, version: string) => {
+        await page.route(/\/assets\/lforms-config\.json5$/, async (route) => {
+          await route.fulfill({
+            contentType: 'application/json5',
+            body: `{\n  // Configured by the test.\n  source: '${source}',\n  version: '${version}',\n}\n`
+          });
         });
       };
 
       test('should load LForms from the configured source', async ({ page }) => {
-        await routeLFormsConfig(page, {source: 'custom-lforms/', version: configuredVersion});
+        await routeLFormsConfig(page, 'custom-lforms/', configuredVersion);
         // Serve the configured (relative) source with the files of the same version on the NLM server.
         const customRequests: string[] = [];
         await page.route(/\/custom-lforms\/(.+)$/, async (route) => {
@@ -176,7 +180,7 @@ test.describe('Home page accept Terms of Use notices', () => {
       });
 
       test('should display error message on an invalid configuration', async ({ page }) => {
-        await routeLFormsConfig(page, {source: 'custom-lforms', version: `v${configuredVersion}`});
+        await routeLFormsConfig(page, 'custom-lforms', `v${configuredVersion}`);
         const lformsRequests: string[] = [];
         page.on('request', (request) => {
           if (/\/(custom-lforms|lforms-versions)\//.test(request.url())) {
@@ -191,7 +195,7 @@ test.describe('Home page accept Terms of Use notices', () => {
         const errorCard = page.locator('.card').filter({ hasText: 'Error' });
         await expect(errorCard.locator('.card-header')).toContainText('Error', { timeout: 10000 });
         await expect(errorCard.locator('.card-body')).toContainText(
-          `Invalid assets/lforms-config.json: "version" "v${configuredVersion}" must be the X.Y.Z version`);
+          `Invalid assets/lforms-config.json5: "version" "v${configuredVersion}" must be the X.Y.Z version`);
         expect(lformsRequests).toEqual([]);
       });
     });
