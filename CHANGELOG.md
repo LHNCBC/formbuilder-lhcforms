@@ -63,6 +63,10 @@ This project follows [Semantic Versioning](http://semver.org/).
   status, until the form builder has finished loading. Choosing to restore the
   autosaved form before that showed an empty page. If the autosaved form
   cannot be restored, an error is now shown and the start page stays.
+- Fixed an NG0100 "expression changed after it was checked" error in
+  development mode, caused by the tooltip of long text fields, such as an
+  extension URL in the form-level advanced fields. Whether the tooltip is
+  needed is now checked on hover, focus and input.
 
 ## [12.9.0] 2026-10-06
 ### Added

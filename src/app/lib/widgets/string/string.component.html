@@ -42,6 +42,9 @@
                    (focus)="suggestionFocus$.next($any($event).target.value)"
                    (click)="suggestionClick$.next($any($event).target.value)"
                    (selectItem)="onSuggestionSelected($event)" popupClass="add-scrolling"
+                   (pointerenter)="updateTooltipVisibility()"
+                   (focusin)="updateTooltipVisibility()"
+                   (input)="updateTooltipVisibility()"
                    [matTooltip]="getTooltipValue()" matTooltipClass="lfb-tooltip-pre-wrap"
                    [lfbDisableControl]="schema.disabled">
           } @else {
@@ -56,6 +59,7 @@
                [required]="isRequired"
                (pointerenter)="updateTooltipVisibility()"
                (focusin)="updateTooltipVisibility()"
+               (input)="updateTooltipVisibility()"
                [matTooltip]="getTooltipValue()"
                matTooltipClass="lfb-tooltip-pre-wrap"
                [lfbDisableControl]="schema.disabled">

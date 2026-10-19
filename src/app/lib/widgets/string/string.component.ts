@@ -2,8 +2,6 @@
  * Component for general input box
  */
 import {
-  AfterViewChecked,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   inject,
@@ -50,7 +48,7 @@ type StringSuggestion = string | {value: string; label?: string};
     }
   `]
 })
-export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class StringComponent extends LfbControlWidgetComponent implements OnInit, OnDestroy {
   @ViewChild('inputEl') inputElRef!: ElementRef;
   @ViewChild('suggestionTypeahead') suggestionTypeahead?: NgbTypeahead;
   showTooltip = false;
@@ -60,7 +58,6 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   suggestionClick$ = new Subject<string>();
 
   Array = Array; // To use in templates.
-  cdr = inject(ChangeDetectorRef);
 
   constructor() {
     super();
@@ -90,7 +87,9 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   }
 
   /**
-   * Refresh tooltip visibility immediately before hover or focus display.
+   * Refresh tooltip visibility on hover, focus, or input, i.e. when the tooltip can be shown
+   * or the text width changes. It is deliberately not updated in a view lifecycle hook:
+   * changing the bound tooltip after the view is checked causes NG0100 in development mode.
    */
   updateTooltipVisibility(): void {
     this.showTooltip = this.hasOverflow();
@@ -179,24 +178,6 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
     }
     catch {
       return value;
-    }
-  }
-
-  /**
-   * Gives the answer-options service a chance to attach autocomplete and updates tooltip overflow state.
-   *
-   */
-  ngAfterViewChecked(): void {
-    const el = this.inputElRef?.nativeElement;
-    const width = el?.clientWidth;
-    if(!width) {
-      return;
-    }
-
-    const nextShowTooltip = el.scrollWidth > width;
-    if(nextShowTooltip !== this.showTooltip) {
-      this.showTooltip = nextShowTooltip;
-      this.cdr.markForCheck();
     }
   }
 
