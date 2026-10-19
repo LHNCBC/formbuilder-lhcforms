@@ -72,10 +72,11 @@ export class ResourceDlgComponent {
   /**
    * Serialize a clean copy of the resource for the read-only JSON viewer.
    *
-   * @returns Pretty-printed JSON without Form Builder's internal __$ fields.
+   * @returns Pretty-printed JSON without Form Builder's internal __$ fields. Resources other
+   *   than ValueSets are otherwise unchanged.
    */
   get resourceJson(): string {
-    return JSON.stringify(Util.convertToQuestionnaireJSON(this.input), null, 2);
+    return JSON.stringify(Util.convertContainedResourceToJSON(this.input), null, 2);
   }
 
 

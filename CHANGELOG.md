@@ -4,20 +4,39 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [12.10.0] 2026-10-13
 ### Added
-- Added support for repeatable SDC `templateExtract` extensions on Questionnaires
-  and Questionnaire items, including FHIRPath expressions for extracted resource
-  IDs and Bundle entry request fields.
-- Prevented deleting a contained resource, or changing its ID, while a
-  `templateExtract` extension on the Questionnaire or on any item references it.
-- Provided the Questionnaire's items to the expression editor when editing
-  form-level template extraction expressions.
-- Recorded the original FHIR version of contained resources in imported
-  Questionnaires, so that previews and exports warn about version mismatches.
-- Kept the recorded FHIR version of contained resources after form-level edits.
-- Rejected imported contained resources whose IDs are not JSON strings or are
-  empty, instead of accepting or replacing them.
-- Added a non-blocking warning when `templateExtract` extensions at the same
-  scope use the same template with identical expressions.
+- Contained resources of any FHIR resource type. The Add menu of the form-level
+  Contained resources table can create a ValueSet, as before, upload a resource
+  from a local JSON file, or import one from a FHIR server.
+  - Server import lists the resource types that the server advertises, and
+    searches them by the parameters the server advertises for the selected type:
+    any text field (_content), resource ID (_id), or another search parameter.
+    Parameters advertised for all resource types are included.
+  - An imported resource without an ID gets a generated one. An ID that is not a
+    non-empty JSON string, or not a valid FHIR id, is rejected. Resources with
+    nested contained resources are rejected. `meta.versionId`,
+    `meta.lastUpdated` and `meta.security` are removed after confirmation,
+    because FHIR does not allow them on contained resources.
+  - Importing a resource with the ID of an existing contained resource of the
+    same type replaces its contents after confirmation and keeps the ID, so
+    references to it stay valid.
+  - ValueSets remain editable. Other resource types are shown as read-only JSON.
+    Their JSON is exported unchanged, including `null` entries that keep values
+    such as `given` aligned with their extensions in `_given`.
+  - The FHIR version of each contained resource other than a ValueSet is
+    recorded, from the server, file type, profile or containing Questionnaire,
+    and kept across edits and autosaves. Preview and export warn when it differs
+    from the output version, or is unknown. ValueSets do not trigger these
+    warnings.
+- Support for repeatable SDC `templateExtract` extensions on Questionnaires and
+  Questionnaire items, using contained resources as templates, including
+  FHIRPath expressions for extracted resource IDs and Bundle entry request
+  fields. The expression editor is given the Questionnaire's items, also for
+  form-level template extractions.
+  - A contained resource cannot be deleted, or its ID changed, while a
+    `templateExtract` extension on the Questionnaire or on any item references
+    it.
+  - A non-blocking warning is shown when `templateExtract` extensions at the
+    same scope use the same template with identical expressions.
 
 ## [12.9.0] 2026-10-06
 ### Added

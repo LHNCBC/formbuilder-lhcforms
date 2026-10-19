@@ -374,6 +374,68 @@ describe('Util', () => {
     expect(flSchema.properties.resourceType.enum).toEqual(['Questionnaire']);
   });
 
+  describe('Contained resources in questionnaire JSON', () => {
+    const templateExtractValue = {
+      extension: [{
+        url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue',
+        valueString: "item.where(linkId='g').answer.value"
+      }]
+    };
+
+    it('should keep null placeholders and remove only __$ fields in opaque resources', () => {
+      const patient = {
+        resourceType: 'Patient',
+        id: 'pt',
+        __$fhirVersionInfo: {version: 'R5'},
+        name: [{given: ['Fixed', null], _given: [null, templateExtractValue], family: ''}]
+      };
+      const questionnaire = {resourceType: 'Questionnaire', status: 'draft', contained: [patient]};
+
+      const result = Util.convertToQuestionnaireJSON(questionnaire);
+
+      expect(result.contained).toEqual([{
+        resourceType: 'Patient',
+        id: 'pt',
+        name: [{given: ['Fixed', null], _given: [null, templateExtractValue], family: ''}]
+      }]);
+      expect(patient.__$fhirVersionInfo).toEqual({version: 'R5'}); // Source is unchanged.
+    });
+
+    it('should prune contained ValueSets and drop empty resources, keeping the order', () => {
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        contained: [
+          {resourceType: 'ValueSet', id: 'vs1', status: '', compose: {include: [{system: 'http://x', concept: [null, {code: 'a'}]}]}},
+          {},
+          null,
+          {resourceType: 'Observation', id: 'obs', note: [null, {text: 'n'}]}
+        ]
+      };
+
+      const result = Util.convertToQuestionnaireJSON(questionnaire);
+
+      expect(result.contained).toEqual([
+        {resourceType: 'ValueSet', id: 'vs1', compose: {include: [{system: 'http://x', concept: [{code: 'a'}]}]}},
+        {resourceType: 'Observation', id: 'obs', note: [null, {text: 'n'}]}
+      ]);
+    });
+
+    it('should omit contained when no resource remains', () => {
+      const result = Util.convertToQuestionnaireJSON({resourceType: 'Questionnaire', status: 'draft', contained: [{}]});
+      expect(result.contained).toBeUndefined();
+    });
+
+    it('should convert a single contained resource for display', () => {
+      expect(Util.convertContainedResourceToJSON(
+        {resourceType: 'Patient', id: 'pt', __$resourceDisplay: 'x', name: [{given: [null, 'Alice']}]}
+      )).toEqual({resourceType: 'Patient', id: 'pt', name: [{given: [null, 'Alice']}]});
+      expect(Util.convertContainedResourceToJSON(
+        {resourceType: 'ValueSet', id: 'vs', status: '', __$fhirVersionInfo: {version: 'R5'}}
+      )).toEqual({resourceType: 'ValueSet', id: 'vs'});
+    });
+  });
+
   describe('FHIR Field Ordering', () => {
     it('should order root Questionnaire fields according to FHIR canonical order', () => {
       const unorderedQ = {

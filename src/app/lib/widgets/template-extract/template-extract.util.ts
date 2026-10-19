@@ -69,7 +69,8 @@ export function parseTemplateExtractExtension(extension: fhir.Extension): Templa
 /**
  * Convert the widget's edit model to a valid complex templateExtract extension.
  * Unknown child slices and metadata on known slices are retained when an imported
- * extension is edited.
+ * extension is edited. The template valueReference is retained only when its reference
+ * is unchanged.
  *
  * @param model - Edit model; empty expression fields are omitted from the result.
  * @returns A templateExtract extension with the template child first, followed by
@@ -100,10 +101,11 @@ export function buildTemplateExtractExtension(model: TemplateExtractEditModel): 
   });
   templateChild.url = 'template';
   delete templateChild.extension;
-  templateChild.valueReference = {
-    ...(templateChild.valueReference || {}),
-    reference: model.templateReference
-  };
+  // Details such as display, type or identifier describe the original template; drop them
+  // when another template is chosen.
+  templateChild.valueReference = templateChild.valueReference?.reference === model.templateReference
+    ? templateChild.valueReference
+    : {reference: model.templateReference};
 
   const knownChildren: fhir.Extension[] = [templateChild];
   TEMPLATE_EXTRACT_CHILD_URLS.slice(1).forEach((url: TemplateExtractExpressionUrl) => {

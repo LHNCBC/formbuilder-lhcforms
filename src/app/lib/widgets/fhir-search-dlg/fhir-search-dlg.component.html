@@ -67,7 +67,7 @@
             <input type="search" class="form-control"
               [(ngModel)]="inputTerm"
               [ngModelOptions]="{standalone: true}"
-              [placeholder]="searchField.searchFieldPlaceholder"
+              [placeholder]="searchField?.searchFieldPlaceholder || ''"
               aria-label="Search term"
               aria-describedby="filterHelp">
             <button

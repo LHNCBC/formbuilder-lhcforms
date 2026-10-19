@@ -14,12 +14,21 @@
           id="template-extract-resource"
           class="form-select form-select-sm"
           [(ngModel)]="model.templateReference"
+          [attr.aria-describedby]="getTemplateWarning() ? 'template-extract-resource-warning' : null"
         >
+          @if (missingTemplateReference) {
+            <option [value]="missingTemplateReference" disabled>{{missingTemplateReference}} (missing)</option>
+          }
           @for (resource of containedResources; track resource.reference) {
             <option [value]="resource.reference">{{resource.label}}</option>
           }
         </select>
         <div class="form-text">Choose the contained resource that will be cloned during extraction.</div>
+        @if (getTemplateWarning(); as templateWarning) {
+          <div id="template-extract-resource-warning" class="alert alert-warning mt-2 mb-0 template-extract-template-warning" role="alert">
+            {{templateWarning}}
+          </div>
+        }
       </div>
 
       <section class="bundle-fields-panel border rounded">

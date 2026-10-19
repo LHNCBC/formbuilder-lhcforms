@@ -1,7 +1,7 @@
 import {Injectable, inject} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
 import * as fhirClient from 'fhirclient';
-import {defer, from, mergeMap, Observable, of, Subject, timeout, TimeoutError} from 'rxjs';
+import {defer, from, mergeMap, Observable, of, Subject, throwError, timeout, TimeoutError} from 'rxjs';
 import fhir from 'fhir/r4';
 import mimeDb from 'mime-db';
 import {fhirPrimitives} from '../fhir';
@@ -167,10 +167,14 @@ export class FhirService {
      *
      * @param resourceType - FHIR resource type used in the REST path.
      * @param id - Logical resource id.
-     * @returns Resource exactly as supplied by the selected FHIR server.
+     * @returns Resource exactly as supplied by the selected FHIR server, or an observable
+     *   that errors when the resource type is invalid.
      */
     readResource(resourceType: string, id: string): Observable<fhir.Resource> {
-      this.assertResourceType(resourceType);
+      const resourceTypeError = this.getResourceTypeError(resourceType);
+      if(resourceTypeError) {
+        return throwError(() => resourceTypeError);
+      }
       return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
         url: `${resourceType}/${encodeURIComponent(id)}?_format=application/fhir+json`
       }));
@@ -207,7 +211,8 @@ export class FhirService {
      * @param searchStr - Search term.
      * @param searchField - FHIR search parameter name.
      * @param otherQueryParams - Additional or overriding query parameters.
-     * @returns Search-set Bundle returned by the selected FHIR server.
+     * @returns Search-set Bundle returned by the selected FHIR server, or an observable that
+     *   errors when the resource type is invalid.
      */
     searchResources(
       resourceType: string,
@@ -215,7 +220,10 @@ export class FhirService {
       searchField?: string,
       otherQueryParams?: any
     ): Observable<fhir.Bundle> {
-      this.assertResourceType(resourceType);
+      const resourceTypeError = this.getResourceTypeError(resourceType);
+      if(resourceTypeError) {
+        return throwError(() => resourceTypeError);
+      }
       const query = {_sort: ['-_lastUpdated'], _total: 'accurate', _format: 'application/fhir+json'};
       Object.assign(query, otherQueryParams);
 
@@ -235,7 +243,8 @@ export class FhirService {
 
     /**
      * Get searchable resource types and parameters advertised by the current server.
-     * Results are cached by server endpoint.
+     * Parameters a REST entry declares for all resources (rest.searchParam) are added
+     * after each resource type's own parameters. Results are cached by server endpoint.
      *
      * @returns Resource capabilities declared in the server CapabilityStatement.
      */
@@ -251,20 +260,15 @@ export class FhirService {
       })).pipe(map((statement: fhir.CapabilityStatement) => {
         const byType = new Map<string, FHIRResourceSearchParameter[]>();
         (statement.rest || []).forEach((rest) => {
+          const serverWideParameters = this.toSearchParameters(rest.searchParam);
           (rest.resource || []).forEach((resource) => {
             if(!resource.type || !/^[A-Z][A-Za-z0-9]{0,63}$/.test(resource.type)) {
               return;
             }
-            const parameters = (resource.searchParam || []).flatMap((parameter) =>
-              parameter.name ? [{
-                name: parameter.name,
-                type: parameter.type,
-                documentation: parameter.documentation
-              }] : []
-            );
             byType.set(resource.type, [
               ...(byType.get(resource.type) || []),
-              ...parameters
+              ...this.toSearchParameters(resource.searchParam),
+              ...serverWideParameters
             ]);
           });
         });
@@ -644,15 +648,35 @@ export class FhirService {
   }
 
   /**
-   * Reject unsafe resource types before interpolating them into a REST path.
+   * Check a resource type before it is interpolated into a REST path. The error is returned
+   * rather than thrown, so callers can emit it through an observable; a synchronous throw
+   * would bypass error handling attached to the request and could end a calling pipeline.
    *
    * @param resourceType - Candidate FHIR resource type.
-   * @throws Error when the resource type is not a valid FHIR type token.
+   * @returns An error when the resource type is not a valid FHIR type token, otherwise null.
    */
-  private assertResourceType(resourceType: string): void {
-    if(!/^[A-Z][A-Za-z0-9]{0,63}$/.test(resourceType || '')) {
-      throw new Error(`Invalid FHIR resource type: ${resourceType || '(empty)'}`);
-    }
+  private getResourceTypeError(resourceType: string): Error | null {
+    return /^[A-Z][A-Za-z0-9]{0,63}$/.test(resourceType || '')
+      ? null
+      : new Error(`Invalid FHIR resource type: ${resourceType || '(empty)'}`);
+  }
+
+  /**
+   * Convert CapabilityStatement search-parameter declarations, skipping unnamed ones.
+   *
+   * @param declarations - Resource-level or REST-level searchParam entries.
+   * @returns Search parameters in server declaration order.
+   */
+  private toSearchParameters(
+    declarations: fhir.CapabilityStatementRestResourceSearchParam[] | undefined
+  ): FHIRResourceSearchParameter[] {
+    return (declarations || []).flatMap((parameter) =>
+      parameter.name ? [{
+        name: parameter.name,
+        type: parameter.type,
+        documentation: parameter.documentation
+      }] : []
+    );
   }
 
   /**

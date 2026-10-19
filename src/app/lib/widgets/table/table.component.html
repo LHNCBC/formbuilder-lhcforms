@@ -116,11 +116,13 @@
         @if (!singleItem &&
           (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))) {
           @if(addMenuItems.length) {
-            <div class="d-block w-100 array-add-menu" ngbDropdown placement="bottom">
+            <div class="d-block w-100 array-add-menu" ngbDropdown placement="bottom"
+              [attr.title]="getAddButtonDisabledReason() || null">
               <button type="button" class="btn btn-sm btn-light text-primary shadow-sm array-add-button w-100"
                 ngbDropdownToggle
                 [attr.disabled]="isAddButtonDisabled() ? '' : null"
-                [attr.title]="schema.widget?.addButtonTitle">
+                [attr.aria-describedby]="getAddButtonDisabledReason() ? tableId+'_addButtonReason' : null"
+                [attr.title]="getAddButtonDisabledReason() ? null : schema.widget?.addButtonTitle">
                 <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
               </button>
               <div ngbDropdownMenu>
@@ -136,17 +138,33 @@
               [ngbPopover]="'Please fill in the above fields before adding a new item'"
               #alertPopover="ngbPopover" triggers="manual" placement="bottom top" container="body"></span>
           } @else {
-            <button type="button" (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
-              [attr.disabled]="isAddButtonDisabled() ? '' : null"
-              [ngbPopover]="'Please fill in the above fields before adding a new item'"
-              #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
-              container="body"
-              popoverClass=""
-              [attr.title]="schema.widget?.addButtonTitle">
-              <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
-            </button>
+            @if (getAddButtonDisabledReason(); as addButtonDisabledReason) {
+              <!-- The wrapper shows the reason on hover, since a disabled button shows no title. -->
+              <div class="array-add-wrapper" [attr.title]="addButtonDisabledReason">
+                <ng-container *ngTemplateOutlet="addButton"></ng-container>
+              </div>
+            } @else {
+              <ng-container *ngTemplateOutlet="addButton"></ng-container>
+            }
+          }
+          @if (getAddButtonDisabledReason(); as addButtonDisabledReason) {
+            <div class="form-text add-button-disabled-reason" [attr.id]="tableId+'_addButtonReason'">
+              {{addButtonDisabledReason}}
+            </div>
           }
         }
+        <ng-template #addButton>
+          <button type="button" (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+            [attr.disabled]="isAddButtonDisabled() ? '' : null"
+            [attr.aria-describedby]="getAddButtonDisabledReason() ? tableId+'_addButtonReason' : null"
+            [ngbPopover]="'Please fill in the above fields before adding a new item'"
+            #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
+            container="body"
+            popoverClass=""
+            [attr.title]="getAddButtonDisabledReason() ? null : schema.widget?.addButtonTitle">
+            <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+          </button>
+        </ng-template>
         @if (tableStatus) {
           <div class="mt-2" role="alert">
             <fa-icon [icon]="warningIcon" [ngStyle]="getStatusStyle()" aria-hidden="true"></fa-icon>

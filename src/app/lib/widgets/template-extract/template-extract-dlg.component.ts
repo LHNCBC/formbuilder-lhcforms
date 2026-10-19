@@ -89,6 +89,8 @@ export class TemplateExtractDlgComponent implements OnInit {
   containedResources: ContainedResourceOption[] = [];
   isNew = true;
   bundleFieldsCollapsed = true;
+  // Reference of an edited occurrence whose template is not a contained resource, or ''.
+  missingTemplateReference = '';
   // Comparison keys of the other rows at this scope, which cannot change while the dialog is open.
   private otherRowSignatures: {rowNumber: number; signature: string}[] = [];
 
@@ -109,6 +111,26 @@ export class TemplateExtractDlgComponent implements OnInit {
     if(this.isNew && this.containedResources.length) {
       this.model.templateReference = this.containedResources[0].reference;
     }
+    if(!this.isNew && this.model.templateReference && !this.canSave()) {
+      this.missingTemplateReference = this.model.templateReference;
+    }
+  }
+
+  /**
+   * Explain why the selected template cannot be saved.
+   *
+   * @returns Warning text, or an empty string when a contained resource is selected.
+   */
+  getTemplateWarning(): string {
+    if(!this.containedResources.length) {
+      return 'This form has no contained resources to use as a template. ' +
+        'Add one under Contained resources in the form-level fields, then edit this template extraction again.';
+    }
+    if(this.missingTemplateReference && this.model.templateReference === this.missingTemplateReference) {
+      return `The template ${this.missingTemplateReference} is not a contained resource in this form. ` +
+        'Choose another template to save this template extraction.';
+    }
+    return '';
   }
 
   /** Close without returning a changed extension. */

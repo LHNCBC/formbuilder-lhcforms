@@ -296,6 +296,66 @@ test.describe('Contained resource local-file import', () => {
     await expect(errorDialog).not.toBeVisible();
     await expect(containedTable.locator('tbody > tr')).toHaveCount(0);
   });
+
+  /**
+   * Upload one in-memory resource with the Add menu.
+   * @param page - Browser page displaying the form-level editor with advanced fields expanded.
+   * @param resource - Resource to upload.
+   */
+  async function uploadResource(page: Page, resource: object): Promise<void> {
+    const chooserPromise = page.waitForEvent('filechooser');
+    await page.getByRole('button', {name: 'Add contained resource'}).click();
+    await page.getByRole('button', {name: 'Upload from a local file…'}).click();
+    await (await chooserPromise).setFiles({
+      name: 'resource.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(resource))
+    });
+  }
+
+  test('keeps null placeholders of an uploaded resource in its JSON view and output', async ({page}) => {
+    const patient = {
+      resourceType: 'Patient',
+      id: 'pt',
+      name: [{given: [null, 'Alice'], _given: [{extension: [{url: 'http://example.org/x', valueString: 'x'}]}, null]}]
+    };
+    await uploadResource(page, patient);
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(1);
+
+    await containedTable.getByRole('button', {name: 'View contained resource JSON'}).click();
+    const resourceDialog = page.getByRole('dialog', {name: 'Contained Resource'});
+    const viewedJSON = JSON.parse(await resourceDialog.locator('pre').innerText());
+    expect(viewedJSON).toEqual(patient);
+    await resourceDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.contained).toEqual([patient]);
+  });
+
+  test('reorders contained resources without errors', async ({page}) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await uploadResource(page, {resourceType: 'Patient', id: 'first'});
+    await uploadResource(page, {resourceType: 'Practitioner', id: 'second'});
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(2);
+
+    await containedTable.locator('tbody > tr').first().getByRole('button', {name: 'Move this row down'}).click();
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('second');
+    await expect(PWUtils.getTableCell(containedTable, 2, 2)).toHaveText('first');
+
+    await containedTable.locator('tbody > tr').nth(1).getByRole('button', {name: 'Move this row up'}).click();
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('first');
+    await expect(PWUtils.getTableCell(containedTable, 2, 2)).toHaveText('second');
+
+    // Moving is not blocked by a reordering state left behind by an earlier move.
+    await containedTable.locator('tbody > tr').first().getByRole('button', {name: 'Move this row down'}).click();
+    await expect(PWUtils.getTableCell(containedTable, 1, 2)).toHaveText('second');
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.contained.map((resource) => resource.id)).toEqual(['second', 'first']);
+    expect(pageErrors).toEqual([]);
+  });
 });
 
 test.describe('Contained resource versions in an imported Questionnaire', () => {
@@ -437,7 +497,9 @@ test.describe('Contained resource import from a FHIR server', () => {
   });
 
   test('selects a resource type and imports a normalized server resource', async ({page}) => {
-    await page.route('https://lforms-fhir.nlm.nih.gov/baseR5/metadata?*', async (route) => {
+    // A regular expression, because '*' in a URL glob does not match the '/' in
+    // '_format=application/fhir+json'.
+    await page.route(/\/baseR5\/metadata\?/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/fhir+json',
@@ -450,6 +512,8 @@ test.describe('Contained resource import from a FHIR server', () => {
           format: ['json'],
           rest: [{
             mode: 'server',
+            // Server-wide parameters apply to every resource type.
+            searchParam: [{name: '_content', type: 'string'}],
             resource: [{
               type: 'Practitioner',
               searchParam: [{name: 'name', type: 'string'}]
@@ -505,6 +569,9 @@ test.describe('Contained resource import from a FHIR server', () => {
     await expect(searchButton).toBeDisabled();
     await searchDialog.getByLabel('Resource type').fill('Practitioner');
     await expect(searchButton).toBeEnabled();
+    const searchField = searchDialog.locator('#searchField1');
+    await expect(searchField.locator('option')).toHaveText(['Any text field', 'name (string)']);
+    await expect(searchField.locator('option:checked')).toHaveText('Any text field');
     await searchDialog.getByLabel('Search term').fill('Jane');
     await searchButton.click();
     await searchDialog.getByRole('button', {name: /Jane Roe/}).click();

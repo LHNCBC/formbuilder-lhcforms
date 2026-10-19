@@ -173,6 +173,19 @@ describe('FhirService', () => {
     }, error: done.fail});
   });
 
+  it('should emit, not throw, an error for an invalid resource type', () => {
+    const reqSpy = spyOn(service.getSmartClient(), 'request');
+    const errors: string[] = [];
+
+    expect(() => {
+      service.searchResources('bad/type', 'x').subscribe({error: (error) => errors.push(error.message)});
+      service.readResource('', 'id').subscribe({error: (error) => errors.push(error.message)});
+    }).not.toThrow();
+
+    expect(errors).toEqual(['Invalid FHIR resource type: bad/type', 'Invalid FHIR resource type: (empty)']);
+    expect(reqSpy).not.toHaveBeenCalled();
+  });
+
   it('should parse and cache resource capabilities for the selected server', (done) => {
     const statement = {
       resourceType: 'CapabilityStatement',
@@ -201,6 +214,37 @@ describe('FhirService', () => {
         expect(reqSpy).toHaveBeenCalledTimes(1);
         done();
       }, error: done.fail});
+    }, error: done.fail});
+  });
+
+  it('should add server-wide search parameters to every resource type', (done) => {
+    const statement = {
+      resourceType: 'CapabilityStatement',
+      status: 'active',
+      date: '2026-10-19',
+      kind: 'instance',
+      fhirVersion: '4.0.1',
+      format: ['json'],
+      rest: [{
+        mode: 'server',
+        searchParam: [{name: '_content', type: 'string'}, {name: '_id', type: 'token'}],
+        resource: [
+          {type: 'Patient', searchParam: [{name: 'name', type: 'string'}, {name: '_id', type: 'token'}]},
+          {type: 'Practitioner'}
+        ]
+      }]
+    } as fhir.CapabilityStatement;
+    spyOn(service.getSmartClient(), 'request').and.returnValue(Promise.resolve(statement));
+
+    service.getResourceCapabilities().subscribe({next: (capabilities) => {
+      const namesByType = Object.fromEntries(capabilities.map((capability) =>
+        [capability.resourceType, capability.searchParameters.map((parameter) => parameter.name)]
+      ));
+      expect(namesByType).toEqual({
+        Patient: ['name', '_id', '_content'],
+        Practitioner: ['_content', '_id']
+      });
+      done();
     }, error: done.fail});
   });
 

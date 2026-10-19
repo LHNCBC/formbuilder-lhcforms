@@ -1386,7 +1386,7 @@
         "addEditAction": true,
         "addDefaultItemIfEmpty": false,
         "addButtonLabel": "Add new template extraction",
-        "addButtonTitle": "A contained resource is required before adding a template extraction.",
+        "addButtonDisabledReason": "A contained resource is required before adding a template extraction. Add one under Contained resources above.",
         "labelPosition": "left",
         "labelClasses": "col-sm-2 ps-0 pe-1",
         "controlClasses": "col-sm-10",

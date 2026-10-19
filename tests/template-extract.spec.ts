@@ -85,6 +85,45 @@ async function uploadContainedResource(
   await (await chooserPromise).setFiles(file);
 }
 
+/**
+ * Import a questionnaire from an in-memory file and expand the advanced form-level fields.
+ * @param page - Browser page displaying a new questionnaire.
+ * @param questionnaire - Questionnaire to import.
+ */
+async function importQuestionnaire(page: Page, questionnaire: fhir.Questionnaire): Promise<void> {
+  const chooserPromise = page.waitForEvent('filechooser');
+  await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+  await (await chooserPromise).setFiles({
+    name: 'questionnaire.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(questionnaire))
+  });
+  await PWUtils.expandAdvancedFields(page);
+}
+
+/**
+ * Create an R5 questionnaire with contained Patient and Observation templates and one
+ * form-level templateExtract extension.
+ * @param template - valueReference of the extension's template child.
+ * @returns Questionnaire to import.
+ */
+function createTemplateQuestionnaire(template: fhir.Reference): fhir.Questionnaire {
+  return {
+    resourceType: 'Questionnaire',
+    meta: {profile: ['http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire']},
+    status: 'draft',
+    contained: [
+      {resourceType: 'Patient', id: 'pt'},
+      {resourceType: 'Observation', id: 'obs', status: 'final', code: {text: 'Observation'}} as fhir.Observation
+    ],
+    extension: [{
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [{url: 'template', valueReference: template}]
+    }],
+    item: [{linkId: 'g', text: 'Given', type: 'string'}]
+  };
+}
+
 test.describe('Template-based extraction', () => {
   test.beforeEach(async ({page}) => {
     const mainPO = new MainPO(page);
@@ -367,5 +406,82 @@ test.describe('Template-based extraction', () => {
     await page.getByRole('dialog').getByRole('button', {name: 'Delete'}).click();
     await expect(widget.locator('tbody > tr')).toHaveCount(1);
     await expect(widget.getByRole('alert')).toHaveCount(0);
+  });
+
+  test('explains why Add is disabled on a form without contained resources', async ({page}) => {
+    await PWUtils.expandAdvancedFields(page);
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    const addExtraction = formWidget.getByRole('button', {name: 'Add new template extraction', exact: true});
+    const reason = 'A contained resource is required before adding a template extraction. ' +
+      'Add one under Contained resources above.';
+    await expect(addExtraction).toBeDisabled();
+    await expect(formWidget.locator('.add-button-disabled-reason')).toHaveText(reason);
+    await expect(addExtraction).toHaveAccessibleDescription(reason);
+    await expect(formWidget.locator('.array-add-wrapper')).toHaveAttribute('title', reason);
+    await expect(addExtraction).not.toHaveAttribute('title');
+
+    await uploadContainedResource(page, 'tests/fixtures/contained-patient-r4.json');
+    await expect(addExtraction).toBeEnabled();
+    await expect(formWidget.locator('.add-button-disabled-reason')).toHaveCount(0);
+    await expect(formWidget.locator('.array-add-wrapper')).toHaveCount(0);
+  });
+
+  test('drops the old template display when another template is chosen', async ({page}) => {
+    await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#pt', display: 'Patient template'}));
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    await formWidget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    await dialog.getByLabel('Contained resource template').selectOption('#obs');
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(formWidget.locator('tbody > tr')).toContainText('Observation #obs');
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.extension[0].extension[0]).toEqual({url: 'template', valueReference: {reference: '#obs'}});
+  });
+
+  test('explains a missing template when editing its row', async ({page}) => {
+    await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#gone'}));
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    await expect(formWidget.locator('tbody > tr')).toContainText('#gone (missing)');
+
+    await formWidget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    const select = dialog.getByLabel('Contained resource template');
+    await expect(select).toHaveValue('#gone');
+    await expect(select.locator('option:checked')).toHaveText('#gone (missing)');
+    await expect(select.locator('option:checked')).toBeDisabled();
+    const warning = 'The template #gone is not a contained resource in this form. ' +
+      'Choose another template to save this template extraction.';
+    await expect(dialog.getByRole('alert')).toHaveText(warning);
+    await expect(select).toHaveAccessibleDescription(warning);
+    const save = dialog.getByRole('button', {name: 'Save and close'});
+    await expect(save).toBeDisabled();
+
+    await select.selectOption('#pt');
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(formWidget.locator('tbody > tr')).toContainText('Patient #pt');
+  });
+
+  test('exports null placeholders in a contained template unchanged', async ({page}) => {
+    const templateExtractValue = {
+      extension: [{
+        url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue',
+        valueString: "item.where(linkId='g').answer.value"
+      }]
+    };
+    const questionnaire = createTemplateQuestionnaire({reference: '#pt'});
+    questionnaire.contained = [{
+      resourceType: 'Patient',
+      id: 'pt',
+      name: [{given: ['Fixed', null], _given: [null, templateExtractValue]} as fhir.HumanName]
+    }];
+    await importQuestionnaire(page, questionnaire);
+
+    for(const version of ['R5', 'R4', 'STU3'] as const) {
+      const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(output.contained, version).toEqual(questionnaire.contained);
+    }
   });
 });

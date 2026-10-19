@@ -416,6 +416,56 @@ describe('TemplateExtractDlgComponent', () => {
     });
   });
 
+  describe('missing template', () => {
+    /**
+     * Read the rendered template warning.
+     * @returns Warning element, or null when it is not displayed.
+     */
+    function getTemplateWarningElement(): HTMLElement | null {
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('.template-extract-template-warning');
+    }
+
+    it('shows a missing template as a disabled selected option with a warning', async () => {
+      questionnaire.extension[3].extension[0].valueReference.reference = '#gone';
+      await createDialog('form', 1);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector('#template-extract-resource');
+      const missingOption = select.options[0];
+      expect(missingOption.textContent.trim()).toBe('#gone (missing)');
+      expect(missingOption.disabled).toBeTrue();
+      expect(select.selectedIndex).toBe(0);
+      expect(component.canSave()).toBeFalse();
+      expect(getTemplateWarningElement().textContent.trim()).toBe(
+        'The template #gone is not a contained resource in this form. ' +
+        'Choose another template to save this template extraction.'
+      );
+
+      component.model.templateReference = '#other-template';
+      expect(getTemplateWarningElement()).toBeNull();
+      expect(component.canSave()).toBeTrue();
+    });
+
+    it('explains that a contained resource is needed when there is none', async () => {
+      questionnaire.contained = [];
+      await createDialog('form', 0);
+
+      expect(component.canSave()).toBeFalse();
+      expect(getTemplateWarningElement().textContent.trim()).toBe(
+        'This form has no contained resources to use as a template. ' +
+        'Add one under Contained resources in the form-level fields, then edit this template extraction again.'
+      );
+    });
+
+    it('does not warn when the template exists', async () => {
+      await createDialog('form', 0);
+      expect(component.missingTemplateReference).toBe('');
+      expect(getTemplateWarningElement()).toBeNull();
+    });
+  });
+
   describe('duplicate warning', () => {
     /**
      * Read the rendered duplicate warning.

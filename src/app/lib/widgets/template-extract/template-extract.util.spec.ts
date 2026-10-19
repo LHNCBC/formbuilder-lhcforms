@@ -41,9 +41,29 @@ describe('templateExtract utilities', () => {
     expect(rebuilt.extension.find(child => child.url === 'template')).toEqual({
       id: 'template-id',
       url: 'template',
-      valueReference: {reference: '#replacement', display: 'Patient template'}
+      valueReference: {reference: '#replacement'}
     });
     expect(rebuilt.extension.some(child => child.url === 'ifMatch')).toBeFalse();
+  });
+
+  it('keeps the template valueReference details only when the reference is unchanged', () => {
+    const extension: fhir.Extension = {
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [{
+        url: 'template',
+        valueReference: {reference: '#pt', display: 'Patient template', type: 'Patient'}
+      }]
+    };
+
+    const unchanged = buildTemplateExtractExtension(parseTemplateExtractExtension(extension));
+    expect(unchanged.extension[0].valueReference).toEqual(
+      {reference: '#pt', display: 'Patient template', type: 'Patient'}
+    );
+
+    const model = parseTemplateExtractExtension(extension);
+    model.templateReference = '#obs';
+    const changed = buildTemplateExtractExtension(model);
+    expect(changed.extension[0].valueReference).toEqual({reference: '#obs'});
   });
 
   it('preserves open-slice child extensions when editing known fields', () => {

@@ -73,6 +73,19 @@ describe('TemplateExtractComponent', () => {
 
     expect(component.isAddButtonDisabled()).toBeFalse();
   });
+
+  it('explains why Add is disabled only while there are no contained resources', () => {
+    const reason = 'A contained resource is required. Add one under Contained resources above.';
+    const contained = new BehaviorSubject<fhir.Resource[]>([]);
+    createComponent({resourceType: 'Questionnaire', status: 'draft'}, contained);
+    component.schema = {widget: {addButtonDisabledReason: reason}} as any;
+
+    component.ngAfterViewInit();
+    expect(component.getAddButtonDisabledReason()).toBe(reason);
+
+    contained.next([patient]);
+    expect(component.getAddButtonDisabledReason()).toBe('');
+  });
 });
 
 

@@ -640,11 +640,90 @@ export class Util {
    * . Removes functions.
    * . Converts __$helpText to appropriate FHIR help text item.
    * . Converts enableWhen[x].question object to linkId.
+   * Contained resources other than ValueSets are opaque to the form builder, so only their
+   * __$ fields are removed. See Util.convertContainedResourceToJSON().
    *
    * @param fhirQInternal - Questionnaire object used in the form builder.
+   * @returns Pruned and canonically ordered copy of the questionnaire.
    */
   static convertToQuestionnaireJSON(fhirQInternal) {
     const value = copy(fhirQInternal); // Deep copy. Leave the internal model untouched.
+    const contained = Array.isArray(value?.contained) ? value.contained : null;
+    if(contained) {
+      delete value.contained;
+    }
+
+    Util.pruneInternalModel(value);
+
+    if(contained) {
+      const containedJSON = contained
+        .map((resource) => Util.pruneContainedResource(resource))
+        .filter((resource) => !Util.isEmpty(resource));
+      if(containedJSON.length) {
+        value.contained = containedJSON;
+      }
+    }
+    // Apply FHIR canonical field ordering to the final output
+    return Util.orderQuestionnaireFields(value);
+  }
+
+  /**
+   * Convert a contained resource from the internal model to FHIR JSON. ValueSets are edited
+   * in the form builder and are pruned like the rest of the questionnaire. Other resource
+   * types are opaque, so only __$ fields are removed. In particular, null entries in their
+   * arrays are kept; FHIR JSON uses them to align primitive values (e.g. given) with their
+   * extensions (e.g. _given).
+   *
+   * @param resource - Contained resource from the internal model.
+   * @returns Cleaned copy of the resource.
+   */
+  static convertContainedResourceToJSON(resource) {
+    return Util.pruneContainedResource(copy(resource));
+  }
+
+  /**
+   * Clean a contained resource in place. See Util.convertContainedResourceToJSON().
+   *
+   * @param resource - Contained resource, already copied from the internal model.
+   * @returns The cleaned resource.
+   * @private
+   */
+  private static pruneContainedResource(resource) {
+    if(Util.isOpaqueContainedResource(resource)) {
+      traverse(resource).forEach(function () {
+        if(this.key?.startsWith('__$')) {
+          this.remove();
+        }
+      });
+    }
+    else {
+      Util.pruneInternalModel(resource);
+    }
+    return resource;
+  }
+
+  /**
+   * Check whether a contained resource is opaque, i.e. it has a resource type that the
+   * form builder does not edit.
+   *
+   * @param resource - Contained resource.
+   * @returns True for a resource with a resourceType other than ValueSet.
+   * @private
+   */
+  private static isOpaqueContainedResource(resource): boolean {
+    return typeof resource?.resourceType === 'string' &&
+      resource.resourceType.trim().length > 0 &&
+      resource.resourceType !== 'ValueSet';
+  }
+
+  /**
+   * Prune an internal model object in place. See Util.convertToQuestionnaireJSON() for
+   * the conditions. The root object itself is not removed, even when it is empty.
+   *
+   * @param value - Copy of an internal model object.
+   * @private
+   */
+  private static pruneInternalModel(value) {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node)) {
@@ -689,8 +768,6 @@ export class Util {
         }
       });
     });
-    // Apply FHIR canonical field ordering to the final output
-    return Util.orderQuestionnaireFields(value);
   }
 
   /**

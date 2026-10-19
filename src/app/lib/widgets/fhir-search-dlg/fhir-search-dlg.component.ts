@@ -8,7 +8,7 @@ import {NgbActiveModal, NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../../../fhir';
 import {BehaviorSubject, Observable, ObservableInput, of, Subject} from 'rxjs';
-import {catchError, finalize, map, switchMap, tap} from 'rxjs/operators';
+import {catchError, filter, finalize, map, switchMap, takeUntil, tap} from 'rxjs/operators';
 import { faInfoCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import {FHIR_VERSION_TYPE} from "../../util";
 import {FormsModule} from "@angular/forms";
@@ -91,10 +91,23 @@ export class FhirSearchDlgComponent {
     {field: 'name:contains', display: 'Form name only', searchFieldPlaceholder: 'Search form name'}
   ];
 
-  private readonly genericSearchFieldList: SearchField[] = [
-    {field: '_content', display: 'Any text field', searchFieldPlaceholder: 'Search any text field'},
-    {field: '_id', display: 'Resource ID', searchFieldPlaceholder: 'Search resource ID'}
-  ];
+  // Shown in contained-resource mode only when the server advertises the parameter.
+  private readonly contentSearchField: SearchField =
+    {field: '_content', display: 'Any text field', searchFieldPlaceholder: 'Search any text field'};
+  private readonly idSearchField: SearchField =
+    {field: '_id', display: 'Resource ID', searchFieldPlaceholder: 'Search resource ID'};
+
+  // Emits when the resource type or server changes, to cancel pending requests.
+  private readonly _contextChange$ = new Subject<void>();
+
+  // Search fields last built for a resource type and capability list. The template binds
+  // each field as an option value, so returning new objects on every change detection pass
+  // would keep the view dirty (NG0103 in development mode).
+  private _genericSearchFieldsCache: {
+    resourceType: string;
+    capabilities: FHIRResourceCapability[];
+    fields: SearchField[];
+  } = null;
 
   fhirService = inject(FhirService);
   /**
@@ -111,7 +124,8 @@ export class FhirSearchDlgComponent {
   /**
    * Set up the search pipeline, which reports request errors, and the bundle pipeline,
    * which captures paging links and keeps summaries of entries matching the selected
-   * resource type.
+   * resource type. A search is cancelled when the resource type or server changes, and a
+   * response for a resource type other than the selected one is ignored.
    */
   constructor() {
     // Set up search pipeline
@@ -121,25 +135,30 @@ export class FhirSearchDlgComponent {
         this.errorDetailsShow = false;
         this._loading$.next(true);
       }),
-      switchMap(() => this._search().pipe(
-        catchError((error, caught): ObservableInput<any> => {
-          const errorList = this.getOperationOutcomeIssues(error);
+      switchMap(() => {
+        const searchedType = this.resourceType;
+        return this._search().pipe(
+          takeUntil(this._contextChange$),
+          filter(() => searchedType === this.resourceType),
+          catchError((error, caught): ObservableInput<any> => {
+            const errorList = this.getOperationOutcomeIssues(error);
 
-          this.searchError = {details: errorList.map(e => e.diagnostics).filter(Boolean)};
-          if (error.statusCode < 500 && error.statusCode >= 400) {
-            this.searchError.message = 'The search parameters may not be supported by the selected FHIR server.';
-          }
-          else if (error.statusCode >= 500) {
-            this.searchError.message = 'Server error - the selected FHIR server encountered an internal error.';
-          }
-          else {
-            this.searchError.message = `Error searching ${this.resourceType || 'FHIR'} resources.`;
-          }
-          console.error(this.searchError.message, error);
-          return of(null);
-        }),
-        finalize(() => this._loading$.next(false))
-      )),
+            this.searchError = {details: errorList.map(e => e.diagnostics).filter(Boolean)};
+            if (error.statusCode < 500 && error.statusCode >= 400) {
+              this.searchError.message = 'The search parameters may not be supported by the selected FHIR server.';
+            }
+            else if (error.statusCode >= 500) {
+              this.searchError.message = 'Server error - the selected FHIR server encountered an internal error.';
+            }
+            else {
+              this.searchError.message = `Error searching ${this.resourceType || 'FHIR'} resources.`;
+            }
+            console.error(this.searchError.message, error);
+            return of(null);
+          }),
+          finalize(() => this._loading$.next(false))
+        );
+      }),
     ).subscribe((bundle) => {
       this.total = undefined; // Reset total before processing bundle
       this._bundle$.next(bundle);
@@ -228,7 +247,8 @@ export class FhirSearchDlgComponent {
   get selectedFHIRServer() {return this._state.fhirServer;}
 
   /**
-   * Set the selected FHIR server and reset version- or capability-dependent search state.
+   * Set the selected FHIR server, cancel pending requests to the previous server, and reset
+   * version- or capability-dependent search state.
    *
    * @param fhirServer - Selected FHIR server.
    */
@@ -236,6 +256,7 @@ export class FhirSearchDlgComponent {
     if(!fhirServer) {
       return;
     }
+    this._contextChange$.next();
     this.fhirService.setFhirServer(fhirServer);
     if(this.mode === 'contained-resource') {
       this._set({fhirServer});
@@ -319,31 +340,33 @@ export class FhirSearchDlgComponent {
   configureForContainedResourceImport(): void {
     this.mode = 'contained-resource';
     this.resourceType = '';
-    this.searchField = this.genericSearchFieldList[0];
+    this.searchField = this.searchFieldList[0] || null;
     this.resetSearchState();
     this.loadResourceCapabilities();
   }
 
   /**
-   * Update the selected resource type and discard results from the previous type.
+   * Update the selected resource type, select its default search field, and discard results
+   * from the previous type.
    *
    * @param resourceType - Resource type selected from the server-advertised list.
    */
   onResourceTypeChange(resourceType: string): void {
     this.resourceType = resourceType?.trim() || '';
-    this.searchField = this.genericSearchFieldList[0];
+    this.searchField = this.searchFieldList[0] || null;
     this.resetSearchState();
   }
 
   /**
    * Determine whether the current dialog state is sufficient to submit a search.
    *
-   * @returns True when search may be submitted.
+   * @returns True when search may be submitted. In contained-resource mode, the server must
+   *   advertise the resource type and at least one usable search field for it.
    */
   canSearch(): boolean {
     return this.mode === 'questionnaire'
       ? !this.capabilityLoading
-      : !this.capabilityLoading && this.resourceTypes.includes(this.resourceType);
+      : !this.capabilityLoading && this.resourceTypes.includes(this.resourceType) && !!this.searchField;
   }
 
   /** Retry loading resource types from the selected FHIR server. */
@@ -388,7 +411,10 @@ export class FhirSearchDlgComponent {
     return (resource as fhir.DomainResource)?.meta?.lastUpdated || '';
   }
 
-  /** Load resource and search-parameter capabilities for the selected server. */
+  /**
+   * Load resource and search-parameter capabilities for the selected server, then keep the
+   * selected search field if the reloaded capabilities still offer it.
+   */
   private loadResourceCapabilities(): void {
     const endpoint = this.selectedFHIRServer.endpoint;
     this.capabilityLoading = true;
@@ -403,6 +429,7 @@ export class FhirSearchDlgComponent {
         this.resourceCapabilities = capabilities;
         this.resourceTypes = capabilities.map((capability) => capability.resourceType);
         this.capabilityLoading = false;
+        this.syncSearchField();
         if(!this.resourceTypes.length) {
           this.capabilityError = 'This server did not advertise any searchable resource types.';
         }
@@ -412,6 +439,7 @@ export class FhirSearchDlgComponent {
           return;
         }
         this.capabilityLoading = false;
+        this.syncSearchField();
         this.capabilityError = 'Unable to load resource types from the selected FHIR server.';
         console.error(this.capabilityError, error);
       }
@@ -419,36 +447,63 @@ export class FhirSearchDlgComponent {
   }
 
   /**
-   * Build search choices compatible with a single text input for the selected resource type.
+   * Select the search field with the same parameter name from the current list, or the
+   * default (first) field when the list no longer offers it. The list is rebuilt with new
+   * field objects when capabilities change, and the selector matches options by identity.
+   */
+  private syncSearchField(): void {
+    const fields = this.searchFieldList;
+    this.searchField = fields.find((field) => field.field === this.searchField?.field) || fields[0] || null;
+  }
+
+  /**
+   * Build search choices compatible with a single text input for the selected resource type,
+   * using only parameters the server advertises for it: 'Any text field' (_content), then
+   * 'Resource ID' (_id), then other parameters in server order. The first field is the
+   * default. The same array and field objects are returned until the resource type or the
+   * loaded capabilities change.
    *
-   * @returns Generic and server-advertised search fields.
+   * @returns Server-advertised search fields; empty when none are usable.
    */
   private getGenericSearchFields(): SearchField[] {
+    const cache = this._genericSearchFieldsCache;
+    if(cache?.resourceType === this.resourceType && cache.capabilities === this.resourceCapabilities) {
+      return cache.fields;
+    }
+
     const supportedParameterTypes = new Set(['string', 'token', 'uri', 'reference']);
-    const advertised = this.resourceCapabilities
+    const parameters = this.resourceCapabilities
       .find((capability) => capability.resourceType === this.resourceType)
-      ?.searchParameters
-      ?.filter((parameter) =>
+      ?.searchParameters || [];
+    const advertisedNames = new Set(parameters.map((parameter) => parameter.name));
+    const advertised = parameters
+      .filter((parameter) =>
         !parameter.name.startsWith('_') && supportedParameterTypes.has(parameter.type || '')
       )
       .map((parameter) => ({
         field: parameter.name,
         display: `${parameter.name}${parameter.type ? ` (${parameter.type})` : ''}`,
         searchFieldPlaceholder: `Search ${parameter.name}`
-      })) || [];
-    const fields = [...this.genericSearchFieldList, ...advertised];
-    const names = new Set<string>();
-    return fields.filter((field) => {
-      if(names.has(field.field)) {
-        return false;
-      }
-      names.add(field.field);
-      return true;
-    });
+      }));
+    const fields = [
+      ...(advertisedNames.has('_content') ? [this.contentSearchField] : []),
+      ...(advertisedNames.has('_id') ? [this.idSearchField] : []),
+      ...advertised
+    ];
+    this._genericSearchFieldsCache = {
+      resourceType: this.resourceType,
+      capabilities: this.resourceCapabilities,
+      fields
+    };
+    return fields;
   }
 
-  /** Clear results, pagination, input, and errors after the search context changes. */
+  /**
+   * Cancel pending requests, then clear results, pagination, input, and errors after the
+   * search context changes.
+   */
   private resetSearchState(): void {
+    this._contextChange$.next();
     this.inputTerm = '';
     this.searchTerm = '';
     this.resultsOffset = 0;
@@ -491,11 +546,17 @@ export class FhirSearchDlgComponent {
   }
 
   /**
-   * Get resource bundle using url, typically by navigation links.
-   * @param url
+   * Get resource bundle using url, typically by navigation links. The request is cancelled
+   * when the resource type or server changes, and a response for a resource type other than
+   * the selected one is ignored.
+   * @param url - Navigation link of the results page.
    */
   getBundleByUrl(url: fhirPrimitives.url): void {
-    this.fhirService.getBundleByUrl(url).subscribe((bundle) => {
+    const requestedType = this.resourceType;
+    this.fhirService.getBundleByUrl(url).pipe(
+      takeUntil(this._contextChange$),
+      filter(() => requestedType === this.resourceType)
+    ).subscribe((bundle) => {
       this._bundle$.next(bundle);
     });
   }
