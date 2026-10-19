@@ -179,6 +179,46 @@ test.describe('Home page accept Terms of Use notices', () => {
         await expect(page.locator('.card.bg-danger-subtle')).toHaveCount(0);
       });
 
+      test('should load the configured version from the NLM server', async ({ page }) => {
+        // An older version than the latest, to verify that the latest one is not loaded.
+        const pinnedVersion = '44.0.0';
+        await routeLFormsConfig(page, '', pinnedVersion);
+        // Mock the NLM server, so that the test does not depend on the availability of the version.
+        // The stub only sets the version, which is enough for the home page.
+        const nlmRequests: string[] = [];
+        await page.route((url) => url.href.startsWith(nlmLFormsUrl), async (route) => {
+          const filePath = route.request().url().substring(nlmLFormsUrl.length);
+          nlmRequests.push(filePath);
+          if (filePath === `${pinnedVersion}/webcomponent/lhc-forms.js`) {
+            await route.fulfill({
+              contentType: 'text/javascript',
+              body: `window.LForms = {lformsVersion: '${pinnedVersion}'};`
+            });
+          }
+          else if (filePath.startsWith(`${pinnedVersion}/`)) {
+            await route.fulfill({contentType: filePath.endsWith('.css') ? 'text/css' : 'text/javascript', body: ''});
+          }
+          else {
+            await route.fulfill({status: 404, body: 'Not mocked'});
+          }
+        });
+
+        await page.goto('/');
+        const mainPO = new MainPO(page);
+        await mainPO.assertLFormsLoaded();
+        await mainPO.acceptAllTermsOfUse();
+
+        expect(await page.evaluate(() => (window as any).LForms.lformsVersion)).toBe(pinnedVersion);
+        // No request for the version list, at nlmLFormsUrl itself.
+        expect(nlmRequests.sort()).toEqual([
+          `${pinnedVersion}/fhir/lformsFHIRAll.min.js`,
+          `${pinnedVersion}/webcomponent/assets/lib/zone.min.js`,
+          `${pinnedVersion}/webcomponent/lhc-forms.js`,
+          `${pinnedVersion}/webcomponent/styles.css`
+        ]);
+        await expect(page.locator('.card.bg-danger-subtle')).toHaveCount(0);
+      });
+
       test('should display error message on an invalid configuration', async ({ page }) => {
         await routeLFormsConfig(page, 'custom-lforms', `v${configuredVersion}`);
         const lformsRequests: string[] = [];

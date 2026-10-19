@@ -356,7 +356,7 @@ describe('FormService', () => {
 
     it('should ship a configuration file that selects the default LHC-Forms', async () => {
       const content = await service.fetchLFormsConfig();
-      expect(content).toContain('// Optional: load LHC-Forms from your own server');
+      expect(content).toContain('// Optional: choose the LHC-Forms version and the server it is loaded from.');
       expect(FormService.parseLFormsConfig(content)).toBeNull();
     });
 
@@ -375,13 +375,25 @@ describe('FormService', () => {
           .toThrowError(`Invalid assets/lforms-config.json5: "version" "${version}" must be the X.Y.Z version ` +
             '(33.0.0 or later) of the LHC-Forms copy at /lforms.');
       }
+      expect(() => FormService.parseLFormsConfig('{version: "32.9.9"}'))
+        .toThrowError('Invalid assets/lforms-config.json5: "version" "32.9.9" must be the X.Y.Z version ' +
+          '(33.0.0 or later) of the LHC-Forms release on the NLM server.');
     });
 
-    it('should throw an error naming the file if only one value is set', () => {
-      for (const config of [{source: '/lforms'}, {source: '/lforms', version: ''}, {version: '44.1.0'}]) {
+    it('should return only the version if the source is not set', () => {
+      for (const config of [{version: ' 44.0.0 '}, {source: '', version: '44.0.0'}, {source: ' / ', version: '44.0.0'},
+        {source: null, version: '44.0.0'}]) {
+        expect(FormService.parseLFormsConfig(JSON.stringify(config)))
+          .withContext(JSON.stringify(config))
+          .toEqual({source: null, version: '44.0.0'});
+      }
+    });
+
+    it('should throw an error naming the file if the source is set without the version', () => {
+      for (const config of [{source: '/lforms'}, {source: '/lforms', version: ''}, {source: '/lforms', version: null}]) {
         expect(() => FormService.parseLFormsConfig(JSON.stringify(config)))
           .withContext(JSON.stringify(config))
-          .toThrowError('Invalid assets/lforms-config.json5: "source" and "version" must both be set, or both be empty.');
+          .toThrowError('Invalid assets/lforms-config.json5: "version" must be set when "source" is set.');
       }
     });
 
@@ -472,6 +484,25 @@ describe('FormService', () => {
         expect(loadLForms).not.toHaveBeenCalled();
         expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
       });
+
+      it('should load the configured version from the NLM server without querying the version list', async () => {
+        fetchLFormsConfig.and.resolveTo('{version: "44.0.0"}');
+        loadLForms.and.resolveTo('44.0.0');
+        await expectAsync(service.loadLFormsLib()).toBeResolvedTo('44.0.0');
+        expect(loadLForms).toHaveBeenCalledOnceWith('44.0.0');
+        expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
+      });
+
+      it('should reject with an error naming the configured version if it fails to load from the NLM server',
+        async () => {
+          fetchLFormsConfig.and.resolveTo('{version: "99.0.0"}');
+          loadLForms.and.rejectWith(new Event('error'));
+          spyOn(console, 'error');
+          await expectAsync(service.loadLFormsLib()).toBeRejectedWithError('Failed to load LHC-Forms version 99.0.0');
+          expect(console.error).toHaveBeenCalledWith(
+            'lforms-loader.loadLForms() failed to load LHC-Forms version 99.0.0');
+          expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
+        });
 
       for (const [description, content] of [
         ['is not available', null],

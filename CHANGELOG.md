@@ -2,12 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.10.0] 2026-10-16
+## [12.10.0] 2026-10-19
 ### Added
-- Support for loading LHC-Forms from a deployment-hosted copy, configured with
-  `source` and `version` in `assets/lforms-config.json5`. Without that
-  configuration, the latest LHC-Forms version is loaded from the NLM server as
-  before. See README.md.
+- Support for choosing the LHC-Forms version to load from the NLM server, or
+  loading LHC-Forms from a deployment-hosted copy, configured with `version`
+  and `source` in `assets/lforms-config.json5`. Without that configuration,
+  the latest LHC-Forms version is loaded from the NLM server as before. See
+  README.md.
 
 ## [12.9.0] 2026-10-06
 ### Added

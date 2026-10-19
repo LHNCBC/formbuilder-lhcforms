@@ -1873,20 +1873,24 @@ export class FormService {
   }
 
   /**
-   * Load LForms library at run time, from the source configured in LFORMS_CONFIG_URL if any,
-   * otherwise the latest version from the NLM server.
+   * Load LForms library at run time, as configured in LFORMS_CONFIG_URL: from the configured source, or
+   * the configured version from the NLM server. Without a configuration, the latest version is loaded
+   * from the NLM server.
    * @return - A promise which resolves to version number loaded. It rejects if the configuration
    *   file is invalid or the library fails to load.
    */
   async loadLFormsLib(): Promise<string> {
     const configured = FormService.parseLFormsConfig(await this.fetchLFormsConfig());
     if (configured) {
-      return FormService.lformsLoader.loadLForms(configured.version, undefined, configured.source)
-        .then(() => configured.version)
-        .catch((error: any) => {
-          console.error(`lforms-loader.loadLForms() failed to load LHC-Forms from ${configured.source}`);
-          throw new Error(error?.message || `Failed to load LHC-Forms from ${configured.source}`);
-        });
+      const {source, version} = configured;
+      const loading = source ?
+        FormService.lformsLoader.loadLForms(version, undefined, source) :
+        FormService.lformsLoader.loadLForms(version);
+      const description = source ? `from ${source}` : `version ${version}`;
+      return loading.then(() => version).catch((error: any) => {
+        console.error(`lforms-loader.loadLForms() failed to load LHC-Forms ${description}`);
+        throw new Error(error?.message || `Failed to load LHC-Forms ${description}`);
+      });
     }
     return FormService.lformsLoader.getSupportedLFormsVersions().then((versions: string []) => {
       const latestVersion = versions[0] || '34.3.0';
@@ -1928,15 +1932,16 @@ export class FormService {
    *     source: "(base URL of the LHC-Forms files, e.g. /lforms/44.1.0)",
    *     version: "(its version, e.g. 44.1.0)"
    *   }
+   * or load a specific version from the NLM server by setting only the version.
    * @param content - The file content, or null if the file is not available.
-   * @return - The base URL, without trailing slashes, and the version; or null if the file is not
-   *   available, is blank, or has neither value (empty, null, or omitted).
-   * @throws Error - If the content is not a JSON5 object, a value is not a string, only one of the values
-   *   is set, or the version is not an X.Y.Z version of at least MIN_CONFIGURED_LFORMS_MAJOR_VERSION.
-   *   lforms-loader picks the file layout from the major version, so an invalid version would otherwise
-   *   request files that do not exist in the configured copy.
+   * @return - The base URL, without trailing slashes (null if only the version is set), and the version;
+   *   or null if the file is not available, is blank, or has neither value (empty, null, or omitted).
+   * @throws Error - If the content is not a JSON5 object, a value is not a string, the source is set
+   *   without the version, or the version is not an X.Y.Z version of at least
+   *   MIN_CONFIGURED_LFORMS_MAJOR_VERSION. lforms-loader picks the file layout from the major version,
+   *   so an invalid version would otherwise request files that do not exist.
    */
-  static parseLFormsConfig(content: string | null): {source: string, version: string} | null {
+  static parseLFormsConfig(content: string | null): {source: string | null, version: string} | null {
     if (!content?.trim()) {
       return null;
     }
@@ -1963,16 +1968,17 @@ export class FormService {
     if (!source && !version) {
       return null;
     }
-    if (!source || !version) {
-      throw invalid('"source" and "version" must both be set, or both be empty.');
+    if (!version) {
+      throw invalid('"version" must be set when "source" is set.');
     }
 
     const majorVersion = /^(\d+)\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.exec(version)?.[1];
     if (!majorVersion || Number(majorVersion) < FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION) {
       throw invalid(`"version" "${version}" must be the X.Y.Z version ` +
-        `(${FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION}.0.0 or later) of the LHC-Forms copy at ${source}.`);
+        `(${FormService.MIN_CONFIGURED_LFORMS_MAJOR_VERSION}.0.0 or later) of the ` +
+        (source ? `LHC-Forms copy at ${source}.` : 'LHC-Forms release on the NLM server.'));
     }
-    return {source, version};
+    return {source: source || null, version};
   }
 
   /**

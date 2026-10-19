@@ -87,14 +87,25 @@ cp .env .env.local
 
 The npm scripts automatically load `.env` plus `.env.local` (when present), with `.env.local` taking precedence.
 
-### Serving LHC-Forms from your own server
+### Choosing the LHC-Forms version and server
 
 By default, the form builder loads the latest version of LHC-Forms from
-https://lhcforms-static.nlm.nih.gov/lforms-versions/ at run time. To use a fixed copy served by your own
-server instead (for example a version that matches the forms renderer of your application), set `source` and
+https://lhcforms-static.nlm.nih.gov/lforms-versions/ at run time. To change that, set `source` and/or
 `version` in `assets/lforms-config.json5`. Edit `src/assets/lforms-config.json5` before building, or the copy
 in the `assets` folder of the built application. The file is in [JSON5](https://json5.org/) format, and its
-comments describe both values:
+comments describe both values.
+
+To load a specific version from the NLM server, set only `version`:
+
+```json5
+{
+  source: "",
+  version: "44.1.0"
+}
+```
+
+To use a fixed copy served by your own server instead (for example a version that matches the forms renderer
+of your application), set both values:
 
 ```json5
 {
@@ -109,14 +120,15 @@ comments describe both values:
 [LHC-Forms release](https://lhcforms-static.nlm.nih.gov/lforms-versions/) (or of `dist/lforms` of the
 `lforms` npm package). A relative URL is resolved against the form builder's base URL (`<base href>`). The
 base URL must contain `webcomponent/styles.css`, `webcomponent/assets/lib/zone.min.js`,
-`webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. `version` must be the `X.Y.Z` version of that
-copy, 33.0.0 or later. Use a recent LHC-Forms version; the form builder is developed and tested with the latest
-one.
+`webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. `version` must be the `X.Y.Z` version, 33.0.0 or
+later, of that copy, or of the release on the NLM server if `source` is not set. Use a recent LHC-Forms
+version; the form builder is developed and tested with the latest one.
 
 The default behavior applies if the file is missing or empty, or if both values are empty or omitted. If the
-file is not valid JSON5, has only one of the values, or has an invalid `version`, the form builder reports an
-error instead of loading LHC-Forms. Browsers may cache the file, so configure your server to revalidate it if
-you change it after deployment.
+file is not valid JSON5, has `source` without `version`, or has an invalid `version`, the form builder reports
+an error instead of loading LHC-Forms. It also reports an error, without falling back to another version, if
+the configured version cannot be loaded. Browsers may cache the file, so configure your server to revalidate
+it if you change it after deployment.
 
 ## **Contributing**
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
