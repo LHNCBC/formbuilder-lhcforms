@@ -276,8 +276,17 @@ export class FormService {
       this.extensionSchema = extSchema;
       this.binarySchema = binarySchema;
       delete this.binarySchema.definitions.Binary;
-      // Load lforms.
-      const ok = await this.loadLFormsLib();
+      // Load lforms. Its failures, including an invalid configuration file, are not JSON5 resource failures.
+      let ok: string;
+      try {
+        ok = await this.loadLFormsLib();
+      }
+      catch(error) {
+        console.error(error);
+        this._lformsVersion = 'ERROR';
+        FormService._lformsLoaded$.error(new Error(`Failed to load LHC-Forms: ${error?.message ?? error}`));
+        return false;
+      }
       if(ok) {
         this._lformsVersion = LForms.lformsVersion;
         FormService._lformsLoaded$.next(this._lformsVersion);
@@ -291,7 +300,7 @@ export class FormService {
     } catch(error) {
       console.error(error);
       this._lformsVersion = 'ERROR';
-      FormService._lformsLoaded$.error(new Error(`JSON5 resources failed to load: ${error}`));
+      FormService._lformsLoaded$.error(new Error(`JSON5 resources failed to load: ${error?.message ?? error}`));
       return false;
     }
   }

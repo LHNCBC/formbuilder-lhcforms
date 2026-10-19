@@ -4,7 +4,7 @@ import { FormService } from './form.service';
 import sampleJson from '../../../tests/fixtures/help-text-sample1.json';
 import traverse from 'traverse';
 import {HttpErrorResponse, HttpHeaders, HttpResponse, provideHttpClient} from '@angular/common/http';
-import {of, throwError} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
@@ -515,6 +515,32 @@ describe('FormService', () => {
           expect(loadLForms).toHaveBeenCalledOnceWith('45.0.0');
         });
       }
+    });
+
+    describe('initialize()', () => {
+      let originalLFormsLoaded$: typeof FormService._lformsLoaded$;
+
+      beforeEach(() => {
+        // Erroring the shared subject would affect later tests; use a fresh one.
+        originalLFormsLoaded$ = FormService._lformsLoaded$;
+        FormService._lformsLoaded$ = new Subject<string>();
+      });
+
+      afterEach(() => {
+        FormService._lformsLoaded$ = originalLFormsLoaded$;
+      });
+
+      it('should report an invalid configuration as an LHC-Forms loading failure, not a JSON5 one', async () => {
+        const configError = 'Invalid assets/lforms-config.json5: "version" must be set when "source" is set.';
+        (service.loadLFormsLib as jasmine.Spy).and.rejectWith(new Error(configError));
+        spyOn(console, 'error');
+        let reportedError: Error;
+        FormService.lformsLoaded$.subscribe({error: (error) => reportedError = error});
+
+        await expectAsync(service.initialize()).toBeResolvedTo(false);
+        expect(reportedError?.message).toBe(`Failed to load LHC-Forms: ${configError}`);
+        expect(service.lformsVersion).toBe('ERROR');
+      });
     });
   });
 

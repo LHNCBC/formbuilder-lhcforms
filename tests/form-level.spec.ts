@@ -234,8 +234,9 @@ test.describe('Home page accept Terms of Use notices', () => {
 
         const errorCard = page.locator('.card').filter({ hasText: 'Error' });
         await expect(errorCard.locator('.card-header')).toContainText('Error', { timeout: 10000 });
-        await expect(errorCard.locator('.card-body')).toContainText(
+        await expect(errorCard.locator('.card-body')).toContainText('Failed to load LHC-Forms: ' +
           `Invalid assets/lforms-config.json5: "version" "v${configuredVersion}" must be the X.Y.Z version`);
+        await expect(errorCard.locator('.card-body')).not.toContainText('JSON5 resources');
         expect(lformsRequests).toEqual([]);
       });
     });
