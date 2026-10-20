@@ -430,19 +430,25 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     const modalRef = this.dialogService.showDialog(
       MessageType.WARNING,
       'Normalize contained resource',
-      `${changes.join('<p>')}</p><p>The source file will not be changed.</p>`,
+      [...changes, 'The source file will not be changed.'].map((change) => `<p>${change}</p>`).join(''),
       [{label: 'Cancel', value: 'cancel'}, {label: 'Import resource', value: 'import'}]
     );
     return modalRef.result.then((result) => result === 'import').catch(() => false);
   }
 
   /**
-   * Show a contained-resource import error.
+   * Show a contained-resource import error. The message is plain text, but it can contain
+   * imported values such as an invalid id or a file name, so it is escaped because the
+   * message dialog renders HTML.
    *
-   * @param message - Error message to display.
+   * @param message - Plain-text error message to display.
    */
   private showImportError(message: string): void {
-    this.dialogService.showDialog(MessageType.DANGER, 'Unable to import contained resource', message);
+    this.dialogService.showDialog(
+      MessageType.DANGER,
+      'Unable to import contained resource',
+      this.containedResourceService.escapeHtml(message)
+    );
   }
 
   /**

@@ -406,12 +406,13 @@ export class ContainedResourceService {
   }
 
   /**
-   * Escape imported strings before placing them in an existing innerHTML warning.
+   * Escape imported strings before placing them in a message dialog, which renders
+   * its message as HTML.
    *
    * @param value - Untrusted string to escape.
    * @returns HTML-safe string.
    */
-  private escapeHtml(value: string): string {
+  escapeHtml(value: string): string {
     return String(value).replace(/[&<>"']/g, (character) => ({
       '&': '&amp;',
       '<': '&lt;',

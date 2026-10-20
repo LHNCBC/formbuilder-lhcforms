@@ -52,11 +52,38 @@ describe('ContainedComponent', () => {
 
     await component.onResourceFileSelected({target: input} as unknown as Event);
 
-    expect(showDialog).toHaveBeenCalled();
+    expect(showDialog).toHaveBeenCalledOnceWith(
+      jasmine.anything(),
+      'Normalize contained resource',
+      '<p>A contained id was generated: <strong>Observation-1</strong>.</p>' +
+      '<p>FHIR does not permit these fields on contained resources, so they will be removed: ' +
+      '<strong>meta.versionId</strong>.</p>' +
+      '<p>The source file will not be changed.</p>',
+      jasmine.anything()
+    );
     expect(addItem).toHaveBeenCalledTimes(1);
     const resource = addItem.calls.mostRecent().args[0];
     expect(resource.id).toBe('Observation-1');
     expect(resource.meta).toBeUndefined();
+  });
+
+  it('escapes imported values in an import error', async () => {
+    const input = {
+      files: [new File([JSON.stringify({
+        resourceType: 'Patient',
+        id: '<b>x</b>'
+      })], 'patient.json', {type: 'application/json'})],
+      value: 'patient.json'
+    };
+
+    await component.onResourceFileSelected({target: input} as unknown as Event);
+
+    expect(addItem).not.toHaveBeenCalled();
+    expect(showDialog).toHaveBeenCalledOnceWith(
+      jasmine.anything(),
+      'Unable to import contained resource',
+      'The resource id &quot;&lt;b&gt;x&lt;/b&gt;&quot; is not a valid FHIR id.'
+    );
   });
 
   it('does not add an invalid resource and reports the error', async () => {
@@ -171,7 +198,7 @@ describe('ContainedComponent', () => {
       expect(showDialog).toHaveBeenCalledOnceWith(
         jasmine.anything(),
         'Unable to import contained resource',
-        'A contained Patient with id "patient-template" already exists. It can only be replaced by a Patient resource.'
+        'A contained Patient with id &quot;patient-template&quot; already exists. It can only be replaced by a Patient resource.'
       );
       expect(reset).not.toHaveBeenCalled();
       expect(addItem).not.toHaveBeenCalled();
