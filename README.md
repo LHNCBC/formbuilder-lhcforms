@@ -118,11 +118,13 @@ of your application), set both values:
 
 `source` is the base URL of the extracted
 [LHC-Forms release](https://lhcforms-static.nlm.nih.gov/lforms-versions/) (or of `dist/lforms` of the
-`lforms` npm package). A relative URL is resolved against the form builder's base URL (`<base href>`). The
-base URL must contain `webcomponent/styles.css`, `webcomponent/assets/lib/zone.min.js`,
-`webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. `version` must be the `X.Y.Z` version, 33.0.0 or
-later, of that copy, or of the release on the NLM server if `source` is not set. Use a recent LHC-Forms
-version; the form builder is developed and tested with the latest one.
+`lforms` npm package). A relative URL is resolved against the form builder's base URL (`<base href>`), and
+`/` is the root of the server. The base URL must contain `webcomponent/styles.css`,
+`webcomponent/assets/lib/zone.min.js`, `webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. `version`
+must be the `X.Y.Z` version, 37.0.0 or later, of that copy, or of the release on the NLM server if `source` is
+not set; older versions lack features the form builder requires, such as FHIR R5 support. The form builder
+logs a warning in the browser console if the version of the loaded copy differs from `version`. Use a recent
+LHC-Forms version; the form builder is developed and tested with the latest one.
 
 The default behavior applies if the file is missing or empty, or if both values are empty or omitted. If the
 file is not valid JSON5, has `source` without `version`, or has an invalid `version`, the form builder reports

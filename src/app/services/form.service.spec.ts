@@ -360,8 +360,8 @@ describe('FormService', () => {
       expect(FormService.parseLFormsConfig(content)).toBeNull();
     });
 
-    it('should accept X.Y.Z versions from 33.0.0, with an optional pre-release suffix', () => {
-      for (const version of ['33.0.0', '44.1.0', '44.1.0-beta.1']) {
+    it('should accept X.Y.Z versions from 37.0.0, with an optional pre-release suffix', () => {
+      for (const version of ['37.0.0', '44.1.0', '44.1.0-beta.1']) {
         expect(FormService.parseLFormsConfig(JSON.stringify({source: '/lforms', version})))
           .withContext(version)
           .toEqual({source: '/lforms', version});
@@ -369,19 +369,27 @@ describe('FormService', () => {
     });
 
     it('should throw an error naming the file if the version is invalid or too old', () => {
-      for (const version of ['v44.1.0', 'latest', '44', '44.1', '44.1.0.1', '32.9.9']) {
+      for (const version of ['v44.1.0', 'latest', '44', '44.1', '44.1.0.1', '33.0.0', '36.20.3']) {
         expect(() => FormService.parseLFormsConfig(JSON.stringify({source: '/lforms', version})))
           .withContext(version)
           .toThrowError(`Invalid assets/lforms-config.json5: "version" "${version}" must be the X.Y.Z version ` +
-            '(33.0.0 or later) of the LHC-Forms copy at /lforms.');
+            '(37.0.0 or later) of the LHC-Forms copy at /lforms.');
       }
-      expect(() => FormService.parseLFormsConfig('{version: "32.9.9"}'))
-        .toThrowError('Invalid assets/lforms-config.json5: "version" "32.9.9" must be the X.Y.Z version ' +
-          '(33.0.0 or later) of the LHC-Forms release on the NLM server.');
+      expect(() => FormService.parseLFormsConfig('{version: "36.20.3"}'))
+        .toThrowError('Invalid assets/lforms-config.json5: "version" "36.20.3" must be the X.Y.Z version ' +
+          '(37.0.0 or later) of the LHC-Forms release on the NLM server.');
+    });
+
+    it('should keep the root source "/" while removing trailing slashes', () => {
+      for (const source of ['/', ' // ']) {
+        expect(FormService.parseLFormsConfig(JSON.stringify({source, version: '44.1.0'})))
+          .withContext(source)
+          .toEqual({source: '/', version: '44.1.0'});
+      }
     });
 
     it('should return only the version if the source is not set', () => {
-      for (const config of [{version: ' 44.0.0 '}, {source: '', version: '44.0.0'}, {source: ' / ', version: '44.0.0'},
+      for (const config of [{version: ' 44.0.0 '}, {source: '', version: '44.0.0'}, {source: ' ', version: '44.0.0'},
         {source: null, version: '44.0.0'}]) {
         expect(FormService.parseLFormsConfig(JSON.stringify(config)))
           .withContext(JSON.stringify(config))
@@ -463,9 +471,28 @@ describe('FormService', () => {
 
       it('should load the configured copy without querying the NLM version list', async () => {
         fetchLFormsConfig.and.resolveTo('{"source": "/lforms-44.1.0/", "version": "44.1.0"}');
+        spyOn(console, 'warn');
         await expectAsync(service.loadLFormsLib()).toBeResolvedTo('44.1.0');
         expect(loadLForms).toHaveBeenCalledOnceWith('44.1.0', undefined, '/lforms-44.1.0');
         expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
+        expect(console.warn).not.toHaveBeenCalled();
+      });
+
+      it('should load the copy at the server root from the page origin, not from the NLM server', async () => {
+        fetchLFormsConfig.and.resolveTo('{source: "/", version: "44.1.0"}');
+        await expectAsync(service.loadLFormsLib()).toBeResolvedTo('44.1.0');
+        // Not "/", which lforms-loader would turn into the protocol-relative "//webcomponent/...".
+        expect(loadLForms).toHaveBeenCalledOnceWith('44.1.0', undefined, window.location.origin);
+        expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
+      });
+
+      it('should warn and resolve to the loaded version if it differs from the configured one', async () => {
+        fetchLFormsConfig.and.resolveTo('{source: "/lforms", version: "44.1.0"}');
+        loadLForms.and.resolveTo('45.0.0');
+        spyOn(console, 'warn');
+        await expectAsync(service.loadLFormsLib()).toBeResolvedTo('45.0.0');
+        expect(console.warn).toHaveBeenCalledOnceWith(
+          'Loaded LHC-Forms version 45.0.0 from /lforms, but assets/lforms-config.json5 sets version 44.1.0.');
       });
 
       it('should reject with an error naming the configured source if it fails to load', async () => {

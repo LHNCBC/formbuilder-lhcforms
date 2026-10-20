@@ -7,12 +7,12 @@
   // See "Choosing the LHC-Forms version and server" in README.md.
 
   // Base URL of the LHC-Forms files, e.g. "/lforms/44.1.0" or "https://example.org/lforms/44.1.0".
-  // A relative URL is resolved against the form builder's base URL (<base href>). It must contain
-  // webcomponent/styles.css, webcomponent/assets/lib/zone.min.js, webcomponent/lhc-forms.js
-  // and fhir/lformsFHIRAll.min.js.
+  // A relative URL is resolved against the form builder's base URL (<base href>); "/" is the server
+  // root. It must contain webcomponent/styles.css, webcomponent/assets/lib/zone.min.js,
+  // webcomponent/lhc-forms.js and fhir/lformsFHIRAll.min.js.
   source: "",
 
-  // X.Y.Z version of LHC-Forms, 33.0.0 or later, e.g. "44.1.0": the version of the files at source,
+  // X.Y.Z version of LHC-Forms, 37.0.0 or later, e.g. "44.1.0": the version of the files at source,
   // or, without source, the version to load from the NLM server.
   version: ""
 }

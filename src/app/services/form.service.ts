@@ -65,8 +65,9 @@ export class FormService {
     'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
   // Optional deployment configuration of the LHC-Forms source, relative to the base href.
   static readonly LFORMS_CONFIG_URL = 'assets/lforms-config.json5';
-  // Oldest LHC-Forms major version with the file layout documented for a configured source.
-  static readonly MIN_CONFIGURED_LFORMS_MAJOR_VERSION = 33;
+  // Oldest LHC-Forms major version supported. FHIR R5, which the builder uses to import and convert forms,
+  // requires 36.0.0; the autocomplete-lhc version the builder's styles and tests rely on requires 36.20.1.
+  static readonly MIN_CONFIGURED_LFORMS_MAJOR_VERSION = 37;
   // The lforms-loader functions used by loadLFormsLib(), held here so tests can stub them; ES module
   // exports cannot be spied on.
   static readonly lformsLoader = {getSupportedLFormsVersions, loadLForms};
@@ -1884,7 +1885,7 @@ export class FormService {
   /**
    * Load LForms library at run time, as configured in LFORMS_CONFIG_URL: from the configured source, or
    * the configured version from the NLM server. Without a configuration, the latest version is loaded
-   * from the NLM server.
+   * from the NLM server. A warning is logged if the loaded version differs from the configured one.
    * @return - A promise which resolves to version number loaded. It rejects if the configuration
    *   file is invalid or the library fails to load.
    */
@@ -1892,13 +1893,22 @@ export class FormService {
     const configured = FormService.parseLFormsConfig(await this.fetchLFormsConfig());
     if (configured) {
       const {source, version} = configured;
+      // lforms-loader appends "/webcomponent/..." to the source, so the root "/" would become the
+      // protocol-relative "//webcomponent/..."; use the page origin instead.
+      const loaderSource = source === '/' ? this._document.location.origin : source;
       const loading = source ?
-        FormService.lformsLoader.loadLForms(version, undefined, source) :
+        FormService.lformsLoader.loadLForms(version, undefined, loaderSource) :
         FormService.lformsLoader.loadLForms(version);
       const description = source ? `from ${source}` : `version ${version}`;
-      return loading.then(() => version).catch((error: any) => {
+      return loading.catch((error: any) => {
         console.error(`lforms-loader.loadLForms() failed to load LHC-Forms ${description}`);
         throw new Error(error?.message || `Failed to load LHC-Forms ${description}`);
+      }).then((loadedVersion: string) => {
+        if (loadedVersion !== version) {
+          console.warn(`Loaded LHC-Forms version ${loadedVersion} ${description}, but ` +
+            `${FormService.LFORMS_CONFIG_URL} sets version ${version}.`);
+        }
+        return loadedVersion ?? version;
       });
     }
     return FormService.lformsLoader.getSupportedLFormsVersions().then((versions: string []) => {
@@ -1943,12 +1953,14 @@ export class FormService {
    *   }
    * or load a specific version from the NLM server by setting only the version.
    * @param content - The file content, or null if the file is not available.
-   * @return - The base URL, without trailing slashes (null if only the version is set), and the version;
+   * @return - The base URL, without trailing slashes except for the root "/" (null if only the version
+   *   is set), and the version;
    *   or null if the file is not available, is blank, or has neither value (empty, null, or omitted).
    * @throws Error - If the content is not a JSON5 object, a value is not a string, the source is set
    *   without the version, or the version is not an X.Y.Z version of at least
-   *   MIN_CONFIGURED_LFORMS_MAJOR_VERSION. lforms-loader picks the file layout from the major version,
-   *   so an invalid version would otherwise request files that do not exist.
+   *   MIN_CONFIGURED_LFORMS_MAJOR_VERSION. Older versions lack features the builder requires, such as
+   *   FHIR R5 support, and lforms-loader picks the file layout from the major version, so an invalid
+   *   version would otherwise request files that do not exist.
    */
   static parseLFormsConfig(content: string | null): {source: string | null, version: string} | null {
     if (!content?.trim()) {
@@ -1972,7 +1984,9 @@ export class FormService {
       }
     }
 
-    const source = (config.source ?? '').trim().replace(/\/+$/, '');
+    const trimmedSource = (config.source ?? '').trim();
+    // Keep the root "/" when removing trailing slashes.
+    const source = trimmedSource.replace(/\/+$/, '') || (trimmedSource ? '/' : '');
     const version = (config.version ?? '').trim();
     if (!source && !version) {
       return null;
