@@ -499,7 +499,7 @@ describe('FormService', () => {
         fetchLFormsConfig.and.resolveTo('{"source": "/no-such-dir", "version": "44.1.0"}');
         loadLForms.and.rejectWith(new Event('error'));
         spyOn(console, 'error');
-        await expectAsync(service.loadLFormsLib()).toBeRejectedWithError('Failed to load LHC-Forms from /no-such-dir');
+        await expectAsync(service.loadLFormsLib()).toBeRejectedWithError('Unable to retrieve the files from /no-such-dir');
         expect(console.error).toHaveBeenCalledWith(
           'lforms-loader.loadLForms() failed to load LHC-Forms from /no-such-dir');
       });
@@ -525,7 +525,8 @@ describe('FormService', () => {
           fetchLFormsConfig.and.resolveTo('{version: "99.0.0"}');
           loadLForms.and.rejectWith(new Event('error'));
           spyOn(console, 'error');
-          await expectAsync(service.loadLFormsLib()).toBeRejectedWithError('Failed to load LHC-Forms version 99.0.0');
+          await expectAsync(service.loadLFormsLib())
+            .toBeRejectedWithError('Unable to retrieve version 99.0.0 from the NLM server');
           expect(console.error).toHaveBeenCalledWith(
             'lforms-loader.loadLForms() failed to load LHC-Forms version 99.0.0');
           expect(getSupportedLFormsVersions).not.toHaveBeenCalled();
@@ -567,6 +568,19 @@ describe('FormService', () => {
         await expectAsync(service.initialize()).toBeResolvedTo(false);
         expect(reportedError?.message).toBe(`Failed to load LHC-Forms: ${configError}`);
         expect(service.lformsVersion).toBe('ERROR');
+      });
+
+      it('should report the configured files that fail to load without repeating the prefix', async () => {
+        // The common testing setup stubs loadLFormsLib(); exercise the real method with a failing loader.
+        (service.loadLFormsLib as jasmine.Spy).and.callThrough();
+        spyOn(service, 'fetchLFormsConfig').and.resolveTo('{source: "/no-such-dir", version: "44.1.0"}');
+        spyOn(FormService.lformsLoader, 'loadLForms').and.rejectWith(new Event('error'));
+        spyOn(console, 'error');
+        let reportedError: Error;
+        FormService.lformsLoaded$.subscribe({error: (error) => reportedError = error});
+
+        await expectAsync(service.initialize()).toBeResolvedTo(false);
+        expect(reportedError?.message).toBe('Failed to load LHC-Forms: Unable to retrieve the files from /no-such-dir');
       });
     });
   });

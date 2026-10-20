@@ -1902,7 +1902,9 @@ export class FormService {
       const description = source ? `from ${source}` : `version ${version}`;
       return loading.catch((error: any) => {
         console.error(`lforms-loader.loadLForms() failed to load LHC-Forms ${description}`);
-        throw new Error(error?.message || `Failed to load LHC-Forms ${description}`);
+        // initialize() prefixes "Failed to load LHC-Forms: ", so only describe the cause.
+        throw new Error(error?.message || (source ? `Unable to retrieve the files from ${source}` :
+          `Unable to retrieve version ${version} from the NLM server`));
       }).then((loadedVersion: string) => {
         if (loadedVersion !== version) {
           console.warn(`Loaded LHC-Forms version ${loadedVersion} ${description}, but ` +

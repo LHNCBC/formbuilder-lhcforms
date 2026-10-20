@@ -126,7 +126,12 @@ not set; older versions lack features the form builder requires, such as FHIR R5
 logs a warning in the browser console if the version of the loaded copy differs from `version`. Use a recent
 LHC-Forms version; the form builder is developed and tested with the latest one.
 
-The default behavior applies if the file is missing or empty, or if both values are empty or omitted. If the
+The default behavior applies if the file is missing or empty, or if both values are empty or omitted. It also
+applies if the file cannot be read: on an HTTP error other than 404, the form builder logs a warning in the
+browser console and loads the latest version from the NLM server, even if the file sets `source`. A response
+with the content type `text/html` is treated as a missing file, without a warning, because single-page
+application servers return their HTML page for missing files. Make sure the file is served as-is (for
+example, not behind a login page) if your deployment must not load LHC-Forms from the NLM server. If the
 file is not valid JSON5, has `source` without `version`, or has an invalid `version`, the form builder reports
 an error instead of loading LHC-Forms. It also reports an error, without falling back to another version, if
 the configured version cannot be loaded. Browsers may cache the file, so configure your server to revalidate
