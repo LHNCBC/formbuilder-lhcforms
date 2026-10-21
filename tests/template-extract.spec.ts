@@ -1,5 +1,6 @@
 import {expect, Page, test} from '@playwright/test';
 import fhir from 'fhir/r4';
+import fs from 'node:fs/promises';
 import {MainPO} from './po/main-po';
 import {PWUtils} from './pw-utils';
 import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_VARIABLE} from '../src/app/lib/constants/constants';
@@ -483,5 +484,57 @@ test.describe('Template-based extraction', () => {
       const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
       expect(output.contained, version).toEqual(questionnaire.contained);
     }
+  });
+
+  test('keeps the help items of a contained Questionnaire template', async ({page}) => {
+    const questionnaire = await PWUtils.uploadFile(page, 'contained-q-help-text.json', false);
+
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).contained)
+      .toEqual(questionnaire.contained);
+    for(const version of ['R4', 'STU3'] as const) {
+      const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(output.contained, version).toEqual(questionnaire.contained);
+    }
+  });
+
+  test('exports Attachment values of a contained resource unchanged to R4', async ({page}, testInfo) => {
+    const questionnaire = await PWUtils.uploadFile(page, 'contained-resource-attachement-type-tmpl-extraction.json', false);
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).contained)
+      .toEqual(questionnaire.contained);
+
+    await PWUtils.clickMenuBarDropdownItem(page, 'Export', 'Export to file in FHIR R4 format');
+    const warningDialog = page.getByRole('dialog', {name: 'Contained resource compatibility'});
+    await expect(warningDialog).toContainText('Patient #pt');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      warningDialog.getByRole('button', {name: 'Export anyway'}).click()
+    ]);
+    const outputPath = testInfo.outputPath('contained-attachment.R4.json');
+    await download.saveAs(outputPath);
+    const output = JSON.parse(await fs.readFile(outputPath, 'utf-8'));
+
+    expect(output.contained).toEqual(questionnaire.contained);
+  });
+
+  test('imports Attachment values of a contained R4 resource unchanged', async ({page}) => {
+    const questionnaire: fhir.Questionnaire = {
+      resourceType: 'Questionnaire',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      status: 'draft',
+      contained: [{
+        resourceType: 'Patient',
+        id: 'pt',
+        extension: [{
+          url: 'http://example.org/document',
+          valueAttachment: {contentType: 'application/pdf', url: 'http://example.org/report.pdf', size: 3000}
+        }]
+      }],
+      item: [{linkId: 'q', text: 'Question', type: 'string'}]
+    };
+    await importQuestionnaire(page, questionnaire);
+
+    // R4 Attachment.size is a number; R5 would make it a string.
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).contained)
+      .toEqual(questionnaire.contained);
   });
 });

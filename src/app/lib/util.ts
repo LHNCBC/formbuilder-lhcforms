@@ -709,9 +709,8 @@ export class Util {
    *
    * @param resource - Contained resource.
    * @returns True for a resource with a resourceType other than ValueSet.
-   * @private
    */
-  private static isOpaqueContainedResource(resource): boolean {
+  static isOpaqueContainedResource(resource): boolean {
     return typeof resource?.resourceType === 'string' &&
       resource.resourceType.trim().length > 0 &&
       resource.resourceType !== 'ValueSet';

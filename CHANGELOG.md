@@ -67,6 +67,12 @@ This project follows [Semantic Versioning](http://semver.org/).
   development mode, caused by the tooltip of long text fields, such as an
   extension URL in the form-level advanced fields. Whether the tooltip is
   needed is now checked on hover, focus and input.
+- Help items of a contained Questionnaire, such as a template for template-based
+  extraction, are kept. They were removed on import.
+- Attachment values of contained resources are kept unchanged on import and
+  export, as the contained resource compatibility warning states. Exporting to
+  R4 or STU3 removed their R5-only fields, such as `pages`, and sizes too large
+  for those versions; importing changed their `size` to the R5 string format.
 
 ## [12.9.0] 2026-10-06
 ### Added

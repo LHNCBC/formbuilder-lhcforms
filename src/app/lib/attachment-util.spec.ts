@@ -151,6 +151,33 @@ describe('AttachmentUtil', () => {
     expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({size: 5});
   });
 
+  ['R5', 'R4', 'STU3'].forEach((version) => {
+    it(`leaves Attachment values of contained resources unchanged for ${version}`, () => {
+      const containedAttachment = {contentType: 'application/pdf', size: '3000000000', pages: 12};
+      const containedQAttachment = {size: 7, pages: 2};
+      const questionnaire: any = {
+        contained: [
+          {resourceType: 'Patient', id: 'pt',
+            extension: [{url: 'http://example.org/document', valueAttachment: containedAttachment}]},
+          {resourceType: 'Questionnaire', id: 'template',
+            item: [{linkId: 'a', type: 'attachment', initial: [{valueAttachment: containedQAttachment}]}]}
+        ],
+        extension: [{url: 'http://example.org/document', valueAttachment: {size: 3, pages: 1}}],
+        item: [{linkId: 'b', type: 'attachment', initial: [{valueAttachment: {size: 5, pages: 3}}]}]
+      };
+      const containedCopy = JSON.parse(JSON.stringify(questionnaire.contained));
+
+      AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, version);
+
+      expect(questionnaire.contained).toEqual(containedCopy);
+      // Attachments outside contained resources are still normalized.
+      const expected = version === 'R5' ? {size: '5', pages: 3} : {size: 5};
+      expect(questionnaire.item[0].initial[0].valueAttachment).toEqual(expected);
+      expect(questionnaire.extension[0].valueAttachment)
+        .toEqual(version === 'R5' ? {size: '3', pages: 1} : {size: 3});
+    });
+  });
+
   it('normalizes STU3 initialAttachment values at root and nested item levels', () => {
     const sizeMetadata = {id: 'size-note'};
     const mediaMetadata = {id: 'media-note'};
