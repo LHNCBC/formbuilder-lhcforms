@@ -119,6 +119,10 @@ import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { ExtensionPrimitiveComponent } from './lib/widgets/extension-primitive/extension-primitive.component';
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
+import {registerPlaceholderArrayProperty} from './lib/placeholder-array-property';
+
+// Keep null placeholders of repeating primitive elements in the form models.
+registerPlaceholderArrayProperty();
 
 @NgModule({
   declarations: [

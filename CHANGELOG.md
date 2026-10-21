@@ -37,6 +37,32 @@ This project follows [Semantic Versioning](http://semver.org/).
     it.
   - A non-blocking warning is shown when `templateExtract` extensions at the
     same scope use the same template with identical expressions.
+### Changed
+- The ValueSet editor schema no longer carries its own unused copy of the FHIR
+  definitions. Like the item and form-level schemas, it uses the definitions
+  from `fhir-definitions.schema.json5`.
+### Fixed
+- `null` entries of repeating primitive elements, such as `derivedFrom`,
+  `subjectType`, or `given` in an extension value, are kept when they align the
+  values with the entries of the parallel `_` array, such as `_derivedFrom`,
+  that have an `id` and/or extensions. They were removed on import, edit,
+  export and autosave, which shifted the values against their extensions.
+  `null` entries without such an entry are still removed.
+- Importing or restoring a Questionnaire that has such `null` entries no longer
+  fails: with `subjectType` values, or without a `meta.profile` that gives its
+  FHIR version.
+- The `_` arrays of repeating primitive elements inside complex values, such as
+  `_given` in an extension's `valueHumanName`, `_line` in `valueAddress`,
+  `_profile` in `meta`, or `_valueSet` in a contained ValueSet, are kept when
+  the item or form is edited. They were removed before.
+- When a value of such an element is removed, cleared, or reordered in the
+  editor, e.g. a `subjectType` value, its `_` array entry moves with it. Before,
+  the `_` array was left unchanged, so the remaining values got the ids and
+  extensions of other values.
+- The Continue button of the start page is disabled, with a "Loading..."
+  status, until the form builder has finished loading. Choosing to restore the
+  autosaved form before that showed an empty page. If the autosaved form
+  cannot be restored, an error is now shown and the start page stays.
 
 ## [12.9.0] 2026-10-06
 ### Added

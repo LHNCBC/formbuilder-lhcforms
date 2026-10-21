@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {FormService} from './form.service';
+import {Util} from '../lib/util';
 
 export type SubjectTypeFHIRVersion = 'R3' | 'R4' | 'R5' | 'R6';
 export type SubjectTypeCompatibilityChoice = 'cancel' | 'keep' | 'export' | 'drop';
@@ -101,7 +102,8 @@ export class SubjectTypeService {
   }
 
   /**
-   * Get subjectType values that are not valid for the target FHIR version.
+   * Get subjectType values that are not valid for the target FHIR version. Null placeholders,
+   * which align the values with the extensions in _subjectType, are not values and are skipped.
    * @param questionnaire - Questionnaire-like object containing subjectType values.
    * @param version - Target FHIR version.
    * @return subjectType values that are not supported by the target version.
@@ -116,11 +118,14 @@ export class SubjectTypeService {
       return [];
     }
     return questionnaire.subjectType
-      .filter((subjectType) => !this.isSupportedByCompatibilityVersion(subjectType, compatibilityVersion, subjectTypeOptions));
+      .filter((subjectType) => subjectType !== null && subjectType !== undefined &&
+        !this.isSupportedByCompatibilityVersion(subjectType, compatibilityVersion, subjectTypeOptions));
   }
 
   /**
    * Return a copy of the questionnaire with subjectType values removed if they are invalid for the target FHIR version.
+   * The extensions of the removed values are removed from _subjectType, so the remaining entries stay aligned.
+   * See Util.cleanPrimitiveArrayPairs() for how the remaining arrays are cleaned.
    * @param questionnaire - Questionnaire-like object containing subjectType values.
    * @param version - Target FHIR version.
    * @return Questionnaire copy with invalid subjectType values removed.
@@ -134,12 +139,24 @@ export class SubjectTypeService {
     if(!subjectTypeOptions.length) {
       return questionnaire;
     }
-    const allowedSubjectTypes = questionnaire.subjectType
-      .filter((subjectType) => this.isSupportedByCompatibilityVersion(subjectType, compatibilityVersion, subjectTypeOptions));
-    return {
+    const invalidTypes = new Set(this.getInvalidSubjectTypesForVersion(questionnaire, version));
+    const keep = (index: number) => !invalidTypes.has(questionnaire.subjectType[index]);
+    const ret: T & {_subjectType?: unknown[]} = {
       ...questionnaire,
-      subjectType: allowedSubjectTypes.length ? allowedSubjectTypes : undefined
+      subjectType: questionnaire.subjectType.filter((_, index) => keep(index))
     };
+    if(Array.isArray(ret._subjectType)) {
+      ret._subjectType = ret._subjectType.filter((_, index) => keep(index));
+    }
+    else {
+      // Without _subjectType, a null is not a placeholder.
+      ret.subjectType = ret.subjectType.filter((subjectType) => subjectType !== null && subjectType !== undefined);
+    }
+    Util.cleanPrimitiveArrayPairs(ret);
+    if(!ret.subjectType?.length) {
+      ret.subjectType = undefined;
+    }
+    return ret;
   }
 
   /**

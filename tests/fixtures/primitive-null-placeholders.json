@@ -1,0 +1,70 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://example.org/StructureDefinition/first",
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire",
+      "http://example.org/StructureDefinition/third"
+    ],
+    "_profile": [
+      null,
+      {"id": "profile-2"},
+      {"extension": [{"url": "http://example.org/note", "valueString": "profile 3"}]}
+    ]
+  },
+  "status": "draft",
+  "title": "Primitive null placeholders",
+  "derivedFrom": [null, "http://example.org/Questionnaire/base", null],
+  "_derivedFrom": [
+    {"extension": [{"url": "http://example.org/note", "valueString": "derivedFrom 1"}]},
+    null,
+    {"id": "derived-from-3"}
+  ],
+  "subjectType": ["Patient", null, "Practitioner"],
+  "_subjectType": [
+    null,
+    {"extension": [{"url": "http://example.org/note", "valueString": "subjectType 2"}]},
+    {"id": "subject-type-3"}
+  ],
+  "contained": [
+    {
+      "resourceType": "ValueSet",
+      "id": "vs",
+      "status": "active",
+      "compose": {
+        "include": [
+          {
+            "valueSet": ["http://example.org/ValueSet/one", null],
+            "_valueSet": [
+              null,
+              {"id": "value-set-2"}
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "q1",
+      "text": "Name",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://example.org/name",
+          "valueHumanName": {
+            "given": ["Fixed", null],
+            "_given": [
+              null,
+              {"id": "given-2", "extension": [{"url": "http://example.org/note", "valueString": "given 2"}]}
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
+
+
+

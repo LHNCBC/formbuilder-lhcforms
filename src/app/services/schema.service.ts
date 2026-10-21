@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import jsonTraverse from "traverse";
 
 import { Util } from '../lib/util';
+import {ELEMENT_ARRAY_KEYWORD, isPrimitiveArraySchema} from '../lib/placeholder-array-property';
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {JSONPath} from "jsonpath-plus";
 import {JsonPointer} from "json-ptr";
@@ -109,6 +110,43 @@ export class SchemaService {
           }
         });
       }
+    });
+  }
+
+  /**
+   * Add a hidden element array, e.g. _given, next to each repeating primitive field, e.g.
+   * given, of the object schemas that do not keep additional properties. In FHIR JSON, the
+   * element array holds the id and/or extension of the values, aligned with null entries.
+   * Without it in the schema, the form drops the element array of such an object, e.g. of
+   * HumanName in valueHumanName. The element array is kept as is; see ElementArrayProperty.
+   * Existing element array definitions are unchanged.
+   * Run before schema-form preprocessing, like addAttachmentPrimitiveMetadata().
+   * @param schema - Editor schema. Its inline object schemas and definitions are updated.
+   */
+  addPrimitiveElementArrays(schema: ISchema): void {
+    jsonTraverse(schema).forEach(function (node: ISchema) {
+      // A map of properties is not an object schema, unless it is a field named 'properties'.
+      const isPropertiesMap = this.key === 'properties' && this.parent?.key !== 'properties';
+      const isClosedObjectSchema = !isPropertiesMap && node && typeof node === 'object' &&
+        !Array.isArray(node) && (node.type === undefined || node.type === 'object') &&
+        node.properties && typeof node.properties === 'object' && !node.additionalProperties;
+      if(!isClosedObjectSchema) {
+        return;
+      }
+
+      Object.keys(node.properties).forEach((field) => {
+        const elementField = `_${field}`;
+        if(!field.startsWith('_') && isPrimitiveArraySchema(node.properties[field]) &&
+          !Object.prototype.hasOwnProperty.call(node.properties, elementField)) {
+          node.properties[elementField] = {
+            type: 'array',
+            description: `Ids and/or extensions of the ${field} values, aligned with them by index.`,
+            items: {anyOf: [{type: 'object'}, {type: 'null'}], widget: {id: 'hidden'}},
+            widget: {id: 'hidden'},
+            [ELEMENT_ARRAY_KEYWORD]: true
+          };
+        }
+      });
     });
   }
 

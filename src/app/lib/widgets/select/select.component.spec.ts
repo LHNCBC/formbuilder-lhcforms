@@ -65,3 +65,29 @@ describe('SelectComponent invalid styling', () => {
     expect(component.shouldShowInvalidStyle()).toBeFalse();
   });
 });
+
+describe('SelectComponent array values with null placeholders', () => {
+  let component: SelectComponent;
+  let control: {value: any, setValue: jasmine.Spy, markAsDirty: jasmine.Spy, markAsTouched: jasmine.Spy};
+
+  beforeEach(() => {
+    component = Object.create(SelectComponent.prototype);
+    control = {
+      value: ['Patient', null, 'Group'],
+      setValue: jasmine.createSpy('setValue'),
+      markAsDirty: jasmine.createSpy('markAsDirty'),
+      markAsTouched: jasmine.createSpy('markAsTouched')
+    };
+    component.control = control as any;
+  });
+
+  it('should not show null placeholders as selected values', () => {
+    expect(component.selectedArrayValues).toEqual(['Patient', 'Group']);
+  });
+
+  it('should keep null placeholders when a selected value is removed', () => {
+    component.removeSelectedValue('Patient');
+
+    expect(control.setValue).toHaveBeenCalledOnceWith([null, 'Group']);
+  });
+});

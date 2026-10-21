@@ -230,6 +230,7 @@ export class FormService {
         }
         obj.schema.definitions = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions));
         this.schemaService.addAttachmentPrimitiveMetadata(obj.schema);
+        this.schemaService.addPrimitiveElementArrays(obj.schema);
         obj.schema.formLayout = obj.layout.formLayout;
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
@@ -791,6 +792,16 @@ export class FormService {
 
   get lformsVersion(): string {
     return this._lformsVersion;
+  }
+
+  /**
+   * Check whether initialize() has loaded the schemas and LForms. Loading a questionnaire
+   * needs both, e.g. to detect its FHIR version with LForms.
+   *
+   * @returns True once LForms is loaded; false while loading or after a failure.
+   */
+  get lformsReady(): boolean {
+    return !!this._lformsVersion && this._lformsVersion !== 'ERROR';
   }
 
   get lformsErrorMessage(): string | null {

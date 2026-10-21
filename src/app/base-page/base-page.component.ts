@@ -470,15 +470,37 @@ export class BasePageComponent implements OnInit, OnDestroy {
     return this.formService.isAutoSaved();
   }
   /**
-   * Handle continue button.
+   * Check whether the schemas and LForms are loaded, so that a questionnaire can be loaded.
+   * The Continue button of the home page is disabled until then.
+   *
+   * @returns True once LForms is loaded.
    */
-  onContinue() {
+  get lformsReady(): boolean {
+    return this.formService.lformsReady;
+  }
+
+  /**
+   * Handle continue button. Nothing is done until LForms is loaded. If the autosaved form
+   * cannot be restored, an error is shown and the home page stays.
+   */
+  async onContinue(): Promise<void> {
+    if(!this.lformsReady) {
+      console.warn('Continue is ignored until LForms is loaded.');
+      return;
+    }
     if(this.startOption === 'from_autosave') {
       let state = this.formService.autoLoad('state');
       state = Util.isGuidingStep(state) ? state : 'fl-editor';
       state = state === 'home' ? 'fl-editor' : state;
+      try {
+        await this.setQuestionnaire(this.formService.autoLoadForm());
+      }
+      catch(error) {
+        console.error(error);
+        this.showError(`The saved form could not be restored: ${error?.message || error}`);
+        return;
+      }
       this.formService.setGuidingStep(state);
-      this.setQuestionnaire(this.formService.autoLoadForm());
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');

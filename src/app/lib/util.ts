@@ -636,6 +636,7 @@ export class Util {
    * Prunes the questionnaire model using the following conditions:
    * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
    *   The following are considered empty: undefined, null, {}, [], and  ''.
+   *   Null placeholders of repeating primitive elements are kept; see Util.cleanPrimitiveArrayPairs().
    * . Removes anything with __$* keys.
    * . Removes functions.
    * . Converts __$helpText to appropriate FHIR help text item.
@@ -726,7 +727,8 @@ export class Util {
   private static pruneInternalModel(value) {
     traverse(value).forEach(function (node) {
       this.before(function () {
-        if(node && Array.isArray(node)) {
+        // Null entries of primitive array pairs are cleaned with the parent; see removeEmptyNode().
+        if(Array.isArray(node) && !Util.isPrimitiveArrayPair(this.parent?.node, this.key)) {
           // There is a bug in one of the package which caused issue if there is objects with empty fields in the array.
           // The array index is not updated properly which caused an error. This is a work-around to clean up the empty fields.
           Util.eliminateEmptyFields(node);
@@ -760,10 +762,12 @@ export class Util {
       });
 
       this.after(function () {
+        // Children are pruned by now, so the pairs can be cleaned before checking emptiness.
+        Util.cleanPrimitiveArrayPairs(node);
         // Remove all custom fields starting with __$ excluding any fields defined in excludeCustomFields array and empty fields.
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           if (this.notRoot) {
-            this.remove(); // Splices off any array elements.
+            Util.removeEmptyNode(this);
           }
         }
       });
@@ -771,27 +775,118 @@ export class Util {
   }
 
   /**
-   * Remove empty fields from a json object.
+   * Remove empty fields from a json object. Null placeholders of repeating primitive
+   * elements are kept; see Util.cleanPrimitiveArrayPairs().
    * @param json - JSON object
    */
   static eliminateEmptyFields(json) {
     traverse(json).forEach(function (node) {
       this.before(function () {
-        if(node && Array.isArray(node)) {
+        if(Array.isArray(node) && !Util.isPrimitiveArrayPair(this.parent?.node, this.key)) {
           // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
           this.update(node.filter((e)=>{return e !== null && e !== undefined && !Util.isEmpty(e);}));
         }
       });
 
       this.after(function () {
+        Util.cleanPrimitiveArrayPairs(node);
         // Remove all empty fields.
         if(typeof node === 'function' || Util.isEmpty(node)) {
           if (this.notRoot) {
-            this.remove(); // Splices off any array elements.
+            Util.removeEmptyNode(this);
           }
         }
       });
     });
+  }
+
+  /**
+   * Remove an empty node while traversing with the traverse package. A node in a primitive
+   * array pair is not spliced off, so the two arrays stay aligned: an entry is replaced
+   * with null, and the arrays themselves are left for Util.cleanPrimitiveArrayPairs() on
+   * their parent.
+   *
+   * @param context - Traverse context of the node, i.e. `this` in the traverse callback.
+   * @private
+   */
+  private static removeEmptyNode(context): void {
+    if(Util.isPrimitiveArrayPair(context.parent?.node, context.key)) {
+      return;
+    }
+    if(Util.isPrimitiveArrayPair(context.parent?.parent?.node, context.parent?.key)) {
+      context.update(null);
+    }
+    else {
+      context.remove(); // Splices off any array elements.
+    }
+  }
+
+  /**
+   * Check whether a property is one of a pair of FHIR JSON arrays: the values of a repeating
+   * primitive element, e.g. derivedFrom, and their element properties (id and/or extension),
+   * e.g. _derivedFrom.
+   *
+   * @param parent - Object that has the property.
+   * @param key - Name of the property, with or without the leading '_'.
+   * @returns True if the parent has both arrays.
+   */
+  static isPrimitiveArrayPair(parent: unknown, key: unknown): boolean {
+    if(!parent || typeof parent !== 'object' || Array.isArray(parent) ||
+      typeof key !== 'string' || key.startsWith('__$')) {
+      return false;
+    }
+    const name = key.startsWith('_') ? key.slice(1) : key;
+    return name.length > 0 && Array.isArray(parent[name]) && Array.isArray(parent['_' + name]);
+  }
+
+  /**
+   * Clean the primitive array pairs of an object in place. In FHIR JSON, a null in either
+   * array of a pair, e.g. derivedFrom and _derivedFrom, keeps the entries of the other
+   * array at the same positions. For each pair:
+   * . Empty entries are replaced with null. An entry of the element array, e.g. _derivedFrom,
+   *   is not empty if it has an id and/or extensions.
+   * . A position that is empty in both arrays is removed from both.
+   * . The element array is removed if all its entries are null. Otherwise, both arrays are
+   *   padded with null to the same length.
+   * . The value array is removed if it is left without entries.
+   *
+   * @param node - Object to clean. Other values are ignored.
+   */
+  static cleanPrimitiveArrayPairs(node: unknown): void {
+    if(!node || typeof node !== 'object' || Array.isArray(node)) {
+      return;
+    }
+    Object.keys(node)
+      .filter((key) => !key.startsWith('_') && Util.isPrimitiveArrayPair(node, key))
+      .forEach((name) => {
+        const values: unknown[] = node[name];
+        const elements: unknown[] = node['_' + name];
+        const keptValues = [];
+        const keptElements = [];
+        for(let i = 0; i < Math.max(values.length, elements.length); i++) {
+          const value = Util.isEmpty(values[i]) ? null : values[i];
+          const element = Util.isEmpty(elements[i]) ? null : elements[i];
+          if(value !== null || element !== null) {
+            keptValues.push(value);
+            keptElements.push(element);
+          }
+        }
+
+        if(keptElements.some((element) => element !== null)) {
+          node[name] = keptValues;
+          node['_' + name] = keptElements;
+        }
+        else {
+          // No element has an id or extensions, so no value is null.
+          delete node['_' + name];
+          if(keptValues.length) {
+            node[name] = keptValues;
+          }
+          else {
+            delete node[name];
+          }
+        }
+      });
   }
 
   /**
@@ -1071,6 +1166,9 @@ export class Util {
    * Detect FHIR version of a resource. Uses LForms library, which currently supports Questionnaire and
    * QuestionnaireResponse.
    *
+   * The version guess of LForms fails on null values, such as the null placeholders of repeating
+   * primitive elements, so it examines a copy without nulls. Nulls carry no version information.
+   *
    * @param resource - FHIR Resource to examine. In form builder it is almost always Questionnaire.
    * @return - Detected FHIR version such as STU3, R4, R5 etc., or null if fails to detect.
    */
@@ -1080,10 +1178,33 @@ export class Util {
     }
     let ret: string = LForms.Util.detectFHIRVersion(resource);
     if(!ret) {
-      ret = LForms.Util.guessFHIRVersion(resource);
+      ret = LForms.Util.guessFHIRVersion(Util.copyWithoutNulls(resource));
     }
     return ret;
   }
+
+  /**
+   * Deep copy a JSON value, leaving out null and undefined array entries and properties.
+   *
+   * @param value - JSON value to copy.
+   * @returns The copy.
+   */
+  static copyWithoutNulls(value: unknown): any {
+    if(Array.isArray(value)) {
+      return value
+        .filter((entry) => entry !== null && entry !== undefined)
+        .map((entry) => Util.copyWithoutNulls(entry));
+    }
+    if(value && typeof value === 'object') {
+      const ret = {};
+      Object.entries(value)
+        .filter(([, entry]) => entry !== null && entry !== undefined)
+        .forEach(([key, entry]) => { ret[key] = Util.copyWithoutNulls(entry); });
+      return ret;
+    }
+    return value;
+  }
+
   /**
    * Convert a given questionnaire to desired version. R5 is also the internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.

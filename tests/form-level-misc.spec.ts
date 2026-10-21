@@ -56,3 +56,33 @@ test.describe('form-level fields', () => {
     expect(inputTags).toStrictEqual(q.meta.tag);
   });
 });
+
+test.describe('home page while LForms is loading', () => {
+  test('should enable Continue, and restore the autosaved form, once LForms is loaded', async ({page}) => {
+    await page.goto('/');
+    await new MainPO(page).loadFLPage();
+    const titleField = page.locator('lfb-form-fields').getByLabel('Title', {exact: true});
+    await titleField.fill('Saved before reload');
+    await PWUtils.waitUntilLocalStorageItemIsUpdated(page, 'fhirQuestionnaire', 'Saved before reload');
+
+    // Hold the LForms files, which lforms-loader fetches from .../lforms-versions/..., until released.
+    let releaseLForms: () => void;
+    const lformsHeld = new Promise<void>((resolve) => { releaseLForms = resolve; });
+    await page.route(/\/lforms-versions\//, async (route) => {
+      await lformsHeld;
+      await route.continue();
+    });
+    await page.reload();
+
+    const continueButton = page.getByRole('button', {name: 'Continue'});
+    await page.getByLabel('Would you like to start from where you left off before?').click();
+    await expect(continueButton).toBeDisabled();
+    await expect(page.getByRole('status').filter({hasText: 'Loading'})).toBeVisible();
+
+    releaseLForms();
+    await expect(continueButton).toBeEnabled();
+    await expect(page.getByRole('status').filter({hasText: 'Loading'})).toHaveCount(0);
+    await continueButton.click();
+    await expect(titleField).toHaveValue('Saved before reload');
+  });
+});
