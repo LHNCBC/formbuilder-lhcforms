@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.10.0] 2026-10-15
+### Added
+- Added form-level support for Questionnaire `jurisdiction` in the advanced fields,
+  including multiple jurisdictions with text and multiple codings per jurisdiction.
+
 ## [12.9.0] 2026-10-06
 ### Added
 - Support for embedding the form builder in an iframe of the parent page, using
