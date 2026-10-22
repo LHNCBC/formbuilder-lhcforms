@@ -87,6 +87,56 @@ cp .env .env.local
 
 The npm scripts automatically load `.env` plus `.env.local` (when present), with `.env.local` taking precedence.
 
+### Choosing the LHC-Forms version and server
+
+By default, the form builder loads the latest version of LHC-Forms from
+https://lhcforms-static.nlm.nih.gov/lforms-versions/ at run time. To change that, set `source` and/or
+`version` in `assets/lforms-config.json5`. Edit `src/assets/lforms-config.json5` before building, or the copy
+in the `assets` folder of the built application. The file is in [JSON5](https://json5.org/) format, and its
+comments describe both values.
+
+To load a specific version from the NLM server, set only `version`:
+
+```json5
+{
+  source: "",
+  version: "44.1.0"
+}
+```
+
+To use a fixed copy served by your own server instead (for example a version that matches the forms renderer
+of your application), set both values:
+
+```json5
+{
+  // Base URL of the LHC-Forms files.
+  source: "/path/to/lforms-44.1.0",
+  // X.Y.Z version of the LHC-Forms files at source.
+  version: "44.1.0"
+}
+```
+
+`source` is the base URL of the extracted
+[LHC-Forms release](https://lhcforms-static.nlm.nih.gov/lforms-versions/) (or of `dist/lforms` of the
+`lforms` npm package). A relative URL is resolved against the form builder's base URL (`<base href>`), and
+`/` is the root of the server. The base URL must contain `webcomponent/styles.css`,
+`webcomponent/assets/lib/zone.min.js`, `webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. `version`
+must be the `X.Y.Z` version, 37.0.0 or later, of that copy, or of the release on the NLM server if `source` is
+not set; older versions lack features the form builder requires, such as FHIR R5 support. The form builder
+logs a warning in the browser console if the version of the loaded copy differs from `version`. Use a recent
+LHC-Forms version; the form builder is developed and tested with the latest one.
+
+The default behavior applies if the file is missing or empty, or if both values are empty or omitted. It also
+applies if the file cannot be read: on an HTTP error other than 404, the form builder logs a warning in the
+browser console and loads the latest version from the NLM server, even if the file sets `source`. A response
+with the content type `text/html` is treated as a missing file, without a warning, because single-page
+application servers return their HTML page for missing files. Make sure the file is served as-is (for
+example, not behind a login page) if your deployment must not load LHC-Forms from the NLM server. If the
+file is not valid JSON5, has `source` without `version`, or has an invalid `version`, the form builder reports
+an error instead of loading LHC-Forms. It also reports an error, without falling back to another version, if
+the configured version cannot be loaded. Browsers may cache the file, so configure your server to revalidate
+it if you change it after deployment.
+
 ## **Contributing**
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
 

@@ -19,5 +19,11 @@ declare module 'json5' {
 // Add minimal types for `lforms-loader` used in Karma
 declare module 'lforms-loader/dist/lformsLoader.js' {
   export function getSupportedLFormsVersions(): Promise<string[]>;
-  export function loadLForms(version: string): Promise<string>;
+  export function loadLForms(version: string, styleCallback?: () => void, lhcFormsSource?: string): Promise<string>;
+}
+
+// Types for `lforms-loader` used by the application, so that loader calls are type-checked.
+declare module 'lforms-loader' {
+  export function getSupportedLFormsVersions(): Promise<string[]>;
+  export function loadLForms(version: string, styleCallback?: () => void, lhcFormsSource?: string): Promise<string>;
 }
