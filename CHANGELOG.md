@@ -11,6 +11,9 @@ This project follows [Semantic Versioning](http://semver.org/).
   configured version must be 37.0.0 or later, and `source` may be the server
   root `/`. A warning is logged if the loaded version differs from the
   configured one. See README.md.
+- Added form-level support for Questionnaire `jurisdiction` in the advanced fields,
+  including multiple jurisdictions with text and multiple codings per jurisdiction.
+
 ### Fixed
 - LHC-Forms loading failures, including an invalid `assets/lforms-config.json5`,
   were reported with the misleading prefix "JSON5 resources failed to load".
