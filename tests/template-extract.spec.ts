@@ -364,10 +364,46 @@ test.describe('Template-based extraction', () => {
     await expect(editor).toHaveCount(0);
     await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'unsaved draft'");
     await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await page.locator('ngb-modal-window').getByRole('button', {name: 'Discard changes', exact: true}).click();
     await expect(dialog).toBeHidden();
     expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
     await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
     await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'root-second'");
+  });
+
+  test('confirms discarding a new extraction with an expression, and closes an unchanged one directly', async ({page}) => {
+    await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#pt'}));
+    const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    const addExtraction = widget.getByRole('button', {name: 'Add new template extraction', exact: true});
+    const dialog = page.getByRole('dialog', {name: 'Add template extraction'});
+    const confirmDlg = page.locator('ngb-modal-window');
+
+    await addExtraction.click();
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await expect(dialog).toBeHidden();
+    await expect(confirmDlg).toHaveCount(0);
+
+    await addExtraction.click();
+    await dialog.getByRole('button', {name: 'Bundle entry fields'}).click();
+    await dialog.getByRole('button', {name: 'Create or edit fullUrl FHIRPath expression'}).click();
+    const editor = page.locator('lhc-expression-editor');
+    await editor.locator('#final-expression').fill("'urn:uuid:1'");
+    await editor.locator('#export').click();
+    await expect(editor).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'urn:uuid:1'");
+
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await expect(confirmDlg.locator('.modal-header')).toHaveClass(/bg-primary/);
+    await expect(confirmDlg.getByRole('heading', {name: 'Confirm'})).toBeVisible();
+    await confirmDlg.getByRole('button', {name: 'Do not discard changes'}).click();
+    await expect(confirmDlg).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'urn:uuid:1'");
+
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await confirmDlg.getByRole('button', {name: 'Discard changes', exact: true}).click();
+    await expect(dialog).toBeHidden();
+    expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
   });
 
   test('warns without blocking save when rows at the same scope duplicate an extraction', async ({page}) => {

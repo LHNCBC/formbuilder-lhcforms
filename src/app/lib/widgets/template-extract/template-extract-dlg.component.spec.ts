@@ -11,7 +11,7 @@ import {SharedObjectService} from '../../../services/shared-object.service';
 import {DialogService} from '../../../services/dialog.service';
 import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {ExpressionEditorDlgComponent} from '../expression-editor-dlg/expression-editor-dlg.component';
-import {MessageType} from '../message-dlg/message-dlg.component';
+import {MessageDlgComponent, MessageDlgOptions, MessageType} from '../message-dlg/message-dlg.component';
 import {TemplateExtractDialogData, TemplateExtractDlgComponent} from './template-extract-dlg.component';
 import {TemplateExtractExpressionUrl} from './template-extract.util';
 
@@ -356,6 +356,92 @@ describe('TemplateExtractDlgComponent', () => {
     expect(dialogRef.close).not.toHaveBeenCalled();
     component.cancel();
     expect(dialogRef.close).toHaveBeenCalledOnceWith(false);
+  });
+
+  describe('discarding changes', () => {
+    let confirmInputs: {options?: MessageDlgOptions};
+    let confirmClosed: Subject<string>;
+    let confirmHidden: Subject<void>;
+
+    /**
+     * Change the fullUrl expression through the expression editor, then make the next modal
+     * a discard confirmation.
+     */
+    async function changeExpression(): Promise<void> {
+      await createDialog();
+      component.editExpression('fullUrl');
+      const result = copy(editorInputs.questionnaire);
+      result.item[0].item[0].extension[3].extension
+        .find(extension => extension.url === 'fullUrl').valueString = "'changed'";
+      modalResult.next(result);
+      modalService.open.and.callFake(() => {
+        confirmInputs = {};
+        confirmClosed = new Subject<string>();
+        confirmHidden = new Subject<void>();
+        return jasmine.createSpyObj<NgbModalRef>('confirmRef', ['close'], {
+          componentInstance: confirmInputs,
+          closed: confirmClosed.asObservable(),
+          hidden: confirmHidden.asObservable()
+        });
+      });
+    }
+
+    /**
+     * Answer the discard confirmation and wait for the dialog to close after the modal hides.
+     * @param value - Value of the chosen button.
+     */
+    async function answer(value: string): Promise<void> {
+      confirmClosed.next(value);
+      confirmHidden.next();
+      await new Promise(resolve => setTimeout(resolve));
+    }
+
+    it('closes an unchanged new dialog without confirmation', async () => {
+      await createDialog('item', -1);
+
+      component.cancel();
+
+      expect(modalService.open).not.toHaveBeenCalled();
+      expect(dialogRef.close).toHaveBeenCalledOnceWith(false);
+    });
+
+    it('asks for confirmation with a header before discarding a changed expression', async () => {
+      await changeExpression();
+
+      component.cancel();
+
+      expect(modalService.open).toHaveBeenCalledWith(MessageDlgComponent, {scrollable: true});
+      expect(confirmInputs.options.title).toBe('Confirm');
+      expect(confirmInputs.options.type).toBe(MessageType.INFO);
+      expect(dialogRef.close).not.toHaveBeenCalled();
+      await answer('yes');
+      expect(dialogRef.close).toHaveBeenCalledOnceWith(false);
+    });
+
+    it('keeps the dialog open when the user does not discard the changes', async () => {
+      await changeExpression();
+
+      component.cancel();
+      await answer('no');
+
+      expect(dialogRef.close).not.toHaveBeenCalled();
+      expect(component.model.fullUrl).toBe("'changed'");
+    });
+
+    it('asks for confirmation after the template is changed', async () => {
+      await createDialog();
+      modalService.open.and.callFake(() => jasmine.createSpyObj<NgbModalRef>('confirmRef', ['close'], {
+        componentInstance: {},
+        closed: new Subject<string>().asObservable(),
+        hidden: new Subject<void>().asObservable()
+      }));
+      component.model.templateReference = '#other-template';
+
+      component.cancel();
+
+      expect(modalService.open).toHaveBeenCalledOnceWith(MessageDlgComponent, {scrollable: true});
+      expect(dialogRef.close).not.toHaveBeenCalled();
+    });
   });
 
   it('reports a missing item rather than silently using Questionnaire-level extensions', async () => {

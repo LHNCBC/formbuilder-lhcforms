@@ -171,6 +171,26 @@ test.describe(() => {
     expect(json.contained).toStrictEqual(fileJson.contained);
   });
 
+  test('should confirm discarding changes in a dialog with a header', async({page}) => {
+    await flContainedTable.locator(editLoc).first().click();
+    const dialog = page.locator('lfb-resource-dlg');
+    await dialog.getByLabel('Title', {exact: true}).fill('Changed title');
+    await dialog.getByRole('button', {name: 'Discard changes'}).click();
+
+    const confirmDlg = page.locator('ngb-modal-window');
+    await expect(confirmDlg.locator('.modal-header')).toHaveClass(/bg-primary/);
+    await expect(confirmDlg.getByRole('heading', {name: 'Confirm'})).toBeVisible();
+    await confirmDlg.getByRole('button', {name: 'Do not discard changes'}).click();
+    await expect(confirmDlg).toHaveCount(0);
+    await expect(dialog.getByLabel('Title', {exact: true})).toHaveValue('Changed title');
+
+    await dialog.getByRole('button', {name: 'Discard changes'}).click();
+    await confirmDlg.getByRole('button', {name: 'Discard changes', exact: true}).click();
+    await expect(dialog).toHaveCount(0);
+    const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(json.contained).toStrictEqual(fileJson.contained);
+  });
+
   test('should validate resource.id', async({page}) => {
     const editCell = PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc);
     await expect(editCell).toBeVisible();

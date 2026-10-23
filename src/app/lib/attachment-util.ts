@@ -299,7 +299,7 @@ export class AttachmentUtil {
     if(questionnaire && typeof questionnaire === 'object' && !Array.isArray(questionnaire)) {
       Object.entries(questionnaire)
         .filter(([key]) => key !== 'contained')
-        .forEach(([key, value]) => AttachmentUtil.visitAttachmentValues({[key]: value}, normalize));
+        .forEach(([, value]) => AttachmentUtil.visitAttachmentValues(value, normalize));
     }
     return questionnaire;
   }

@@ -126,6 +126,8 @@ export class SchemaService {
   addPrimitiveElementArrays(schema: ISchema): void {
     jsonTraverse(schema).forEach(function (node: ISchema) {
       // A map of properties is not an object schema, unless it is a field named 'properties'.
+      // The node is judged by its parent's key only, so a definition named 'properties', not
+      // used in the FHIR schemas, would be misread as a map of properties.
       const isPropertiesMap = this.key === 'properties' && this.parent?.key !== 'properties';
       const isClosedObjectSchema = !isPropertiesMap && node && typeof node === 'object' &&
         !Array.isArray(node) && (node.type === undefined || node.type === 'object') &&

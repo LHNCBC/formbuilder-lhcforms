@@ -16,7 +16,8 @@ import {
   ELEMENT_ARRAY_KEYWORD,
   isPrimitiveArraySchema,
   PlaceholderArrayProperty,
-  registerPlaceholderArrayProperty
+  registerPlaceholderArrayProperty,
+  removePlaceholderErrors
 } from './placeholder-array-property';
 
 describe('PlaceholderArrayProperty', () => {
@@ -35,6 +36,7 @@ describe('PlaceholderArrayProperty', () => {
     }
   };
   let originalArrayMapping;
+  let originalObjectMapping;
 
   /**
    * Create the root form property of a schema, loaded with a value.
@@ -55,11 +57,13 @@ describe('PlaceholderArrayProperty', () => {
 
   beforeAll(() => {
     originalArrayMapping = PROPERTY_TYPE_MAPPING.array;
+    originalObjectMapping = PROPERTY_TYPE_MAPPING.object;
     registerPlaceholderArrayProperty();
   });
 
   afterAll(() => {
     PROPERTY_TYPE_MAPPING.array = originalArrayMapping;
+    PROPERTY_TYPE_MAPPING.object = originalObjectMapping;
   });
 
   it('should be created for the arrays of a schema once registered', () => {
@@ -281,6 +285,95 @@ describe('PlaceholderArrayProperty', () => {
       expect(root.value.given).toEqual(['C']);
       expect(Object.prototype.hasOwnProperty.call(root.value, '_given')).toBeFalse();
     });
+
+    describe('with elements of implicit trailing null values', () => {
+      const suffix = {id: 'suffix'};
+
+      it('should keep them when a value is added', () => {
+        const root = createForm({given: ['A'], _given: [e1, suffix]});
+
+        (root.getProperty('given') as ArrayProperty).addItem('B');
+
+        expect(root.value.given).toEqual(['A', 'B']);
+        expect(root.value._given).toEqual([e1, null, suffix]);
+      });
+
+      it('should keep them when a value is removed', () => {
+        const root = createForm({given: ['A', 'B'], _given: [e1, null, suffix]});
+
+        (root.getProperty('given') as ArrayProperty).removeItem(root.getProperty('given/0'));
+
+        expect(root.value.given).toEqual(['B']);
+        expect(root.value._given).toEqual([null, suffix]);
+      });
+
+      it('should keep them when a value is cleared and entered again', () => {
+        const root = createForm({given: ['A'], _given: [e1, suffix]});
+        const first = root.getProperty('given/0');
+
+        first.setValue('', false);
+        expect(root.value._given).toEqual([suffix]);
+
+        first.setValue('A2', false);
+        expect(root.value.given).toEqual(['A2']);
+        expect(root.value._given).toEqual([e1, suffix]);
+      });
+
+      it('should keep them when the array is replaced', () => {
+        const root = createForm({given: ['A'], _given: [e1, suffix]});
+
+        root.getProperty('given').setValue(['B', 'A'], false);
+
+        expect(root.value.given).toEqual(['B', 'A']);
+        expect(root.value._given).toEqual([null, e1, suffix]);
+      });
+    });
+  });
+
+  describe('validation', () => {
+    const codesSchema: ISchema = {
+      type: 'object',
+      properties: {
+        subjectType: {type: 'array', items: {type: 'string', oneOf: [{enum: ['Patient']}, {enum: ['Practitioner']}]}},
+        include: {
+          type: 'array',
+          items: {type: 'object', properties: {valueSet: {type: 'array', items: {type: 'string', pattern: '^\\S*$'}}}}
+        }
+      }
+    };
+
+    it('should accept null placeholders in the arrays and in their ancestors', () => {
+      const root = createForm({
+        subjectType: ['Patient', null, 'Practitioner'],
+        include: [{valueSet: ['http://example.org/a', null]}]
+      }, codesSchema);
+
+      expect(root.value.subjectType).toEqual(['Patient', null, 'Practitioner']);
+      expect(root.value.include).toEqual([{valueSet: ['http://example.org/a', null]}]);
+      ['', 'subjectType', 'subjectType/1', 'include', 'include/0', 'include/0/valueSet', 'include/0/valueSet/1']
+        .forEach((path) => {
+          const property = path ? root.getProperty(path) : root;
+          expect(property._errors).withContext(path).toBeNull();
+        });
+    });
+
+    it('should still report invalid values', () => {
+      const root = createForm({subjectType: ['Patient', null, 'Unknown']}, codesSchema);
+
+      expect(root._errors?.map((error) => error.path)).toEqual(['#/subjectType/2']);
+    });
+
+    it('should validate a value entered in a placeholder', () => {
+      const root = createForm({subjectType: ['Patient', null]}, codesSchema);
+      const placeholder = root.getProperty('subjectType/1');
+
+      placeholder.setValue('Unknown', false);
+      expect(placeholder._errors?.length).toBeGreaterThan(0);
+
+      placeholder.setValue('', false);
+      expect(placeholder._errors).toBeNull();
+      expect(root._errors).toBeNull();
+    });
   });
 
   it('should recognize arrays of primitive values', () => {
@@ -292,6 +385,21 @@ describe('PlaceholderArrayProperty', () => {
     expect(isPrimitiveArraySchema({type: 'array'})).toBeFalse();
     expect(isPrimitiveArraySchema({type: 'string'})).toBeFalse();
     expect(isPrimitiveArraySchema(undefined)).toBeFalse();
+  });
+
+  it('should remove only the validation errors of null array entries', () => {
+    const value = {a: ['x', null], 'b/c': [null], d: null};
+    const errors = [
+      {code: 'INVALID_TYPE', path: '#/a/1'},
+      {code: 'ENUM_MISMATCH', path: '#/a/0'},
+      {code: 'INVALID_TYPE', path: '#/b~1c/0'},
+      {code: 'INVALID_TYPE', path: '#/d'},
+      {code: 'INVALID_TYPE', path: '#/'}
+    ];
+
+    expect(removePlaceholderErrors(errors, value)).toEqual([errors[1], errors[3], errors[4]]);
+    expect(removePlaceholderErrors([errors[0]], value)).toBeNull();
+    expect(removePlaceholderErrors(null, value)).toBeNull();
   });
 });
 

@@ -8,7 +8,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ValueSetResourceComponent } from '../value-set-resource/value-set-resource.component';
 import fhir from 'fhir/r4';
-import {MessageDlgComponent} from "../message-dlg/message-dlg.component";
+import {MessageDlgComponent, MessageDlgOptions, MessageType} from "../message-dlg/message-dlg.component";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
@@ -174,10 +174,10 @@ export class ResourceDlgComponent {
       return;
     } else {
       const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
-      modalRef.componentInstance.options = {
+      const options: MessageDlgOptions = {
         title: 'Confirm',
         message: 'Are you sure you want to discard the changes you made?',
-        type: 'warning',
+        type: MessageType.INFO,
         buttons: [{
           label: 'Discard changes',
           value: 'yes'
@@ -185,6 +185,7 @@ export class ResourceDlgComponent {
           label:  'Do not discard changes',
           value: 'no'
         }]};
+      modalRef.componentInstance.options = options;
 
       modalRef.closed.subscribe((result) => {
         if (result === 'yes') {
@@ -200,15 +201,16 @@ export class ResourceDlgComponent {
    */
   alertErrors(message: string) {
     const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
-    modalRef.componentInstance.options = {
+    const options: MessageDlgOptions = {
       title: 'Fix errors',
       message,
-      type: 'error',
+      type: MessageType.DANGER,
       buttons: [{
         label: 'OK',
         value: 'ok'
       }]
     };
+    modalRef.componentInstance.options = options;
     return modalRef;
   }
 }

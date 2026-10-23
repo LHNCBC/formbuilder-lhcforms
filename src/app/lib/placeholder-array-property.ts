@@ -14,6 +14,69 @@ export const ELEMENT_ARRAY_KEYWORD = 'x-elementArray';
 /** Item types of the arrays whose loaded empty entries are kept as null. */
 const PRIMITIVE_ITEM_TYPES = ['string', 'number', 'integer', 'boolean'];
 
+/** Stock ngx-schema-form factory of object properties, kept to wrap it. */
+const STOCK_OBJECT_MAPPING = PROPERTY_TYPE_MAPPING.object;
+
+/**
+ * Check whether a validation error path points to a null entry of an array in a value.
+ *
+ * @param value - Validated value.
+ * @param path - Path of the error, e.g. '#/subjectType/1', relative to the value.
+ * @returns True if the path ends with an array index whose entry is null.
+ */
+function isNullArrayEntry(value: unknown, path: unknown): boolean {
+  if(typeof path !== 'string') {
+    return false;
+  }
+  const segments = path.replace(/^#\/?/, '').split('/').filter((segment) => segment !== '')
+    .map((segment) => segment.replace(/~1/g, '/').replace(/~0/g, '~'));
+  const index = segments.pop();
+  if(index === undefined || !/^\d+$/.test(index)) {
+    return false;
+  }
+  let container: unknown = value;
+  for(const segment of segments) {
+    if(!container || typeof container !== 'object') {
+      return false;
+    }
+    container = container[segment];
+  }
+  return Array.isArray(container) && container[Number(index)] === null;
+}
+
+/**
+ * Remove the schema validation errors of the null entries of arrays. A null entry of an array
+ * in a form value is a placeholder of a repeating primitive element, output by
+ * PlaceholderArrayProperty, or an entry of an element array, which accepts null. The item
+ * schemas of the primitive arrays, e.g. type string with a oneOf of codes, do not accept null.
+ *
+ * @param errors - Errors returned by a schema validator, or null.
+ * @param value - Validated value.
+ * @returns The remaining errors, or null if none remain.
+ */
+export function removePlaceholderErrors(errors: any[] | null, value: unknown): any[] | null {
+  if(!Array.isArray(errors)) {
+    return errors;
+  }
+  const remaining = errors.filter((error) => !isNullArrayEntry(value, error?.path));
+  return remaining.length ? remaining : null;
+}
+
+/**
+ * Make the schema validator of a property accept the null placeholders in its value. Each
+ * ancestor of an array validates its whole value, and an ObjectProperty copies its errors to
+ * the descendants at the error paths, so the validators of all the arrays and objects are
+ * wrapped.
+ *
+ * @param property - Array or object property, before its value is validated.
+ * @returns The same property.
+ */
+function acceptPlaceholders<T extends FormProperty>(property: T): T {
+  const validate = property.schemaValidator;
+  property.schemaValidator = (value: unknown) => removePlaceholderErrors(validate(value), value);
+  return property;
+}
+
 /**
  * Check whether a schema is an array of primitive values.
  *
@@ -49,7 +112,18 @@ export function isPrimitiveArraySchema(schema: any): boolean {
  *
  * When the user removes, clears, or reorders the entries, the sibling element array, e.g.
  * _derivedFrom in the same object, is rebuilt so that each element stays with its value.
- * See alignElements() and setValue().
+ * See alignElements() and setValue(). The element array may be longer than this array; its
+ * extra entries belong to implicit trailing null values and are kept after the elements of
+ * the output children.
+ *
+ * Limitation: when the array widget, e.g. a select or chips, replaces the whole array through
+ * setValue(), the new entries are matched to the current ones by value. An entry whose value
+ * was changed has no match, so its element is replaced with null. A value edited in place
+ * through its child property keeps its element.
+ *
+ * The null placeholders do not match the item schemas, e.g. type string. The schema
+ * validation errors at their positions are removed; see removePlaceholderErrors(). A child
+ * loaded as a placeholder is not validated while it is empty.
  */
 export class PlaceholderArrayProperty extends ArrayProperty {
   /** Whether a value is being loaded by setValue() or reset(). */
@@ -72,6 +146,12 @@ export class PlaceholderArrayProperty extends ArrayProperty {
    * that is cleared and entered again gets its entry back.
    */
   private childElements = new WeakMap<FormProperty, unknown>();
+
+  /**
+   * Entries of the sibling element array beyond the aligned children, as of the last
+   * recording. In FHIR JSON, they belong to implicit trailing null values.
+   */
+  private trailingElements: unknown[] = [];
 
   /**
    * Set the value, recording which children are loaded as placeholders.
@@ -137,8 +217,10 @@ export class PlaceholderArrayProperty extends ArrayProperty {
     const outputChildren: FormProperty[] = [];
     this.forEachChild((property, index) => {
       // While loading, the children are created one by one and update this value each time.
-      if(this.loadingValue && PlaceholderArrayProperty.isPlaceholder(this.loadingValue[Number(index)])) {
+      if(this.loadingValue && PlaceholderArrayProperty.isPlaceholder(this.loadingValue[Number(index)]) &&
+        !this.placeholders.has(property)) {
         this.placeholders.add(property);
+        PlaceholderArrayProperty.acceptEmptyValue(property);
       }
       if(property.visible) {
         if(property._hasValue()) {
@@ -185,7 +267,8 @@ export class PlaceholderArrayProperty extends ArrayProperty {
   }
 
   /**
-   * Record the element of each child from an element array aligned with the children.
+   * Record the element of each child from an element array aligned with the children, and
+   * the entries of the element array beyond the children.
    *
    * @param elements - Element array, e.g. the value of _derivedFrom.
    * @param children - Children aligned with the element array.
@@ -194,17 +277,18 @@ export class PlaceholderArrayProperty extends ArrayProperty {
     children.forEach((child, i) => {
       this.childElements.set(child, elements[i] ?? null);
     });
+    this.trailingElements = elements.slice(children.length);
   }
 
   /**
-   * Set the element array to the recorded elements of the aligned children. The ancestors
-   * are updated by the caller.
+   * Set the element array to the recorded elements of the aligned children, followed by the
+   * recorded trailing elements. The ancestors are updated by the caller.
    *
    * @param elementArray - Form property of the sibling element array.
    */
   private writeElements(elementArray: FormProperty): void {
     const elements = this.alignedChildren.map((child) => this.childElements.get(child) ?? null);
-    elementArray.setValue(elements, true);
+    elementArray.setValue([...elements, ...this.trailingElements], true);
   }
 
   /**
@@ -270,6 +354,19 @@ export class PlaceholderArrayProperty extends ArrayProperty {
   private static isPlaceholder(entry: unknown): boolean {
     return entry === null || entry === undefined || entry === '';
   }
+
+  /**
+   * Make a placeholder child valid while it is empty. The child was already validated when
+   * it was created, e.g. '' against a oneOf of codes, so it is validated again.
+   *
+   * @param child - Child loaded as a placeholder.
+   */
+  private static acceptEmptyValue(child: FormProperty): void {
+    const validate = child.schemaValidator;
+    child.schemaValidator = (value: unknown) =>
+      PlaceholderArrayProperty.isPlaceholder(value) ? null : validate(value);
+    child._runValidation();
+  }
 }
 
 /**
@@ -326,7 +423,9 @@ export class ElementArrayProperty extends AtomicProperty {
 /**
  * Make ngx-schema-form create an ElementArrayProperty for each array marked with
  * ELEMENT_ARRAY_KEYWORD, and a PlaceholderArrayProperty for any other array in the schema.
- * Call it before any form is created.
+ * The schema validators of the arrays and objects accept the null placeholders; see
+ * acceptPlaceholders(). Call it before any form is created. It replaces the array and
+ * object entries of PROPERTY_TYPE_MAPPING, which are global, so it affects every form.
  */
 export function registerPlaceholderArrayProperty(): void {
   PROPERTY_TYPE_MAPPING.array = (schemaValidatorFactory, validatorRegistry, expressionCompilerFactory,
@@ -335,9 +434,10 @@ export function registerPlaceholderArrayProperty(): void {
       return new ElementArrayProperty(schemaValidatorFactory, validatorRegistry, expressionCompilerFactory,
         schema, parent, path, logger);
     }
-    return new PlaceholderArrayProperty(formPropertyFactory, schemaValidatorFactory, validatorRegistry,
-      expressionCompilerFactory, schema, parent, path, logger);
+    return acceptPlaceholders(new PlaceholderArrayProperty(formPropertyFactory, schemaValidatorFactory,
+      validatorRegistry, expressionCompilerFactory, schema, parent, path, logger));
   };
+  PROPERTY_TYPE_MAPPING.object = (...args) => acceptPlaceholders(STOCK_OBJECT_MAPPING(...args));
 }
 
 

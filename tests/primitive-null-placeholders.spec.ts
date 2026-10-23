@@ -3,6 +3,36 @@ import {MainPO} from './po/main-po';
 import {PWUtils} from './pw-utils';
 
 /**
+ * Open the home page, start from scratch, and import a fixture.
+ *
+ * @param page - Browser page.
+ * @param file - Name of the fixture file.
+ * @returns The imported fixture.
+ */
+async function importFixture(page: Page, file: string): Promise<any> {
+  await page.goto('/');
+  await new MainPO(page).loadHomePage();
+  await page.getByLabel('Start from scratch').click();
+  await page.getByRole('button', {name: 'Continue'}).click();
+  const imported = await PWUtils.uploadFile(page, file);
+  await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
+    .toHaveValue(imported.title);
+  return imported;
+}
+
+/**
+ * Show the advanced form-level fields and get the chips of the subjectType values.
+ *
+ * @param page - Browser page displaying the form-level fields.
+ * @returns Locator of the chips.
+ */
+async function showSubjectTypeChips(page: Page): Promise<Locator> {
+  await PWUtils.expandAdvancedFields(page);
+  return page.locator('input[id^="subjectType"][id$="_ac"]:visible').first()
+    .locator('xpath=..').locator('li');
+}
+
+/**
  * In FHIR JSON, a null entry in a repeating primitive element, such as derivedFrom, keeps
  * the values aligned with the entries of the parallel element array, such as _derivedFrom.
  * An element entry may have an id and/or extensions. These tests check that the nulls survive
@@ -33,23 +63,8 @@ test.describe('Null placeholders in repeating primitive fields', () => {
     return ret;
   }
 
-  /**
-   * Import the fixture from the home page.
-   *
-   * @param page - Browser page displaying the home page.
-   */
-  async function importFixture(page: Page): Promise<void> {
-    await page.getByLabel('Start from scratch').click();
-    await page.getByRole('button', {name: 'Continue'}).click();
-    fixture = await PWUtils.uploadFile(page, fixtureFile);
-    await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
-      .toHaveValue(fixture.title);
-  }
-
   test.beforeEach(async ({page}) => {
-    await page.goto('/');
-    await new MainPO(page).loadHomePage();
-    await importFixture(page);
+    fixture = await importFixture(page, fixtureFile);
   });
 
   test('keeps the placeholders in R5, R4, and STU3 output', async ({page}) => {
@@ -90,9 +105,7 @@ test.describe('Null placeholders in repeating primitive fields', () => {
   });
 
   test('moves the extensions with the remaining subjectType values when a value is removed', async ({page}) => {
-    await PWUtils.expandAdvancedFields(page);
-    const chips = page.locator('input[id^="subjectType"][id$="_ac"]:visible').first()
-      .locator('xpath=..').locator('li');
+    const chips = await showSubjectTypeChips(page);
     await expect(chips).toHaveCount(2);
     await chips.filter({hasText: 'Patient'}).getByRole('button').click();
     await expect(chips).toHaveCount(1);
@@ -100,6 +113,30 @@ test.describe('Null placeholders in repeating primitive fields', () => {
     const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(output.subjectType).toEqual([null, 'Practitioner']);
     expect(output._subjectType).toEqual(fixture._subjectType.slice(1));
+  });
+
+  test('shows no validation errors for the placeholders', async ({page}) => {
+    const chips = await showSubjectTypeChips(page);
+    await expect(chips).toHaveCount(2);
+    await expect(page.locator('lfb-meta-profile input')).toHaveCount(fixture.meta.profile.length);
+
+    const formFields = page.locator('lfb-form-fields');
+    await expect(formFields.getByText('Expected type string but found type null')).toHaveCount(0);
+    await expect(formFields.getByText('Data does not match any schemas')).toHaveCount(0);
+  });
+
+  test('saves an edit of the contained ValueSet that has placeholders', async ({page}) => {
+    await PWUtils.expandAdvancedFields(page);
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    await containedTable.getByRole('button', {name: 'Edit this row'}).first().click();
+    const dialog = page.locator('lfb-resource-dlg');
+    await dialog.getByLabel('Title', {exact: true}).fill('Edited value set');
+
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toHaveCount(0);
+    const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(output.contained[0].title).toBe('Edited value set');
+    expect(output.contained[0].compose).toEqual(fixture.contained[0].compose);
   });
 
   test.describe('Profiles of meta', () => {
@@ -175,6 +212,44 @@ test.describe('Null placeholders in repeating primitive fields', () => {
         profile: [...fixture.meta.profile, 'http://example.org/StructureDefinition/new'],
         _profile: [...fixture.meta._profile, null]
       });
+    });
+  });
+});
+
+/**
+ * In FHIR JSON, an element array, such as _subjectType, may be longer than its value array.
+ * Its extra entries belong to implicit trailing null values. These tests check that they are
+ * kept when values are removed or added.
+ */
+test.describe('Elements of implicit trailing null values', () => {
+  let fixture: any;
+
+  test.beforeEach(async ({page}) => {
+    fixture = await importFixture(page, 'primitive-trailing-elements.json');
+  });
+
+  test('are kept when a subjectType value is removed', async ({page}) => {
+    const chips = await showSubjectTypeChips(page);
+    await expect(chips).toHaveCount(2);
+    await chips.filter({hasText: 'Patient'}).getByRole('button').click();
+    await expect(chips).toHaveCount(1);
+
+    const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(output.subjectType).toEqual(['Practitioner', null]);
+    expect(output._subjectType).toEqual(fixture._subjectType.slice(1));
+  });
+
+  test('are kept when a profile is added', async ({page}) => {
+    await PWUtils.expandAdvancedFields(page);
+    const inputs = page.locator('lfb-meta-profile input');
+    await expect(inputs).toHaveCount(1);
+    await page.getByRole('button', {name: 'Add profile'}).click();
+    await expect(inputs).toHaveCount(2);
+    await inputs.nth(1).fill('http://example.org/StructureDefinition/new');
+
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).meta).toEqual({
+      profile: [...fixture.meta.profile, 'http://example.org/StructureDefinition/new', null],
+      _profile: [null, null, ...fixture.meta._profile.slice(1)]
     });
   });
 });

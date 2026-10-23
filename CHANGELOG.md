@@ -37,6 +37,8 @@ This project follows [Semantic Versioning](http://semver.org/).
     it.
   - A non-blocking warning is shown when `templateExtract` extensions at the
     same scope use the same template with identical expressions.
+  - Discarding changes in the template extraction dialog asks for
+    confirmation, as in the other editing dialogs.
 ### Changed
 - The ValueSet editor schema no longer carries its own unused copy of the FHIR
   definitions. Like the item and form-level schemas, it uses the definitions
@@ -59,10 +61,19 @@ This project follows [Semantic Versioning](http://semver.org/).
   editor, e.g. a `subjectType` value, its `_` array entry moves with it. Before,
   the `_` array was left unchanged, so the remaining values got the ids and
   extensions of other values.
+  - Entries of the `_` array beyond the last value, which belong to implicit
+    trailing `null` values, are kept when values are added or removed.
+  - The kept `null` entries are not reported as validation errors, such as
+    "Expected type string but found type null" under Subject type in the
+    form-level advanced fields, and no longer block saving a contained
+    ValueSet.
 - The Continue button of the start page is disabled, with a "Loading..."
   status, until the form builder has finished loading. Choosing to restore the
   autosaved form before that showed an empty page. If the autosaved form
-  cannot be restored, an error is now shown and the start page stays.
+  cannot be restored, an error is now shown and the start page stays. If
+  LHC-Forms fails to load, Continue stays disabled for all the options,
+  including "Start from scratch", because the form builder needs LHC-Forms to
+  work properly.
 - Fixed an NG0100 "expression changed after it was checked" error in
   development mode, caused by the tooltip of long text fields, such as an
   extension URL in the form-level advanced fields. Whether the tooltip is
@@ -73,6 +84,9 @@ This project follows [Semantic Versioning](http://semver.org/).
   export, as the contained resource compatibility warning states. Exporting to
   R4 or STU3 removed their R5-only fields, such as `pages`, and sizes too large
   for those versions; importing changed their `size` to the R5 string format.
+- The confirmation shown when discarding changes to a contained resource, and
+  the error alert of the contained resource dialog, showed a blank header:
+  their white title was shown without the colored background.
 
 ## [12.10.0] 2026-10-20
 ### Added
