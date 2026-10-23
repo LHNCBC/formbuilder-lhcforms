@@ -134,7 +134,7 @@ describe('FhirService', () => {
             const re = new RegExp('^[^\?]*\\?(.+)$').exec(requestOptions.url as string)[1].split('&')
               .reduce((acc, p) => {
                 const nv = p.split('=');
-                requestParams[nv[0]] = nv[1];
+                requestParams[decodeURIComponent(nv[0])] = decodeURIComponent(nv[1]);
                 }, requestParams);
             expect(requestParams.dummyField).toBe('dummySearchTerm');
             expect(requestParams._sort).toBe('-_lastUpdated');
@@ -171,6 +171,29 @@ describe('FhirService', () => {
       expect(bundle).toBe(dummyBundle);
       done();
     }, error: done.fail});
+  });
+
+  it('should send search text with reserved characters as one parameter value', (done) => {
+    const dummyBundle: fhir.Bundle = {resourceType: 'Bundle', type: 'searchset'};
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
+      .and.returnValue(Promise.resolve(dummyBundle));
+
+    service.searchResources('Patient', 'a&b=c #1+d/e', 'name:contains').subscribe({next: () => {
+      const url = reqSpy.calls.mostRecent().args[0]['url'] as string;
+      const params = new URL(url, 'http://example.org/fhir/').searchParams;
+      expect(params.get('name:contains')).toBe('a&b=c #1+d/e');
+      expect(params.get('_format')).toBe('application/fhir+json');
+      expect(params.has('b')).toBeFalse();
+      expect(url).not.toContain('#');
+      expect(url).toContain('name:contains=');
+      done();
+    }, error: done.fail});
+  });
+
+  it('should encode the entries of an array value and join them with a literal comma', () => {
+    expect(service.queryToString({_sort: ['-_lastUpdated', 'a,b'], _count: 20}))
+      .toBe('_sort=-_lastUpdated,a%2Cb&_count=20');
+    expect(service.queryToString(null)).toBeNull();
   });
 
   it('should emit, not throw, an error for an invalid resource type', () => {

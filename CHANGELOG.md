@@ -87,6 +87,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 - The confirmation shown when discarding changes to a contained resource, and
   the error alert of the contained resource dialog, showed a blank header:
   their white title was shown without the colored background.
+- FHIR server search text with reserved characters, such as `&`, `#`, `+` or
+  `=`, is sent as text. Before, the search was split or cut off at them, so the
+  server searched for something else.
 
 ## [12.10.0] 2026-10-20
 ### Added

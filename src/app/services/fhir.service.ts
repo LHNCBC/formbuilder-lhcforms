@@ -360,14 +360,25 @@ export class FhirService {
       }
     }
 
+    /**
+     * Build the query string of a FHIR search URL. Names and values are encoded as URI
+     * components, so search text with reserved characters, e.g. '&', '#', '+' or '=', is
+     * sent as text. The ':' of a modifier in a name, e.g. title:contains, is kept as is; it
+     * is valid in a query string. The entries of an array value are encoded separately and
+     * joined with a literal ',', which FHIR search reads as OR.
+     *
+     * @param obj - Query parameters by name. A value may be a string or an array of strings.
+     * @returns Query string without the leading '?', or null if obj is missing.
+     */
     queryToString(obj: any): string {
       let ret: string = null;
       if(obj) {
         ret = Object.entries(obj).map(([k, v]) => {
-          if(Array.isArray(v)) {
-            v = (v as Array<string>).join(',');
-          }
-           return encodeURI(k)+'='+encodeURI(v as string);
+          const name = encodeURIComponent(k).replace(/%3A/gi, ':');
+          const value = Array.isArray(v)
+            ? v.map((entry) => encodeURIComponent(String(entry))).join(',')
+            : encodeURIComponent(String(v));
+          return name + '=' + value;
         }).join('&');
       }
       return ret;
