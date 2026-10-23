@@ -1,0 +1,26 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"],
+    "_profile": [
+      null,
+      {"id": "profile-suffix"}
+    ]
+  },
+  "status": "draft",
+  "title": "Primitive trailing elements",
+  "subjectType": ["Patient", "Practitioner"],
+  "_subjectType": [
+    null,
+    {"id": "subject-type-2"},
+    {"extension": [{"url": "http://example.org/note", "valueString": "subjectType suffix"}]}
+  ],
+  "item": [
+    {
+      "linkId": "q1",
+      "text": "Name",
+      "type": "string"
+    }
+  ]
+}
+
