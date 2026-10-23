@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.10.0] 2026-10-13
+## [12.11.0] 2026-10-23
 ### Added
 - Contained resources of any FHIR resource type. The Add menu of the form-level
   Contained resources table can create a ValueSet, as before, upload a resource
@@ -73,6 +73,23 @@ This project follows [Semantic Versioning](http://semver.org/).
   export, as the contained resource compatibility warning states. Exporting to
   R4 or STU3 removed their R5-only fields, such as `pages`, and sizes too large
   for those versions; importing changed their `size` to the R5 string format.
+
+## [12.10.0] 2026-10-20
+### Added
+- Support for choosing the LHC-Forms version to load from the NLM server, or
+  loading LHC-Forms from a deployment-hosted copy, configured with `version`
+  and `source` in `assets/lforms-config.json5`. Without that configuration,
+  the latest LHC-Forms version is loaded from the NLM server as before. The
+  configured version must be 37.0.0 or later, and `source` may be the server
+  root `/`. A warning is logged if the loaded version differs from the
+  configured one. See README.md.
+- Added form-level support for Questionnaire `jurisdiction` in the advanced fields,
+  including multiple jurisdictions with text and multiple codings per jurisdiction.
+
+### Fixed
+- LHC-Forms loading failures, including an invalid `assets/lforms-config.json5`,
+  were reported with the misleading prefix "JSON5 resources failed to load".
+  They are now reported as "Failed to load LHC-Forms".
 
 ## [12.9.0] 2026-10-06
 ### Added
