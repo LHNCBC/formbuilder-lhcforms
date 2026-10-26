@@ -28,6 +28,9 @@ export interface SearchField {
   display: string,
   searchFieldPlaceholder: string
   supportedVersions?: FHIR_VERSION_TYPE []; // If not defined, assume all versions are supported.
+  // FHIR search parameter type, e.g. 'string' or 'token', which decides how the search text
+  // is escaped. If not defined, 'string' is assumed.
+  type?: string;
 }
 
 export interface FhirResourceSelection {
@@ -83,19 +86,19 @@ export class FhirSearchDlgComponent {
    * Define a structure to associate fhir search field, its modifiers, display and search input field placeholder.
    */
   _searchFieldList: SearchField [] = [
-    {field: '_content', display: 'Any text field', searchFieldPlaceholder: 'Search any text field'},
-    {field: 'questionnaire-code', display: 'Questionnaire code', searchFieldPlaceholder: 'Search questionnaire code', supportedVersions: ['R5']},
-    {field: 'code', display: 'Item code', searchFieldPlaceholder: 'Search item code', supportedVersions: ['STU3', 'R4']},
-    {field: 'item-code', display: 'Item code', searchFieldPlaceholder: 'Search item code', supportedVersions: ['R5']},
-    {field: 'title:contains', display: 'Form title only', searchFieldPlaceholder: 'Search form title'},
-    {field: 'name:contains', display: 'Form name only', searchFieldPlaceholder: 'Search form name'}
+    {field: '_content', display: 'Any text field', searchFieldPlaceholder: 'Search any text field', type: 'string'},
+    {field: 'questionnaire-code', display: 'Questionnaire code', searchFieldPlaceholder: 'Search questionnaire code', supportedVersions: ['R5'], type: 'token'},
+    {field: 'code', display: 'Item code', searchFieldPlaceholder: 'Search item code', supportedVersions: ['STU3', 'R4'], type: 'token'},
+    {field: 'item-code', display: 'Item code', searchFieldPlaceholder: 'Search item code', supportedVersions: ['R5'], type: 'token'},
+    {field: 'title:contains', display: 'Form title only', searchFieldPlaceholder: 'Search form title', type: 'string'},
+    {field: 'name:contains', display: 'Form name only', searchFieldPlaceholder: 'Search form name', type: 'string'}
   ];
 
   // Shown in contained-resource mode only when the server advertises the parameter.
   private readonly contentSearchField: SearchField =
-    {field: '_content', display: 'Any text field', searchFieldPlaceholder: 'Search any text field'};
+    {field: '_content', display: 'Any text field', searchFieldPlaceholder: 'Search any text field', type: 'string'};
   private readonly idSearchField: SearchField =
-    {field: '_id', display: 'Resource ID', searchFieldPlaceholder: 'Search resource ID'};
+    {field: '_id', display: 'Resource ID', searchFieldPlaceholder: 'Search resource ID', type: 'token'};
 
   // Emits when the resource type or server changes, to cancel pending requests.
   private readonly _contextChange$ = new Subject<void>();
@@ -315,12 +318,13 @@ export class FhirSearchDlgComponent {
    */
   private _search(): Observable<fhir.Bundle> {
     return this.mode === 'questionnaire'
-      ? this.fhirService.search(this.searchTerm, this.searchField.field, {_count: this.pageSize})
+      ? this.fhirService.search(this.searchTerm, this.searchField.field, {_count: this.pageSize}, this.searchField.type)
       : this.fhirService.searchResources(
         this.resourceType,
         this.searchTerm,
         this.searchField.field,
-        {_count: this.pageSize}
+        {_count: this.pageSize},
+        this.searchField.type
       );
   }
 
@@ -483,7 +487,8 @@ export class FhirSearchDlgComponent {
       .map((parameter) => ({
         field: parameter.name,
         display: `${parameter.name}${parameter.type ? ` (${parameter.type})` : ''}`,
-        searchFieldPlaceholder: `Search ${parameter.name}`
+        searchFieldPlaceholder: `Search ${parameter.name}`,
+        type: parameter.type
       }));
     const fields = [
       ...(advertisedNames.has('_content') ? [this.contentSearchField] : []),

@@ -79,7 +79,7 @@ describe('FhirSearchDlgComponent', () => {
       }}]
     } as any;
     const searchSpy = spyOn(component.fhirService, 'searchResources')
-      .withArgs('Practitioner', 'Jane', '_content', {_count: 20})
+      .withArgs('Practitioner', 'Jane', '_content', {_count: 20}, 'string')
       .and.returnValue(of(bundle));
     const closeSpy = spyOn(component, 'close');
 
@@ -130,6 +130,26 @@ describe('FhirSearchDlgComponent', () => {
       expect(component.canSearch()).toBe(fields.length > 0);
     }));
   });
+
+  it('should pass the type of the selected search parameter, which decides the escaping', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([{
+      resourceType: 'Observation',
+      searchParameters: [...contentAndIdParameters, {name: 'code', type: 'token'}]
+    }]));
+    const searchSpy = spyOn(component.fhirService, 'searchResources')
+      .and.returnValue(of({resourceType: 'Bundle', type: 'searchset'} as any));
+    component.configureForContainedResourceImport();
+    flush();
+    component.onResourceTypeChange('Observation');
+    component.searchField = component.searchFieldList.find((field) => field.field === 'code');
+    component.inputTerm = 'http://loinc.org|8867-4';
+    component.searchInput();
+    flush();
+
+    expect(searchSpy).toHaveBeenCalledOnceWith(
+      'Observation', 'http://loinc.org|8867-4', 'code', {_count: 20}, 'token'
+    );
+  }));
 
   it('should reset the search field when the new resource type does not offer it', fakeAsync(() => {
     spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([
@@ -271,7 +291,9 @@ describe('FhirSearchDlgComponent', () => {
     .forEach((strategy) => {
     it(`should search with ${strategy.field} option (${strategy.baseUrl.replace(/https?:\/\/.+\/baseD?/, '')})`, fakeAsync(() => {
       const dummyBundle = TestUtil.createDummySearchBundle({total: strategy.total, baseUrl: strategy.baseUrl});
-      const searchSpy = spyOn(component.fhirService, 'search').withArgs(strategy.term, strategy.field, {_count: 20})
+      // The code fields are token parameters; the others are string parameters.
+      const searchSpy = spyOn(component.fhirService, 'search')
+        .withArgs(strategy.term, strategy.field, {_count: 20}, strategy.field.endsWith('code') ? 'token' : 'string')
         .and.returnValue(of(dummyBundle));
       const searchFieldEl = fixture.debugElement.nativeElement.querySelector('#searchField1');
       TestUtil.selectText(fixture.debugElement.nativeElement.querySelector('#SelectFHIRServer1'), strategy.baseUrl);

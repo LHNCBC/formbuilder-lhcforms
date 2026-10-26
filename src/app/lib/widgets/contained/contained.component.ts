@@ -196,8 +196,9 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   /**
-   * Prevent deletion from leaving a dangling local Usage Context or template-based
-   * extraction reference. Referenced rows show a warning instead of the confirmation.
+   * Prevent deletion from leaving a dangling local reference, e.g. from Usage Context,
+   * template-based extraction, an answerValueSet, an extension's valueReference, or another
+   * contained resource. Referenced rows show a warning instead of the confirmation.
    *
    * @param index - Index of the contained resource to delete.
    * @param message - Standard confirmation message used for unreferenced rows.
@@ -205,25 +206,41 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   override confirmRemoveProperty(index: number, message = 'Are you sure you want to delete this row?'): void {
     const resourceId = this.formProperty?.properties?.[index]?.value?.id as string | undefined;
     if(this.isReferencedByUsageContext(resourceId)) {
-      this.dialogService.showDialog(
-        MessageType.WARNING,
-        'Contained resource is in use',
-        `The contained resource #${resourceId} is referenced by Usage Context and cannot be deleted.`,
-        this.referencedResourceButtons
+      this.showReferencedResourceWarning(
+        `The contained resource #${resourceId} is referenced by Usage Context and cannot be deleted.`
       );
       return;
     }
     if(this.isReferencedByTemplateExtraction(resourceId)) {
-      this.dialogService.showDialog(
-        MessageType.WARNING,
-        'Contained resource is in use',
-        `The contained resource #${resourceId} is referenced by Template-based extraction and cannot be deleted.`,
-        this.referencedResourceButtons
+      this.showReferencedResourceWarning(
+        `The contained resource #${resourceId} is referenced by Template-based extraction and cannot be deleted.`
+      );
+      return;
+    }
+    const referencePath = this.findLocalReferencePath(resourceId);
+    if(referencePath) {
+      this.showReferencedResourceWarning(
+        `The contained resource #${resourceId} is referenced at ` +
+        `${this.containedResourceService.escapeHtml(referencePath)} and cannot be deleted.`
       );
       return;
     }
 
     super.confirmRemoveProperty(index, message);
+  }
+
+  /**
+   * Explain why a referenced contained resource cannot be deleted.
+   *
+   * @param message - HTML message; values from the Questionnaire must already be escaped.
+   */
+  private showReferencedResourceWarning(message: string): void {
+    this.dialogService.showDialog(
+      MessageType.WARNING,
+      'Contained resource is in use',
+      message,
+      this.referencedResourceButtons
+    );
   }
 
   /**
@@ -263,8 +280,12 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
 
   /**
    * Select a FHIR server and import one searched resource into Questionnaire.contained.
+   * The server dialogs change the shared FHIR server, which is also where the questionnaire
+   * is saved, so the original server is restored afterwards, whether or not a resource
+   * was imported.
    */
   private async importResourceFromFHIRServer(): Promise<void> {
+    const originalServer = this.fhirService.getFhirServer();
     try {
       const serverSelected = await this.modalService
         .open(FhirServersDlgComponent, {size: 'lg'})
@@ -292,6 +313,11 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     }
     catch(error) {
       this.showImportError(error instanceof Error ? error.message : String(error));
+    }
+    finally {
+      if(this.fhirService.getFhirServer() !== originalServer) {
+        this.fhirService.setFhirServer(originalServer);
+      }
     }
   }
 
@@ -495,16 +521,106 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
 
   /**
    * Check whether template-based extraction targets a contained resource id, at the
-   * Questionnaire root or on any item. This table is in the form-level editor, whose
-   * model excludes items, so items are read from the current Questionnaire.
+   * Questionnaire root or on any item.
    *
    * @param resourceId - Contained resource id.
    * @returns True when a template extraction targets the resource.
    */
   private isReferencedByTemplateExtraction(resourceId: string | undefined): boolean {
-    return hasTemplateExtractReference(
-      this.sharedObjectService.composeQuestionnaire(this.formProperty?.findRoot()?.value),
-      resourceId
-    );
+    return hasTemplateExtractReference(this.getCurrentQuestionnaire(), resourceId);
+  }
+
+  /**
+   * Get the current Questionnaire. This table is in the form-level editor, whose model
+   * excludes items, so items are read from the current Questionnaire.
+   *
+   * @returns Form-level fields combined with the current items.
+   */
+  private getCurrentQuestionnaire(): fhir.Questionnaire {
+    return this.sharedObjectService.composeQuestionnaire(this.formProperty?.findRoot()?.value);
+  }
+
+  /**
+   * Find a local reference to a contained resource anywhere in the current Questionnaire,
+   * including its items and the other contained resources. A local reference is a string
+   * value '#id', such as Reference.reference or a canonical such as answerValueSet.
+   * The resource itself and form builder fields, whose names start with '__$', are skipped.
+   *
+   * @param resourceId - Contained resource id.
+   * @returns FHIRPath-like location of the first reference found, e.g.
+   *   "Questionnaire.item.where(linkId='q1').answerValueSet", or '' when there is none.
+   */
+  private findLocalReferencePath(resourceId: string | undefined): string {
+    if(!resourceId) {
+      return '';
+    }
+    const reference = `#${resourceId}`;
+
+    /**
+     * Quote a string as a FHIRPath string literal.
+     *
+     * @param value - String to quote.
+     * @returns Quoted and escaped string.
+     */
+    const quote = (value: string): string => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+
+    /**
+     * Get the path of an array element: an extension by its url, an item by its linkId,
+     * a contained resource by its id, or another element by its index.
+     *
+     * @param arrayPath - Path of the array.
+     * @param element - Array element.
+     * @param index - Index of the element.
+     * @returns Path of the element.
+     */
+    const getElementPath = (arrayPath: string, element: any, index: number): string => {
+      if(/\.(modifierExtension|extension)$/.test(arrayPath) && typeof element?.url === 'string') {
+        return `${arrayPath}(${quote(element.url)})`;
+      }
+      if(typeof element?.linkId === 'string') {
+        return `${arrayPath}.where(linkId=${quote(element.linkId)})`;
+      }
+      if(typeof element?.resourceType === 'string' && typeof element?.id === 'string') {
+        return `${arrayPath}.where(id=${quote(element.id)})`;
+      }
+      return `${arrayPath}[${index}]`;
+    };
+
+    /**
+     * Search a node and its descendants for the reference.
+     *
+     * @param node - JSON value to search.
+     * @param path - Path of the node.
+     * @returns Path of the first reference found, or ''.
+     */
+    const search = (node: unknown, path: string): string => {
+      if(typeof node === 'string') {
+        return node === reference ? path : '';
+      }
+      if(Array.isArray(node)) {
+        for(let index = 0; index < node.length; index++) {
+          const element = node[index];
+          if(path === 'Questionnaire.contained' && element?.id === resourceId) {
+            continue;
+          }
+          const found = search(element, getElementPath(path, element, index));
+          if(found) {
+            return found;
+          }
+        }
+        return '';
+      }
+      if(node && typeof node === 'object') {
+        for(const [key, value] of Object.entries(node)) {
+          const found = key.startsWith('__$') ? '' : search(value, `${path}.${key}`);
+          if(found) {
+            return found;
+          }
+        }
+      }
+      return '';
+    };
+
+    return search(this.getCurrentQuestionnaire(), 'Questionnaire');
   }
 }

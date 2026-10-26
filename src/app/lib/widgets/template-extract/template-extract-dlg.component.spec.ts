@@ -358,6 +358,34 @@ describe('TemplateExtractDlgComponent', () => {
     expect(dialogRef.close).toHaveBeenCalledOnceWith(false);
   });
 
+  it('removes an optional expression with its Clear button', async () => {
+    await createDialog();
+    const element: HTMLElement = fixture.nativeElement;
+
+    /**
+     * Find the Clear button of an expression field.
+     * @param field - Expression field label.
+     * @returns The Clear button.
+     */
+    const clearButton = (field: string): HTMLButtonElement =>
+      element.querySelector(`button[aria-label="Clear ${field} FHIRPath expression"]`);
+    expect(clearButton('fullUrl').disabled).toBeFalse();
+    expect(clearButton('resourceId').disabled).toBeTrue();
+
+    clearButton('fullUrl').click();
+    fixture.detectChanges();
+
+    expect(component.model.fullUrl).toBe('');
+    expect(element.querySelector<HTMLInputElement>('#template-extract-fullUrl').value).toBe('');
+    expect(clearButton('fullUrl').disabled).toBeTrue();
+    expect(component.hasChanges()).toBeTrue();
+    component.save();
+    expect(dialogRef.close).toHaveBeenCalledOnceWith({
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [{url: 'template', valueReference: {reference: '#patient-template'}}]
+    });
+  });
+
   describe('discarding changes', () => {
     let confirmInputs: {options?: MessageDlgOptions};
     let confirmClosed: Subject<string>;

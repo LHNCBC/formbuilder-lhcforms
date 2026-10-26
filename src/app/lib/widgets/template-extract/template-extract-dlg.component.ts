@@ -259,6 +259,15 @@ export class TemplateExtractDlgComponent implements OnInit {
   }
 
   /**
+   * Remove an optional expression from the draft. The expression editor requires an
+   * expression, so it cannot be used to remove one.
+   * @param field - templateExtract child slice to clear.
+   */
+  clearExpression(field: TemplateExtractExpressionUrl): void {
+    this.model[field] = '';
+  }
+
+  /**
    * Report a failure to open or read the expression editor, leaving the draft unchanged.
    * @param error - Error thrown while preparing or reading the editor Questionnaire.
    */

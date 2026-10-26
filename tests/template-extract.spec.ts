@@ -371,6 +371,77 @@ test.describe('Template-based extraction', () => {
     await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'root-second'");
   });
 
+  test('keeps a metadata-only expression child when an extraction is saved unchanged', async ({page}) => {
+    const original = await PWUtils.uploadFile(page, 'template-extract-metadata-only-expression.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    await widget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue('');
+    await expect(dialog.getByRole('button', {name: 'Clear fullUrl FHIRPath expression'})).toBeDisabled();
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toBeHidden();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.extension).toEqual(original.extension);
+  });
+
+  test('removes an optional expression with its Clear button', async ({page}) => {
+    const original = await PWUtils.uploadFile(page, 'template-extract-metadata-only-expression.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    await widget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    const resourceId = dialog.getByRole('textbox', {name: 'resourceId FHIRPath expression'});
+    await expect(resourceId).toHaveValue("'patient-1'");
+
+    await dialog.getByRole('button', {name: 'Clear resourceId FHIRPath expression'}).click();
+    await expect(resourceId).toHaveValue('');
+    await expect(dialog.getByRole('button', {name: 'Clear resourceId FHIRPath expression'})).toBeDisabled();
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toBeHidden();
+    await expect(widget.locator('tbody > tr')).not.toContainText('patient-1');
+
+    // The extraction is kept without resourceId; the metadata-only fullUrl child is unchanged.
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.extension).toEqual([{
+      ...original.extension[0],
+      extension: original.extension[0].extension.slice(0, 2)
+    }]);
+  });
+
+  test('blocks deleting contained resources that are referenced by templateExtractBundle or answerValueSet', async ({page}) => {
+    const original = await PWUtils.uploadFile(page, 'contained-local-references.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    const inUseDialog = page.getByRole('dialog', {name: 'Contained resource is in use'});
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(3);
+
+    await containedTable.locator('tbody > tr').nth(0).getByRole('button', {name: 'Remove this row'}).click();
+    await expect(inUseDialog).toContainText(
+      'The contained resource #bundle-template is referenced by Template-based extraction and cannot be deleted.'
+    );
+    await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+    await expect(inUseDialog).toHaveCount(0);
+
+    await containedTable.locator('tbody > tr').nth(1).getByRole('button', {name: 'Remove this row'}).click();
+    await expect(inUseDialog).toContainText(
+      "The contained resource #colors is referenced at Questionnaire.item.where(linkId='color').answerValueSet " +
+      'and cannot be deleted.'
+    );
+    await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+    await expect(inUseDialog).toHaveCount(0);
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(3);
+
+    // An unreferenced resource is deleted after the usual confirmation.
+    await containedTable.locator('tbody > tr').nth(2).getByRole('button', {name: 'Remove this row'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(2);
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.contained).toEqual(original.contained.slice(0, 2));
+    expect(questionnaire.extension).toEqual(original.extension);
+  });
+
   test('confirms discarding a new extraction with an expression, and closes an unchanged one directly', async ({page}) => {
     await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#pt'}));
     const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');

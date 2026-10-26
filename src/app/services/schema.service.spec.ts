@@ -191,7 +191,11 @@ describe('SchemaService', () => {
     }
     expect(extSchema.properties.valueAttachment.properties._url.widget.id).toBe('hidden');
     expect(itemSchema.properties._type).toBeUndefined();
-    expect(extSchema.properties._valueString).toBeUndefined();
+    // Extension defines its primitive companions itself; Attachment preparation adds none.
+    expect(extSchema.properties._valueString).toEqual(jasmine.objectContaining({
+      $ref: '#/definitions/Element', widget: {id: 'hidden'}
+    }));
+    expect(extSchema.properties._valueAttachment).toBeUndefined();
   });
 
   describe('element arrays of repeating primitive fields', () => {

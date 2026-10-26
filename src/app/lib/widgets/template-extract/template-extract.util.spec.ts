@@ -1,5 +1,6 @@
+import copy from 'fast-copy';
 import fhir from 'fhir/r4';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
 import {
   buildTemplateExtractExtension,
   findDuplicateTemplateExtractGroups,
@@ -130,6 +131,78 @@ describe('templateExtract utilities', () => {
     expect(hasTemplateExtractReference(questionnaire, 'root-template')).toBeTrue();
     expect(hasTemplateExtractReference(questionnaire, 'item-template')).toBeTrue();
     expect(hasTemplateExtractReference(questionnaire, 'other')).toBeFalse();
+  });
+
+  it('finds templateExtractBundle references at the root and on items', () => {
+    /**
+     * Build a templateExtractBundle extension.
+     *
+     * @param reference - Local reference to the Bundle template, e.g. '#root-bundle'.
+     * @returns The templateExtractBundle extension.
+     */
+    const bundleExtension = (reference: string): fhir.Extension => ({
+      url: EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE,
+      valueReference: {reference}
+    });
+    const questionnaire: fhir.Questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      extension: [bundleExtension('#root-bundle')],
+      item: [{linkId: 'q', text: 'Question', type: 'string', extension: [bundleExtension('#item-bundle')]}]
+    };
+
+    expect(hasTemplateExtractReference(questionnaire, 'root-bundle')).toBeTrue();
+    expect(hasTemplateExtractReference(questionnaire, 'item-bundle')).toBeTrue();
+    expect(hasTemplateExtractReference(questionnaire, 'other')).toBeFalse();
+  });
+
+  describe('expression children without expression text', () => {
+    const dataAbsentReason: fhir.Element = {
+      extension: [{url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason', valueCode: 'unknown'}]
+    };
+    const metadataOnlyChild = {url: 'fullUrl', id: 'full-url', _valueString: dataAbsentReason} as fhir.Extension;
+
+    /**
+     * Build a templateExtract extension with a metadata-only fullUrl child.
+     *
+     * @returns The templateExtract extension.
+     */
+    const createExtension = (): fhir.Extension => ({
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [
+        {url: 'template', valueReference: {reference: '#patient'}},
+        copy(metadataOnlyChild),
+        {url: 'resourceId', valueString: "'patient-1'"}
+      ]
+    });
+
+    it('keeps an unchanged metadata-only child', () => {
+      const extension = createExtension();
+      const model = parseTemplateExtractExtension(extension);
+      expect(model.fullUrl).toBe('');
+
+      expect(buildTemplateExtractExtension(model)).toEqual(extension);
+    });
+
+    it('keeps the metadata when an expression is added to the child', () => {
+      const model = parseTemplateExtractExtension(createExtension());
+      model.fullUrl = '%patientId';
+
+      expect(buildTemplateExtractExtension(model).extension[1]).toEqual({
+        ...metadataOnlyChild,
+        valueString: '%patientId'
+      } as fhir.Extension);
+    });
+
+    it('removes a cleared child that had an expression, with its metadata', () => {
+      const extension = createExtension();
+      (extension.extension[2] as any)._valueString = dataAbsentReason;
+      const model = parseTemplateExtractExtension(extension);
+      model.resourceId = '';
+
+      const rebuilt = buildTemplateExtractExtension(model);
+      expect(rebuilt.extension.map(child => child.url)).toEqual(['template', 'fullUrl']);
+    });
   });
 
   describe('duplicate detection', () => {

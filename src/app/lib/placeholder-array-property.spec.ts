@@ -401,6 +401,108 @@ describe('PlaceholderArrayProperty', () => {
     expect(removePlaceholderErrors([errors[0]], value)).toBeNull();
     expect(removePlaceholderErrors(null, value)).toBeNull();
   });
+
+  describe('Extension properties', () => {
+    const extensionSchema: ISchema = {
+      type: 'object',
+      properties: {
+        extension: {type: 'array', items: {$ref: '#/definitions/Extension'}},
+        address: {type: 'object', properties: {text: {type: 'string'}, city: {type: 'string'}}}
+      },
+      definitions: {
+        Element: {
+          type: 'object',
+          properties: {
+            id: {type: 'string'},
+            extension: {type: 'array', items: {$ref: '#/definitions/Extension'}}
+          },
+          additionalProperties: false
+        },
+        Extension: {
+          type: 'object',
+          properties: {
+            url: {type: 'string'},
+            extension: {type: 'array', items: {$ref: '#/definitions/Extension'}},
+            valueAddress: {type: 'object', properties: {text: {type: 'string'}}},
+            valueAge: {type: 'object', properties: {value: {type: 'number'}}},
+            valueCode: {type: 'string'},
+            valueInteger: {type: 'integer'},
+            valueString: {type: 'string'},
+            _valueString: {$ref: '#/definitions/Element'}
+          },
+          additionalProperties: false
+        }
+      }
+    };
+    const dataAbsentReason = {
+      extension: [{url: 'http://hl7.org/fhir/StructureDefinition/data-absent-reason', valueCode: 'unknown'}]
+    };
+
+    /**
+     * Load an extension and return its property.
+     *
+     * @param extension - Extension to load.
+     * @returns The root form property and the property of the extension.
+     */
+    function loadExtension(extension: object): {root: PropertyGroup; property: PropertyGroup} {
+      const root = createForm({extension: [extension]}, extensionSchema);
+      const property = (root.getProperty('extension') as ArrayProperty).properties[0] as PropertyGroup;
+      return {root, property};
+    }
+
+    /**
+     * Get the names of the child properties of a property.
+     *
+     * @param property - Object property.
+     * @returns Child property names.
+     */
+    function childNames(property: PropertyGroup): string[] {
+      return Object.keys(property.properties as object);
+    }
+
+    it('should keep a _valueString added by a reset', () => {
+      const {root, property} = loadExtension({url: 'http://example.org/x', valueString: 'a'});
+      expect(childNames(property)).not.toContain('_valueString');
+      const value = {url: 'http://example.org/x', valueString: 'b', _valueString: dataAbsentReason};
+
+      property.reset(value, false);
+
+      expect(root.value.extension).toEqual([value]);
+    });
+
+    it('should keep a different value[x] set by a reset', () => {
+      const {root, property} = loadExtension({url: 'http://example.org/x', valueString: 'a'});
+
+      property.reset({url: 'http://example.org/x', valueInteger: 3}, false);
+
+      expect(root.value.extension).toEqual([{url: 'http://example.org/x', valueInteger: 3}]);
+    });
+
+    it('should create child properties only for the fields of the value', () => {
+      const {property} = loadExtension({url: 'http://example.org/x', valueString: 'a'});
+
+      property.reset({url: 'http://example.org/x', _valueString: dataAbsentReason}, false);
+
+      expect(childNames(property).sort()).toEqual(['_valueString', 'url', 'valueString']);
+    });
+
+    it('should not add fields that the Extension schema does not define', () => {
+      const {root, property} = loadExtension({url: 'http://example.org/x', valueString: 'a'});
+
+      property.reset({url: 'http://example.org/x', valueString: 'a', unknown: 'x'}, false);
+
+      expect(childNames(property)).not.toContain('unknown');
+      expect(root.value.extension).toEqual([{url: 'http://example.org/x', valueString: 'a'}]);
+    });
+
+    it('should not change the reset of other objects', () => {
+      const root = createForm({address: {text: 'a'}}, extensionSchema);
+
+      root.getProperty('address').reset({city: 'b'}, false);
+
+      expect(root.value.address).toEqual({city: 'b'});
+    });
+  });
 });
 
 

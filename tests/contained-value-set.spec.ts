@@ -619,4 +619,47 @@ test.describe('Contained resource import from a FHIR server', () => {
       name: [{family: 'Roe', given: ['Jane']}]
     });
   });
+
+  test('restores the questionnaire server after choosing another server for an import', async ({page}) => {
+    const r5Endpoint = 'https://lforms-fhir.nlm.nih.gov/baseR5';
+    const r4Endpoint = 'https://lforms-fhir.nlm.nih.gov/baseR4';
+    await page.route(/\/baseR4\/metadata\?/, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/fhir+json',
+        json: {
+          resourceType: 'CapabilityStatement',
+          status: 'active',
+          date: '2026-09-02',
+          kind: 'instance',
+          fhirVersion: '4.0.1',
+          format: ['json'],
+          rest: [{mode: 'server', resource: [{type: 'Practitioner', searchParam: [{name: 'name', type: 'string'}]}]}]
+        }
+      });
+    });
+    const serverDialog = page.locator('lfb-fhir-servers-dlg');
+
+    /** Open the server dialog of the contained-resource import. */
+    async function openServerDialog(): Promise<void> {
+      await page.getByRole('button', {name: 'Add contained resource'}).click();
+      await page.getByRole('button', {name: 'Import from a FHIR server…'}).click();
+      await expect(serverDialog).toBeVisible();
+    }
+
+    await openServerDialog();
+    await expect(serverDialog.locator(`input[id="${r5Endpoint}"]`)).toBeChecked();
+    await serverDialog.locator(`input[id="${r4Endpoint}"]`).check();
+    await serverDialog.getByRole('button', {name: 'Continue'}).click();
+    const searchDialog = page.getByRole('dialog', {name: 'Import a contained resource'});
+    await expect(searchDialog).toBeVisible();
+    await searchDialog.getByRole('button', {name: 'Close'}).click();
+    await expect(searchDialog).toHaveCount(0);
+
+    // The next server choice starts from the questionnaire server again.
+    await openServerDialog();
+    await expect(serverDialog.locator(`input[id="${r5Endpoint}"]`)).toBeChecked();
+    await serverDialog.getByRole('button', {name: 'Cancel'}).click();
+    await expect(serverDialog).toHaveCount(0);
+  });
 });

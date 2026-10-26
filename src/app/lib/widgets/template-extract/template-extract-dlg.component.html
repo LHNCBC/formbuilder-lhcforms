@@ -45,7 +45,7 @@
 
         <div id="template-extract-bundle-fields" [ngbCollapse]="bundleFieldsCollapsed">
           <div class="p-3 pb-0">
-            <p class="form-text mt-0">Use the expression editor to create valid FHIRPath. Expression fields are read-only here.</p>
+            <p class="form-text mt-0">Use the expression editor to create valid FHIRPath. Expression fields are read-only here; use Clear to remove an expression.</p>
 
             @for (field of expressionFields; track field.id) {
               <div class="mb-3 expression-field">
@@ -66,6 +66,16 @@
                   >
                     <mat-icon aria-hidden="true">edit</mat-icon>
                     <span>Create/edit expression</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    [disabled]="!model[field.id]"
+                    (click)="clearExpression(field.id)"
+                    [attr.aria-label]="'Clear '+field.label+' FHIRPath expression'"
+                  >
+                    <mat-icon aria-hidden="true">clear</mat-icon>
+                    <span>Clear</span>
                   </button>
                 </div>
                 <div class="form-text">{{field.description}}</div>

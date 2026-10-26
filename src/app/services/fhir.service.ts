@@ -195,22 +195,30 @@ export class FhirService {
     /**
      * Search Questionnaires on the current FHIR server.
      *
-     * @param searchStr - Search term.
+     * @param searchStr - Search term, matched as text; see escapeSearchValue().
      * @param searchField - Questionnaire search parameter name.
      * @param otherQueryParams - Additional or overriding query parameters.
+     * @param searchFieldType - FHIR search parameter type of searchField, e.g. 'string' or 'token'.
      * @returns Search-set Bundle returned by the selected FHIR server.
      */
-    search(searchStr: string, searchField?: string, otherQueryParams?: any): Observable<fhir.Bundle> {
-      return this.searchResources('Questionnaire', searchStr, searchField, otherQueryParams);
+    search(
+      searchStr: string,
+      searchField?: string,
+      otherQueryParams?: any,
+      searchFieldType = 'string'
+    ): Observable<fhir.Bundle> {
+      return this.searchResources('Questionnaire', searchStr, searchField, otherQueryParams, searchFieldType);
     };
 
     /**
      * Search resources of a selected type on the current FHIR server.
      *
      * @param resourceType - FHIR resource type used in the REST path.
-     * @param searchStr - Search term.
+     * @param searchStr - Search term, matched as text; see escapeSearchValue().
      * @param searchField - FHIR search parameter name.
-     * @param otherQueryParams - Additional or overriding query parameters.
+     * @param otherQueryParams - Additional or overriding query parameters. Their values are
+     *   not escaped.
+     * @param searchFieldType - FHIR search parameter type of searchField, e.g. 'string' or 'token'.
      * @returns Search-set Bundle returned by the selected FHIR server, or an observable that
      *   errors when the resource type is invalid.
      */
@@ -218,7 +226,8 @@ export class FhirService {
       resourceType: string,
       searchStr: string,
       searchField?: string,
-      otherQueryParams?: any
+      otherQueryParams?: any,
+      searchFieldType = 'string'
     ): Observable<fhir.Bundle> {
       const resourceTypeError = this.getResourceTypeError(resourceType);
       if(resourceTypeError) {
@@ -233,13 +242,29 @@ export class FhirService {
 
       if(searchStr) {
         // query[searchField+':contains'] = searchStr;
-        query[searchField] = searchStr;
+        query[searchField] = this.escapeSearchValue(searchStr, searchFieldType);
       }
 
       return this.promiseToObservable(this.smartClient.request<fhir.Bundle>({
         url: `${resourceType}?${this.queryToString(query)}`
       }));
     };
+
+    /**
+     * Apply FHIR search escaping to a search value, so that it is matched as text. A '\' is
+     * added before '\', ',' and '$', which FHIR search reads as escape, OR and composite
+     * separators, and, for string parameters, before '|'. A '|' is kept for other parameter
+     * types, e.g. system|code of a token or url|version of a canonical.
+     * This is separate from the percent-encoding that queryToString() applies.
+     *
+     * @param value - Search value as entered.
+     * @param parameterType - FHIR search parameter type, e.g. 'string' or 'token'.
+     * @returns Escaped search value.
+     */
+    escapeSearchValue(value: string, parameterType = 'string'): string {
+      const specialCharacters = parameterType === 'string' ? /[\\,$|]/g : /[\\,$]/g;
+      return value.replace(specialCharacters, '\\$&');
+    }
 
     /**
      * Get searchable resource types and parameters advertised by the current server.
@@ -363,9 +388,11 @@ export class FhirService {
     /**
      * Build the query string of a FHIR search URL. Names and values are encoded as URI
      * components, so search text with reserved characters, e.g. '&', '#', '+' or '=', is
-     * sent as text. The ':' of a modifier in a name, e.g. title:contains, is kept as is; it
-     * is valid in a query string. The entries of an array value are encoded separately and
+     * sent as one value. The ':' of a modifier in a name, e.g. title:contains, is kept as is;
+     * it is valid in a query string. The entries of an array value are encoded separately and
      * joined with a literal ',', which FHIR search reads as OR.
+     * Percent-encoding does not apply FHIR search escaping: a server decodes '%2C' to ',' and
+     * still reads it as OR. Escape a value to be matched as text with escapeSearchValue().
      *
      * @param obj - Query parameters by name. A value may be a string or an array of strings.
      * @returns Query string without the leading '?', or null if obj is missing.

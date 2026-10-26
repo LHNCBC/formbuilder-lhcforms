@@ -34,11 +34,22 @@ This project follows [Semantic Versioning](http://semver.org/).
   form-level template extractions.
   - A contained resource cannot be deleted, or its ID changed, while a
     `templateExtract` extension on the Questionnaire or on any item references
-    it.
+    it. Deleting is also blocked while a `templateExtractBundle` extension
+    references it.
   - A non-blocking warning is shown when `templateExtract` extensions at the
     same scope use the same template with identical expressions.
   - Discarding changes in the template extraction dialog asks for
     confirmation, as in the other editing dialogs.
+  - Each optional expression of the template extraction dialog, such as
+    `fullUrl` or `resourceId`, has a Clear button to remove it. The expression
+    editor does not accept an empty expression.
+  - An expression without text, such as a `fullUrl` with only a
+    data-absent-reason extension in `_valueString`, is kept unchanged when the
+    extraction is saved.
+- A contained resource cannot be deleted while anything else in the
+  Questionnaire refers to it by its local reference, such as an item's
+  `answerValueSet`, an extension's `valueReference`, or another contained
+  resource. The message shows where it is referenced.
 ### Changed
 - The ValueSet editor schema no longer carries its own unused copy of the FHIR
   definitions. Like the item and form-level schemas, it uses the definitions
@@ -90,6 +101,18 @@ This project follows [Semantic Versioning](http://semver.org/).
 - FHIR server search text with reserved characters, such as `&`, `#`, `+` or
   `=`, is sent as text. Before, the search was split or cut off at them, so the
   server searched for something else.
+- FHIR server search text with a `,`, `$`, `\`, or, for text parameters, `|`, is
+  searched as text. Before, the server read a `,` as OR, so `Smith, John`
+  searched for `Smith` or `John`. The `|` of a code search, such as
+  `http://loinc.org|8867-4`, keeps its meaning.
+- Importing a contained resource from a FHIR server no longer changes the
+  server that the form is saved to. The server chosen for the import is used
+  for that import only.
+- The id and extensions of an extension's primitive value, such as
+  `_valueString` of a `templateExtract` child, are kept when the extensions
+  are edited. They were removed before. This holds however an extension is
+  updated, including an update in place that adds a field the extension did not
+  have when it was loaded.
 
 ## [12.10.0] 2026-10-20
 ### Added

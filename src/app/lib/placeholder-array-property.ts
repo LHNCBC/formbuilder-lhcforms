@@ -78,6 +78,56 @@ function acceptPlaceholders<T extends FormProperty>(property: T): T {
 }
 
 /**
+ * Schema properties that identify an Extension schema; the same ones ngx-schema-form's
+ * ObjectProperty uses to create the child properties of an extension sparsely.
+ */
+const EXTENSION_SCHEMA_MARKERS = ['url', 'extension', 'valueAddress', 'valueAge'];
+
+/** Members of ngx-schema-form's ObjectProperty used by createMissingExtensionProperties(). */
+interface ExtensionObjectProperty {
+  schema: any;
+  properties: Record<string, FormProperty>;
+  propertiesId: string[];
+  formPropertyFactory: {createProperty(schema: any, parent: any, propertyId: string, value?: any): FormProperty};
+  resetProperties(value: any): void;
+}
+
+/**
+ * Make reset() of an Extension property keep every field of the new value that its schema
+ * defines. ngx-schema-form creates the child properties of an extension only for the fields
+ * of its value at creation, e.g. valueString but not _valueString, and reset() only resets
+ * the existing child properties, so a field without one was dropped, e.g. a _valueString or
+ * a different value[x]. The missing child properties are now created first, as setValue()
+ * does; fields absent from the value still get no child property.
+ *
+ * @param property - Object property, before it is reset.
+ * @returns The same property.
+ */
+function createMissingExtensionProperties<T extends FormProperty>(property: T): T {
+  const objectProperty = property as unknown as ExtensionObjectProperty;
+  const schemaProperties = objectProperty.schema?.properties;
+  const isExtension = !!schemaProperties &&
+    EXTENSION_SCHEMA_MARKERS.every((name) => Object.prototype.hasOwnProperty.call(schemaProperties, name));
+  if(!isExtension || typeof objectProperty.resetProperties !== 'function') {
+    return property;
+  }
+
+  const resetProperties = objectProperty.resetProperties.bind(objectProperty);
+  objectProperty.resetProperties = (value: any) => {
+    Object.keys(value && typeof value === 'object' ? value : {}).forEach((name) => {
+      if(!objectProperty.properties[name] && Object.prototype.hasOwnProperty.call(schemaProperties, name)) {
+        objectProperty.properties[name] = objectProperty.formPropertyFactory.createProperty(
+          schemaProperties[name], objectProperty, name, value[name]
+        );
+        objectProperty.propertiesId.push(name);
+      }
+    });
+    resetProperties(value);
+  };
+  return property;
+}
+
+/**
  * Check whether a schema is an array of primitive values.
  *
  * @param schema - Schema to check.
@@ -424,8 +474,9 @@ export class ElementArrayProperty extends AtomicProperty {
  * Make ngx-schema-form create an ElementArrayProperty for each array marked with
  * ELEMENT_ARRAY_KEYWORD, and a PlaceholderArrayProperty for any other array in the schema.
  * The schema validators of the arrays and objects accept the null placeholders; see
- * acceptPlaceholders(). Call it before any form is created. It replaces the array and
- * object entries of PROPERTY_TYPE_MAPPING, which are global, so it affects every form.
+ * acceptPlaceholders(). Extension properties keep every schema-defined field on reset; see
+ * createMissingExtensionProperties(). Call it before any form is created. It replaces the
+ * array and object entries of PROPERTY_TYPE_MAPPING, which are global, so it affects every form.
  */
 export function registerPlaceholderArrayProperty(): void {
   PROPERTY_TYPE_MAPPING.array = (schemaValidatorFactory, validatorRegistry, expressionCompilerFactory,
@@ -437,7 +488,8 @@ export function registerPlaceholderArrayProperty(): void {
     return acceptPlaceholders(new PlaceholderArrayProperty(formPropertyFactory, schemaValidatorFactory,
       validatorRegistry, expressionCompilerFactory, schema, parent, path, logger));
   };
-  PROPERTY_TYPE_MAPPING.object = (...args) => acceptPlaceholders(STOCK_OBJECT_MAPPING(...args));
+  PROPERTY_TYPE_MAPPING.object = (...args) =>
+    acceptPlaceholders(createMissingExtensionProperties(STOCK_OBJECT_MAPPING(...args)));
 }
 
 

@@ -191,9 +191,43 @@ describe('FhirService', () => {
   });
 
   it('should encode the entries of an array value and join them with a literal comma', () => {
-    expect(service.queryToString({_sort: ['-_lastUpdated', 'a,b'], _count: 20}))
-      .toBe('_sort=-_lastUpdated,a%2Cb&_count=20');
+    expect(service.queryToString({_sort: ['-_lastUpdated', 'title'], _count: 20}))
+      .toBe('_sort=-_lastUpdated,title&_count=20');
     expect(service.queryToString(null)).toBeNull();
+  });
+
+  it('should escape FHIR search special characters in search text before encoding it', (done) => {
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
+      .and.returnValue(Promise.resolve({resourceType: 'Bundle', type: 'searchset'}));
+
+    service.searchResources('Patient', 'Smith, John $1 a|b c\\d', 'name').subscribe({next: () => {
+      const url = reqSpy.calls.mostRecent().args[0]['url'] as string;
+      expect(new URL(url, 'http://example.org/fhir/').searchParams.get('name'))
+        .toBe('Smith\\, John \\$1 a\\|b c\\\\d');
+      expect(url).toContain('name=Smith%5C%2C%20John');
+      done();
+    }, error: done.fail});
+  });
+
+  it('should escape search text according to the search parameter type', () => {
+    expect(service.escapeSearchValue('a,b$c|d\\e')).toBe('a\\,b\\$c\\|d\\\\e');
+    expect(service.escapeSearchValue('a,b$c|d\\e', 'string')).toBe('a\\,b\\$c\\|d\\\\e');
+    // '|' separates system|code of a token, and url|version of a canonical.
+    expect(service.escapeSearchValue('http://loinc.org|8867-4', 'token')).toBe('http://loinc.org|8867-4');
+    expect(service.escapeSearchValue('http://x.org/vs|1.0,a', 'uri')).toBe('http://x.org/vs|1.0\\,a');
+    expect(service.escapeSearchValue('Smith John')).toBe('Smith John');
+  });
+
+  it('should pass the search field type to the escaping of a Questionnaire search', (done) => {
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
+      .and.returnValue(Promise.resolve({resourceType: 'Bundle', type: 'searchset'}));
+
+    service.search('http://loinc.org|8867-4', 'questionnaire-code', {}, 'token').subscribe({next: () => {
+      const url = reqSpy.calls.mostRecent().args[0]['url'] as string;
+      expect(new URL(url, 'http://example.org/fhir/').searchParams.get('questionnaire-code'))
+        .toBe('http://loinc.org|8867-4');
+      done();
+    }, error: done.fail});
   });
 
   it('should emit, not throw, an error for an invalid resource type', () => {

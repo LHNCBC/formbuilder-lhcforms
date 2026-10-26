@@ -43,6 +43,29 @@
           "pattern": "^\\S*$",
           "type": "string"
         },
+        // The id and/or extensions of the primitive fields, copied from
+        // $.definitions.Extension in fhir.schema.json. Without them, the form drops e.g. a
+        // child extension's _valueString when the extension array is rebuilt.
+        "_url": {"description": "Extensions for url", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueBase64Binary": {"description": "Extensions for valueBase64Binary", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueBoolean": {"description": "Extensions for valueBoolean", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueCanonical": {"description": "Extensions for valueCanonical", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueCode": {"description": "Extensions for valueCode", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueDate": {"description": "Extensions for valueDate", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueDateTime": {"description": "Extensions for valueDateTime", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueDecimal": {"description": "Extensions for valueDecimal", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueId": {"description": "Extensions for valueId", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueInstant": {"description": "Extensions for valueInstant", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueInteger": {"description": "Extensions for valueInteger", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueMarkdown": {"description": "Extensions for valueMarkdown", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueOid": {"description": "Extensions for valueOid", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valuePositiveInt": {"description": "Extensions for valuePositiveInt", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueString": {"description": "Extensions for valueString", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueTime": {"description": "Extensions for valueTime", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueUnsignedInt": {"description": "Extensions for valueUnsignedInt", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueUri": {"description": "Extensions for valueUri", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueUrl": {"description": "Extensions for valueUrl", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
+        "_valueUuid": {"description": "Extensions for valueUuid", "$ref": "#/definitions/Element", "widget": {"id": "hidden"}},
         "valueBase64Binary": {
           "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
           "pattern": "^(\\s*([0-9a-zA-Z\\+/=]){4}\\s*)+$",
