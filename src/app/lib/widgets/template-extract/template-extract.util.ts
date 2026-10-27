@@ -1,6 +1,6 @@
 import copy from 'fast-copy';
 import fhir from 'fhir/r4';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
 
 export const TEMPLATE_EXTRACT_CHILD_URLS = [
   'template',
@@ -69,11 +69,15 @@ export function parseTemplateExtractExtension(extension: fhir.Extension): Templa
 /**
  * Convert the widget's edit model to a valid complex templateExtract extension.
  * Unknown child slices and metadata on known slices are retained when an imported
- * extension is edited.
+ * extension is edited. The template valueReference is retained only when its reference
+ * is unchanged.
  *
- * @param model - Edit model; empty expression fields are omitted from the result.
- * @returns A templateExtract extension with the template child first, followed by
- *   non-empty expression children and then any unknown children.
+ * @param model - Edit model. An empty expression field is omitted from the result, unless
+ *   the source extension has a child for it without expression text, e.g. a child with only
+ *   _valueString metadata such as a data-absent-reason extension. Such a child is kept
+ *   unchanged, because the field was not edited.
+ * @returns A templateExtract extension with the template child first, followed by the
+ *   expression children and then any unknown children.
  */
 export function buildTemplateExtractExtension(model: TemplateExtractEditModel): fhir.Extension {
   const result: fhir.Extension = copy(model.sourceExtension || {url: EXTENSION_URL_TEMPLATE_EXTRACT});
@@ -100,16 +104,25 @@ export function buildTemplateExtractExtension(model: TemplateExtractEditModel): 
   });
   templateChild.url = 'template';
   delete templateChild.extension;
-  templateChild.valueReference = {
-    ...(templateChild.valueReference || {}),
-    reference: model.templateReference
-  };
+  // Details such as display, type or identifier describe the original template; drop them
+  // when another template is chosen.
+  templateChild.valueReference = templateChild.valueReference?.reference === model.templateReference
+    ? templateChild.valueReference
+    : {reference: model.templateReference};
 
   const knownChildren: fhir.Extension[] = [templateChild];
   TEMPLATE_EXTRACT_CHILD_URLS.slice(1).forEach((url: TemplateExtractExpressionUrl) => {
     const value = model[url];
-    if(value?.trim()) {
-      const child = copy(childByUrl.get(url) || {url});
+    const sourceChild = childByUrl.get(url);
+    if(!value?.trim()) {
+      // A source child without expression text is valid FHIR when it has metadata, e.g.
+      // only _valueString. The edit model shows it as empty, so it was not changed.
+      if(sourceChild && !sourceChild.valueString?.trim()) {
+        knownChildren.push(copy(sourceChild));
+      }
+    }
+    else {
+      const child = copy(sourceChild || {url});
       Object.keys(child).forEach(key => {
         if(key.startsWith('value') && key !== 'valueString') {
           delete child[key];
@@ -145,12 +158,13 @@ export function getContainedResourceOptions(questionnaire: fhir.Questionnaire): 
 }
 
 /**
- * Check whether a contained resource is targeted by a templateExtract extension
- * at the Questionnaire root or on any Questionnaire item.
+ * Check whether a contained resource is a template of template-based extraction at the
+ * Questionnaire root or on any Questionnaire item: the template child of a templateExtract
+ * extension, or the valueReference of a templateExtractBundle extension.
  *
  * @param questionnaire - Questionnaire to search.
  * @param resourceId - Contained resource id, without the leading '#'.
- * @returns True when any templateExtract extension's template child references '#resourceId'.
+ * @returns True when a templateExtract or templateExtractBundle extension references '#resourceId'.
  */
 export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, resourceId?: string): boolean {
   if(!questionnaire || !resourceId) {
@@ -159,17 +173,18 @@ export function hasTemplateExtractReference(questionnaire: fhir.Questionnaire, r
   const reference = `#${resourceId}`;
 
   /**
-   * Check whether any extension in a list is a templateExtract targeting the resource.
+   * Check whether any extension in a list is a template extraction targeting the resource.
    *
    * @param extensions - Extensions of the Questionnaire or of an item.
-   * @returns True when a templateExtract extension references the resource.
+   * @returns True when a templateExtract or templateExtractBundle extension references the resource.
    */
   const referencesResource = (extensions: fhir.Extension[] = []): boolean =>
     extensions.some(extension =>
-      extension.url === EXTENSION_URL_TEMPLATE_EXTRACT &&
-      extension.extension?.some(child =>
-        child.url === 'template' && child.valueReference?.reference === reference
-      )
+      (extension.url === EXTENSION_URL_TEMPLATE_EXTRACT &&
+        extension.extension?.some(child =>
+          child.url === 'template' && child.valueReference?.reference === reference
+        )) ||
+      (extension.url === EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE && extension.valueReference?.reference === reference)
     );
 
   /**

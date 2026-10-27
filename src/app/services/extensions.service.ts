@@ -539,9 +539,11 @@ export class ExtensionsService {
       this.updateExtension(value);
 
       // Extension ObjectProperties are intentionally sparse: ngx-schema-form creates only
-      // the value[x] property present in imported JSON. ObjectProperty.reset() cannot add a
-      // different schema-defined value[x], so replace the array item when the destination
-      // property is absent (for example valueInteger -> valuePositiveInt).
+      // the value[x] property present in imported JSON. reset() now adds a missing
+      // schema-defined property (see createMissingExtensionProperties()), but it keeps the
+      // child property of the previous value[x]. Replace the array item when the destination
+      // property is absent (for example valueInteger -> valuePositiveInt), so it is rebuilt
+      // with only the new value[x].
       const valueTypePropertyMissing = valueType &&
         !(extProp as PropertyGroup).getProperty(valueType);
       if(valueTypePropertyMissing) {

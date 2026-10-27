@@ -104,6 +104,17 @@ export class TemplateExtractComponent extends TableEditRowInDlgComponent impleme
   }
 
   /**
+   * Explain that a contained template is needed while there is none.
+   * @returns The schema's addButtonDisabledReason when there are no contained resources,
+   *   otherwise an empty string.
+   */
+  override getAddButtonDisabledReason(): string {
+    return this.containedResources.length === 0
+      ? this.schema?.widget?.addButtonDisabledReason || 'A contained resource is required before adding a template extraction.'
+      : '';
+  }
+
+  /**
    * Render every configured summary column as read-only text.
    * @param _showField - Configured table field.
    * @returns Always true for this dialog-backed table.

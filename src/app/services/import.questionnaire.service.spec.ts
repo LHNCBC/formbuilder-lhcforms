@@ -9,6 +9,7 @@ import {
   EXTENSION_URL_QUESTIONNAIRE_HIDDEN
 } from '../lib/constants/constants';
 import fhir from 'fhir/r4';
+import {Util} from '../lib/util';
 
 describe('ImportQuestionnaireService', () => {
   let service: ImportQuestionnaireService;
@@ -196,5 +197,51 @@ describe('ImportQuestionnaireService', () => {
     service.updateRawQuestionnaire(questionnaire, {} as any);
     expect((questionnaire.item[1].enableWhen[0] as any).__$answerType).toBe('attachment');
     expect(questionnaire.item[1].enableWhen[0].answerBoolean).toBeFalse();
+  });
+
+  it('leaves opaque contained resources, such as help items of a contained Questionnaire, unchanged', () => {
+    /**
+     * Build a string item with a help display item.
+     *
+     * @param linkId - linkId of the string item.
+     * @returns The item.
+     */
+    const itemWithHelp = (linkId: string): fhir.QuestionnaireItem => ({
+      linkId,
+      type: 'string',
+      text: 'Question',
+      item: [{
+        linkId: `${linkId}-help`,
+        type: 'display',
+        text: 'Help text',
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{system: 'http://hl7.org/fhir/questionnaire-item-control', code: 'help'}]
+          }
+        }]
+      }]
+    });
+    const contained: any[] = [
+      {resourceType: 'Questionnaire', id: 'template', status: 'draft', item: [itemWithHelp('nested')]},
+      {resourceType: 'Patient', id: 'pt', extension: [{url: 'http://example.org/x', valueString: 'x'}]}
+    ];
+    const questionnaire: fhir.Questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: JSON.parse(JSON.stringify(contained)),
+      item: [itemWithHelp('root')]
+    };
+
+    service.updateRawQuestionnaire(questionnaire, {} as any);
+
+    expect(questionnaire.contained).toEqual(contained);
+    // The help item of the questionnaire itself is still converted for editing.
+    expect((questionnaire.item[0] as any).__$helpText.linkId).toBe('root-help');
+    expect(questionnaire.item[0].item).toBeUndefined();
+
+    const exported = Util.convertToQuestionnaireJSON(questionnaire);
+    expect(exported.contained).toEqual(contained);
+    expect(exported.item[0].item.map((item) => item.linkId)).toEqual(['root-help']);
   });
 });

@@ -149,8 +149,12 @@
       </ul>
       <hr>
         <div class="btn-toolbar float-end mb-2" role="toolbar" aria-label="Toolbar with button groups">
+          @if (!lformsReady && !lformsErrorMessage) {
+            <span class="small text-muted align-self-center me-2" role="status">Loading...</span>
+          }
           <div class="btn-group" role="group" aria-label="Last group">
-            <button type="button" class="btn btn-sm btn-primary" (click)="onContinue()">Continue</button>
+            <button type="button" class="btn btn-sm btn-primary" [disabled]="!lformsReady"
+              (click)="onContinue()">Continue</button>
           </div>
         </div>
       </div>

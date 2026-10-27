@@ -4,6 +4,7 @@ import { SchemaService, patternToFHIRPrimitiveType } from './schema.service';
 import {FormService} from "./form.service";
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {provideHttpClient} from "@angular/common/http";
+import {ELEMENT_ARRAY_KEYWORD} from '../lib/placeholder-array-property';
 
 describe('SchemaService', () => {
   let schemaService: SchemaService, formService: FormService, extSchema: ISchema, flSchema: ISchema;
@@ -190,6 +191,98 @@ describe('SchemaService', () => {
     }
     expect(extSchema.properties.valueAttachment.properties._url.widget.id).toBe('hidden');
     expect(itemSchema.properties._type).toBeUndefined();
-    expect(extSchema.properties._valueString).toBeUndefined();
+    // Extension defines its primitive companions itself; Attachment preparation adds none.
+    expect(extSchema.properties._valueString).toEqual(jasmine.objectContaining({
+      $ref: '#/definitions/Element', widget: {id: 'hidden'}
+    }));
+    expect(extSchema.properties._valueAttachment).toBeUndefined();
+  });
+
+  describe('element arrays of repeating primitive fields', () => {
+    /**
+     * Expected schema of an element array.
+     *
+     * @param field - Name of the repeating primitive field.
+     * @returns Schema of the element array of the field.
+     */
+    function elementArray(field: string): ISchema {
+      return {
+        type: 'array',
+        description: `Ids and/or extensions of the ${field} values, aligned with them by index.`,
+        items: {anyOf: [{type: 'object'}, {type: 'null'}], widget: {id: 'hidden'}},
+        widget: {id: 'hidden'},
+        [ELEMENT_ARRAY_KEYWORD]: true
+      };
+    }
+
+    it('should add hidden element arrays to closed inline schemas and definitions', () => {
+      const schema: any = {
+        type: 'object',
+        properties: {
+          valueHumanName: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              family: {type: 'string'},
+              given: {type: 'array', items: {type: 'string'}}
+            }
+          }
+        },
+        definitions: {
+          Meta: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {profile: {type: 'array', items: {$ref: '#/definitions/canonical'}}}
+          }
+        }
+      };
+
+      schemaService.addPrimitiveElementArrays(schema);
+
+      expect(schema.properties.valueHumanName.properties._given).toEqual(elementArray('given'));
+      expect(schema.properties.valueHumanName.properties._family).toBeUndefined();
+      expect(schema.definitions.Meta.properties._profile).toEqual(elementArray('profile'));
+    });
+
+    it('should not change open objects, arrays of objects, or existing element arrays', () => {
+      const schema: any = {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          derivedFrom: {type: 'array', items: {type: 'string'}},
+          address: {
+            type: 'object',
+            properties: {
+              coding: {type: 'array', items: {$ref: '#/definitions/Coding'}},
+              tags: {type: 'array', items: {type: 'object', properties: {code: {type: 'string'}}}},
+              line: {type: 'array', items: {type: 'string'}},
+              _line: {type: 'array', items: {$ref: '#/definitions/Element'}}
+            }
+          }
+        }
+      };
+      const expected = structuredClone(schema);
+
+      schemaService.addPrimitiveElementArrays(schema);
+
+      expect(schema).toEqual(expected);
+    });
+
+    it('should add element arrays on every initialized editor surface', () => {
+      for(const schema of [
+        formService.getItemSchema(), flSchema, extSchema, formService.getResourceSchema('ValueSet')
+      ]) {
+        expect(schema.definitions.HumanName.properties._given).toEqual(elementArray('given'));
+        expect(schema.definitions.Meta.properties._profile).toEqual(elementArray('profile'));
+        expect(schema.definitions.ValueSet_Include.properties._valueSet).toEqual(elementArray('valueSet'));
+        expect(schema.definitions.Extension.properties.valueHumanName.properties._given)
+          .toEqual(elementArray('given'));
+      }
+      expect(extSchema.properties.valueHumanName.properties._given).toEqual(elementArray('given'));
+      expect(extSchema.properties.valueAddress.properties._line).toEqual(elementArray('line'));
+      expect(extSchema.properties.valueMeta.properties._profile).toEqual(elementArray('profile'));
+      // The form level keeps additional properties, such as _derivedFrom, as they are.
+      expect(flSchema.properties._derivedFrom).toBeUndefined();
+    });
   });
 });

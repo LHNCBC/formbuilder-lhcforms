@@ -23,6 +23,7 @@
           { field:  "identifier", col:  12},
           { field:  "meta", col:  12},
           { field:  "useContext", col:  12},
+          { field:  "jurisdiction", col:  12},
           { field:  "subjectType", "col": 12},
           { field:  "date", col:  12},
           { field:  "publisher", col:  12},
@@ -50,6 +51,11 @@
     '$.properties.meta': 'Meta',
     '$.properties.useContext': 'Usage Context',
     '$.properties.useContext.items.properties.__$valueSummary': 'Value',
+    '$.properties.jurisdiction.items.properties.text': 'Text',
+    '$.properties.jurisdiction.items.properties.coding': 'Coding',
+    '$.properties.jurisdiction.items.properties.coding.items.properties.display': 'Display',
+    '$.properties.jurisdiction.items.properties.coding.items.properties.code': 'Code',
+    '$.properties.jurisdiction.items.properties.coding.items.properties.system': 'System',
     '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
     '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
     '$.definitions.Meta.properties.source': 'Source',
@@ -65,6 +71,7 @@
     inputBox: 'formStringField',
     textArea: 'formTextareaField',
     inlineTextArea: 'formInlineTextareaField',
+    jurisdictionCoding: 'dialogCodingTable',
     instant: 'formInstantField',
     'positive-integer': 'formPositiveIntegerField',
     'unsigned-integer': 'formUnsignedIntegerField'
@@ -186,6 +193,24 @@
         {"field": "__$valueSummary", "title": "Value", "col": 4, "nolabel": true}
       ]
     },
+    jurisdiction: {
+      "id": "array",
+      "addDefaultItemIfEmpty": false,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add jurisdiction",
+      "noCollapseButton": true
+    },
+    jurisdictionConcept: {
+      "id": "lfb-object",
+      "nolabel": true,
+      "childOffsetClass": "ms-0",
+      "showFields": [
+        {"field": "text", "col": 12},
+        {"field": "coding", "col": 12}
+      ]
+    },
     contained: {
       "id": "contained",
       "addEditAction": true,
@@ -290,9 +315,13 @@
       '$.properties.publisher',
       '$.definitions.Meta.properties.versionId',
       '$.definitions.Meta.properties.lastUpdated',
+      '$.properties.jurisdiction.items.properties.text',
+      '$.properties.jurisdiction.items.properties.coding.items.properties.display',
+      '$.properties.jurisdiction.items.properties.coding.items.properties.code',
     ],
     url: [
       '$.definitions.Meta.properties.source',
+      '$.properties.jurisdiction.items.properties.coding.items.properties.system',
     ],
     inlineTextArea: [
       '$.properties.description',
@@ -328,6 +357,15 @@
     ],
     usageContext: [
       '$.properties.useContext'
+    ],
+    jurisdiction: [
+      '$.properties.jurisdiction'
+    ],
+    jurisdictionConcept: [
+      '$.properties.jurisdiction.items'
+    ],
+    jurisdictionCoding: [
+      '$.properties.jurisdiction.items.properties.coding'
     ],
     extension: [
       '$.properties.extension'

@@ -1,5 +1,8 @@
 import { ResourceDlgComponent } from './resource-dlg.component';
 import { SharedObjectService } from '../../../services/shared-object.service';
+import { MessageDlgOptions, MessageType } from '../message-dlg/message-dlg.component';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { Subject } from 'rxjs';
 import type fhir from 'fhir/r4';
 
 type ResourceDialogInternals = {
@@ -119,5 +122,50 @@ describe('ResourceDlgComponent', () => {
     };
 
     expect(internals.isReferencedResourceIdChanged()).toBeTrue();
+  });
+
+  describe('message dialogs', () => {
+    /**
+     * Create a dialog whose message dialogs are recorded instead of opened.
+     *
+     * @param dirty - Whether the dialog content has a changed field.
+     * @returns The dialog and the options of the opened message dialogs.
+     */
+    function createDialog(dirty: boolean): {dialog: ResourceDlgComponent; opened: MessageDlgOptions[]} {
+      const dialog = Object.create(ResourceDlgComponent.prototype) as ResourceDlgComponent;
+      const opened: MessageDlgOptions[] = [];
+      const modalService = jasmine.createSpyObj<NgbModal>('ngbModalService', ['open']);
+      modalService.open.and.callFake(() => {
+        const componentInstance: {options?: MessageDlgOptions} = {};
+        setTimeout(() => opened.push(componentInstance.options));
+        return {componentInstance, closed: new Subject<string>()} as unknown as NgbModalRef;
+      });
+      dialog.ngbModalService = modalService;
+      dialog.matDialogRef = jasmine.createSpyObj('matDialogRef', ['close']);
+      dialog.dlgContent = {nativeElement: {querySelector: () => dirty ? {} : null}};
+      return {dialog, opened};
+    }
+
+    it('should confirm discarding changes with a colored header', async () => {
+      const {dialog, opened} = createDialog(true);
+
+      dialog.cancel();
+      await new Promise(resolve => setTimeout(resolve));
+
+      expect(opened.length).toBe(1);
+      expect(opened[0].title).toBe('Confirm');
+      expect(opened[0].type).toBe(MessageType.INFO);
+      expect(dialog.matDialogRef.close).not.toHaveBeenCalled();
+    });
+
+    it('should alert errors with a danger header', async () => {
+      const {dialog, opened} = createDialog(false);
+
+      dialog.alertErrors('Bad');
+      await new Promise(resolve => setTimeout(resolve));
+
+      expect(opened[0].title).toBe('Fix errors');
+      expect(opened[0].type).toBe(MessageType.DANGER);
+    });
   });
 });

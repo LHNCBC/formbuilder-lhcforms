@@ -115,7 +115,8 @@ td.error-column {
   margin-top: 2px;
 }
 
-.lfb-table + .array-add-button {
+.lfb-table + .array-add-button,
+.array-add-wrapper > .array-add-button {
   width: 100%;
 }
 

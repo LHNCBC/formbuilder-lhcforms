@@ -1,8 +1,9 @@
 import {ContainedResourceService} from '../../../services/contained-resource.service';
 import {SharedObjectService} from '../../../services/shared-object.service';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
 import {TableComponent} from '../table/table.component';
 import {ContainedComponent} from './contained.component';
+import fhir from 'fhir/r4';
 import {of} from 'rxjs';
 
 describe('ContainedComponent', () => {
@@ -52,11 +53,38 @@ describe('ContainedComponent', () => {
 
     await component.onResourceFileSelected({target: input} as unknown as Event);
 
-    expect(showDialog).toHaveBeenCalled();
+    expect(showDialog).toHaveBeenCalledOnceWith(
+      jasmine.anything(),
+      'Normalize contained resource',
+      '<p>A contained id was generated: <strong>Observation-1</strong>.</p>' +
+      '<p>FHIR does not permit these fields on contained resources, so they will be removed: ' +
+      '<strong>meta.versionId</strong>.</p>' +
+      '<p>The source file will not be changed.</p>',
+      jasmine.anything()
+    );
     expect(addItem).toHaveBeenCalledTimes(1);
     const resource = addItem.calls.mostRecent().args[0];
     expect(resource.id).toBe('Observation-1');
     expect(resource.meta).toBeUndefined();
+  });
+
+  it('escapes imported values in an import error', async () => {
+    const input = {
+      files: [new File([JSON.stringify({
+        resourceType: 'Patient',
+        id: '<b>x</b>'
+      })], 'patient.json', {type: 'application/json'})],
+      value: 'patient.json'
+    };
+
+    await component.onResourceFileSelected({target: input} as unknown as Event);
+
+    expect(addItem).not.toHaveBeenCalled();
+    expect(showDialog).toHaveBeenCalledOnceWith(
+      jasmine.anything(),
+      'Unable to import contained resource',
+      'The resource id &quot;&lt;b&gt;x&lt;/b&gt;&quot; is not a valid FHIR id.'
+    );
   });
 
   it('does not add an invalid resource and reports the error', async () => {
@@ -87,8 +115,9 @@ describe('ContainedComponent', () => {
       }
     );
     Object.defineProperty(component, 'modalService', {value: {open}});
+    const server = {version: 'R4'};
     Object.defineProperty(component, 'fhirService', {value: {
-      getFhirServer: () => ({version: 'R4'}),
+      getFhirServer: () => server,
       readResource: () => of({
         resourceType: 'Practitioner',
         id: 'p2',
@@ -171,7 +200,7 @@ describe('ContainedComponent', () => {
       expect(showDialog).toHaveBeenCalledOnceWith(
         jasmine.anything(),
         'Unable to import contained resource',
-        'A contained Patient with id "patient-template" already exists. It can only be replaced by a Patient resource.'
+        'A contained Patient with id &quot;patient-template&quot; already exists. It can only be replaced by a Patient resource.'
       );
       expect(reset).not.toHaveBeenCalled();
       expect(addItem).not.toHaveBeenCalled();
@@ -225,5 +254,181 @@ describe('ContainedComponent', () => {
       'The contained resource #patient-template is referenced by Template-based extraction and cannot be deleted.'
     );
     expect(parentConfirm).not.toHaveBeenCalled();
+  });
+
+  describe('deleting a resource referenced elsewhere in the questionnaire', () => {
+    let parentConfirm: jasmine.Spy;
+
+    /**
+     * Set up the form-level model and the current items, then try to delete the first
+     * contained resource.
+     *
+     * @param formLevel - Form-level fields, including contained; the first one is deleted.
+     * @param items - Current Questionnaire items.
+     */
+    function removeFirstResource(formLevel: Partial<fhir.Questionnaire>, items: fhir.QuestionnaireItem[] = []): void {
+      const sharedObjectService = new SharedObjectService();
+      sharedObjectService.currentQuestionnaire = {resourceType: 'Questionnaire', status: 'draft', item: items};
+      Object.defineProperty(component, 'sharedObjectService', {value: sharedObjectService});
+      const formLevelRoot = {
+        value: {resourceType: 'Questionnaire', status: 'draft', ...formLevel},
+        getProperty: () => ({value: []})
+      };
+      component['formProperty'] = {
+        properties: formLevel.contained.map(resource => ({value: resource})),
+        findRoot: () => formLevelRoot
+      } as any;
+      parentConfirm = spyOn(TableComponent.prototype, 'confirmRemoveProperty');
+      component.confirmRemoveProperty(0);
+    }
+
+    /**
+     * Check that deletion was blocked with a message.
+     *
+     * @param message - Expected warning message.
+     */
+    function expectBlocked(message: string): void {
+      expect(showDialog).toHaveBeenCalledTimes(1);
+      expect(showDialog.calls.mostRecent().args.slice(1, 3)).toEqual(['Contained resource is in use', message]);
+      expect(parentConfirm).not.toHaveBeenCalled();
+    }
+
+    /**
+     * Build the warning for a reference found by the generic search. The message dialog
+     * renders HTML, so the location is HTML-escaped, e.g. ' as &#39;.
+     *
+     * @param resourceId - Id of the referenced resource.
+     * @param location - Unescaped location of the reference.
+     * @returns Expected warning message.
+     */
+    function referencedAt(resourceId: string, location: string): string {
+      return `The contained resource #${resourceId} is referenced at ` +
+        `${location.replace(/'/g, '&#39;')} and cannot be deleted.`;
+    }
+
+    it('blocks deleting a Bundle referenced by templateExtractBundle', () => {
+      removeFirstResource({
+        contained: [{resourceType: 'Bundle', id: 'bundle-template', type: 'transaction'} as fhir.Bundle],
+        extension: [{url: EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE, valueReference: {reference: '#bundle-template'}}]
+      });
+
+      expectBlocked(
+        'The contained resource #bundle-template is referenced by Template-based extraction and cannot be deleted.'
+      );
+    });
+
+    it('blocks deleting a resource referenced by any extension valueReference', () => {
+      removeFirstResource({
+        contained: [{resourceType: 'Patient', id: 'pt'}],
+        extension: [
+          {url: 'http://example.org/other', valueString: 'x'},
+          {url: 'http://example.org/subject', valueReference: {reference: '#pt'}}
+        ]
+      });
+
+      expectBlocked(referencedAt(
+        'pt', "Questionnaire.extension('http://example.org/subject').valueReference.reference"
+      ));
+    });
+
+    it('blocks deleting a ValueSet referenced by a nested item answerValueSet, and escapes the location', () => {
+      removeFirstResource({contained: [{resourceType: 'ValueSet', id: 'vs1', status: 'active'} as fhir.ValueSet]}, [{
+        linkId: 'group',
+        type: 'group',
+        item: [{linkId: "<b>q'1</b>", type: 'choice', answerValueSet: '#vs1'}]
+      }]);
+
+      expectBlocked(
+        'The contained resource #vs1 is referenced at Questionnaire.item.where(linkId=&#39;group&#39;)' +
+        '.item.where(linkId=&#39;&lt;b&gt;q\\&#39;1&lt;/b&gt;&#39;).answerValueSet and cannot be deleted.'
+      );
+    });
+
+    it('blocks deleting a resource referenced by another contained resource', () => {
+      removeFirstResource({contained: [
+        {resourceType: 'ValueSet', id: 'vs1', status: 'active'} as fhir.ValueSet,
+        {resourceType: 'Questionnaire', id: 'q-template', status: 'draft', item: [
+          {linkId: 'a', type: 'choice', answerValueSet: '#vs1'}
+        ]} as fhir.Questionnaire
+      ]});
+
+      expectBlocked(referencedAt(
+        'vs1', "Questionnaire.contained.where(id='q-template').item.where(linkId='a').answerValueSet"
+      ));
+    });
+
+    it('asks for confirmation when only the resource itself or form builder fields refer to it', () => {
+      removeFirstResource({
+        contained: [{resourceType: 'Patient', id: 'pt', link: [{other: {reference: '#pt'}, type: 'seealso'}]} as fhir.Patient],
+        extension: [{url: 'http://example.org/text', valueString: 'pt'}],
+        ['__$internal' as string]: '#pt'
+      }, [{linkId: 'q', type: 'string', text: '#ptx'}]);
+
+      expect(showDialog).not.toHaveBeenCalled();
+      expect(parentConfirm).toHaveBeenCalledOnceWith(0, 'Are you sure you want to delete this row?');
+    });
+  });
+
+  describe('importing from a FHIR server', () => {
+    const originalServer = {id: 1, endpoint: 'https://example.org/r5', version: 'R5'};
+    const importServer = {id: 2, endpoint: 'https://example.org/r4', version: 'R4'};
+    let currentServer: typeof originalServer;
+    let setFhirServer: jasmine.Spy;
+
+    beforeEach(() => {
+      currentServer = originalServer;
+      setFhirServer = jasmine.createSpy('setFhirServer').and.callFake((server) => currentServer = server);
+      Object.defineProperty(component, 'fhirService', {value: {
+        getFhirServer: () => currentServer,
+        setFhirServer,
+        readResource: () => of({resourceType: 'Practitioner', id: 'p2', active: true})
+      }});
+    });
+
+    /**
+     * Mock the server dialog, which selects the import server, and the search dialog.
+     *
+     * @param selection - Result of the search dialog; a rejected promise when it is dismissed.
+     */
+    function mockDialogs(selection: Promise<unknown>): void {
+      const open = jasmine.createSpy('open').and.returnValues(
+        {result: Promise.resolve(true).then((result) => {
+          currentServer = importServer;
+          return result;
+        })},
+        {componentInstance: {configureForContainedResourceImport: () => {}}, result: selection}
+      );
+      Object.defineProperty(component, 'modalService', {value: {open}});
+    }
+
+    it('restores the questionnaire server after importing a resource', async () => {
+      mockDialogs(Promise.resolve({resourceType: 'Practitioner', id: 'p2'}));
+
+      await component['importResourceFromFHIRServer']();
+
+      expect(addItem).toHaveBeenCalledTimes(1);
+      expect(component['containedResourceService'].getVersionInfo(addItem.calls.mostRecent().args[0])?.version)
+        .toBe('R4');
+      expect(setFhirServer).toHaveBeenCalledOnceWith(originalServer);
+      expect(currentServer).toBe(originalServer);
+    });
+
+    it('restores the questionnaire server when the search is canceled', async () => {
+      mockDialogs(Promise.reject('dismissed'));
+
+      await component['importResourceFromFHIRServer']();
+
+      expect(addItem).not.toHaveBeenCalled();
+      expect(setFhirServer).toHaveBeenCalledOnceWith(originalServer);
+    });
+
+    it('does not reset an unchanged server', async () => {
+      const open = jasmine.createSpy('open').and.returnValue({result: Promise.reject('dismissed')});
+      Object.defineProperty(component, 'modalService', {value: {open}});
+
+      await component['importResourceFromFHIRServer']();
+
+      expect(setFhirServer).not.toHaveBeenCalled();
+    });
   });
 });

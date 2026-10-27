@@ -280,19 +280,27 @@ export class AttachmentUtil {
    * Normalize every Attachment value in a Questionnaire for the requested FHIR release.
    * R5 integer64 values are JSON strings; earlier releases use a JSON number and do not
    * contain the media-specific fields introduced in R5.
+   * Contained resources are preserved without version conversion, so their Attachment
+   * values are not changed.
    * @param questionnaire - The Questionnaire-like object to normalize in place.
    * @param version - The target FHIR release, such as STU3, R4, or R5.
    * @returns The same Questionnaire-like object after normalization.
    */
   static normalizeQuestionnaireAttachments<T>(questionnaire: T, version: string): T {
-    AttachmentUtil.visitAttachmentValues(questionnaire, (attachment) => {
+    const normalize = (attachment: Record<string, any>) => {
       if(version === 'R5') {
         AttachmentUtil.normalizeR5Size(attachment);
       }
       else {
         AttachmentUtil.normalizeLegacyAttachment(attachment);
       }
-    });
+    };
+
+    if(questionnaire && typeof questionnaire === 'object' && !Array.isArray(questionnaire)) {
+      Object.entries(questionnaire)
+        .filter(([key]) => key !== 'contained')
+        .forEach(([, value]) => AttachmentUtil.visitAttachmentValues(value, normalize));
+    }
     return questionnaire;
   }
 

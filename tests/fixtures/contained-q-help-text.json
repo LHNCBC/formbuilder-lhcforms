@@ -1,0 +1,63 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Questionnaire",
+      "id": "template",
+      "status": "draft",
+      "item": [
+        {
+          "linkId": "nested",
+          "type": "string",
+          "text": "Nested question",
+          "item": [
+            {
+              "linkId": "nested-help",
+              "type": "display",
+              "text": "Keep this help text",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "help"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#template"
+          }
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "linkId": "q",
+      "text": "Question",
+      "type": "string"
+    }
+  ]
+}

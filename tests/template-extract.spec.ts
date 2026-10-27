@@ -1,5 +1,6 @@
 import {expect, Page, test} from '@playwright/test';
 import fhir from 'fhir/r4';
+import fs from 'node:fs/promises';
 import {MainPO} from './po/main-po';
 import {PWUtils} from './pw-utils';
 import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_VARIABLE} from '../src/app/lib/constants/constants';
@@ -83,6 +84,45 @@ async function uploadContainedResource(
   await page.getByRole('button', {name: 'Add contained resource'}).click();
   await page.getByRole('button', {name: 'Upload from a local file…'}).click();
   await (await chooserPromise).setFiles(file);
+}
+
+/**
+ * Import a questionnaire from an in-memory file and expand the advanced form-level fields.
+ * @param page - Browser page displaying a new questionnaire.
+ * @param questionnaire - Questionnaire to import.
+ */
+async function importQuestionnaire(page: Page, questionnaire: fhir.Questionnaire): Promise<void> {
+  const chooserPromise = page.waitForEvent('filechooser');
+  await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+  await (await chooserPromise).setFiles({
+    name: 'questionnaire.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(questionnaire))
+  });
+  await PWUtils.expandAdvancedFields(page);
+}
+
+/**
+ * Create an R5 questionnaire with contained Patient and Observation templates and one
+ * form-level templateExtract extension.
+ * @param template - valueReference of the extension's template child.
+ * @returns Questionnaire to import.
+ */
+function createTemplateQuestionnaire(template: fhir.Reference): fhir.Questionnaire {
+  return {
+    resourceType: 'Questionnaire',
+    meta: {profile: ['http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire']},
+    status: 'draft',
+    contained: [
+      {resourceType: 'Patient', id: 'pt'},
+      {resourceType: 'Observation', id: 'obs', status: 'final', code: {text: 'Observation'}} as fhir.Observation
+    ],
+    extension: [{
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [{url: 'template', valueReference: template}]
+    }],
+    item: [{linkId: 'g', text: 'Given', type: 'string'}]
+  };
 }
 
 test.describe('Template-based extraction', () => {
@@ -324,10 +364,117 @@ test.describe('Template-based extraction', () => {
     await expect(editor).toHaveCount(0);
     await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'unsaved draft'");
     await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await page.locator('ngb-modal-window').getByRole('button', {name: 'Discard changes', exact: true}).click();
     await expect(dialog).toBeHidden();
     expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
     await widget.getByRole('button', {name: 'Edit this row'}).nth(1).click();
     await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'root-second'");
+  });
+
+  test('keeps a metadata-only expression child when an extraction is saved unchanged', async ({page}) => {
+    const original = await PWUtils.uploadFile(page, 'template-extract-metadata-only-expression.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    await widget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue('');
+    await expect(dialog.getByRole('button', {name: 'Clear fullUrl FHIRPath expression'})).toBeDisabled();
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toBeHidden();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.extension).toEqual(original.extension);
+  });
+
+  test('removes an optional expression with its Clear button', async ({page}) => {
+    const original = await PWUtils.uploadFile(page, 'template-extract-metadata-only-expression.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    await widget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    const resourceId = dialog.getByRole('textbox', {name: 'resourceId FHIRPath expression'});
+    await expect(resourceId).toHaveValue("'patient-1'");
+
+    await dialog.getByRole('button', {name: 'Clear resourceId FHIRPath expression'}).click();
+    await expect(resourceId).toHaveValue('');
+    await expect(dialog.getByRole('button', {name: 'Clear resourceId FHIRPath expression'})).toBeDisabled();
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).toBeHidden();
+    await expect(widget.locator('tbody > tr')).not.toContainText('patient-1');
+
+    // The extraction is kept without resourceId; the metadata-only fullUrl child is unchanged.
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.extension).toEqual([{
+      ...original.extension[0],
+      extension: original.extension[0].extension.slice(0, 2)
+    }]);
+  });
+
+  test('blocks deleting contained resources that are referenced by templateExtractBundle or answerValueSet', async ({page}) => {
+    const original = await PWUtils.uploadFile(page, 'contained-local-references.json', false);
+    await PWUtils.expandAdvancedFields(page);
+    const containedTable = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Contained resources');
+    const inUseDialog = page.getByRole('dialog', {name: 'Contained resource is in use'});
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(3);
+
+    await containedTable.locator('tbody > tr').nth(0).getByRole('button', {name: 'Remove this row'}).click();
+    await expect(inUseDialog).toContainText(
+      'The contained resource #bundle-template is referenced by Template-based extraction and cannot be deleted.'
+    );
+    await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+    await expect(inUseDialog).toHaveCount(0);
+
+    await containedTable.locator('tbody > tr').nth(1).getByRole('button', {name: 'Remove this row'}).click();
+    await expect(inUseDialog).toContainText(
+      "The contained resource #colors is referenced at Questionnaire.item.where(linkId='color').answerValueSet " +
+      'and cannot be deleted.'
+    );
+    await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+    await expect(inUseDialog).toHaveCount(0);
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(3);
+
+    // An unreferenced resource is deleted after the usual confirmation.
+    await containedTable.locator('tbody > tr').nth(2).getByRole('button', {name: 'Remove this row'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+    await expect(containedTable.locator('tbody > tr')).toHaveCount(2);
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.contained).toEqual(original.contained.slice(0, 2));
+    expect(questionnaire.extension).toEqual(original.extension);
+  });
+
+  test('confirms discarding a new extraction with an expression, and closes an unchanged one directly', async ({page}) => {
+    await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#pt'}));
+    const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const widget = page.locator('lfb-form-fields lfb-template-extract');
+    const addExtraction = widget.getByRole('button', {name: 'Add new template extraction', exact: true});
+    const dialog = page.getByRole('dialog', {name: 'Add template extraction'});
+    const confirmDlg = page.locator('ngb-modal-window');
+
+    await addExtraction.click();
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await expect(dialog).toBeHidden();
+    await expect(confirmDlg).toHaveCount(0);
+
+    await addExtraction.click();
+    await dialog.getByRole('button', {name: 'Bundle entry fields'}).click();
+    await dialog.getByRole('button', {name: 'Create or edit fullUrl FHIRPath expression'}).click();
+    const editor = page.locator('lhc-expression-editor');
+    await editor.locator('#final-expression').fill("'urn:uuid:1'");
+    await editor.locator('#export').click();
+    await expect(editor).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'urn:uuid:1'");
+
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await expect(confirmDlg.locator('.modal-header')).toHaveClass(/bg-primary/);
+    await expect(confirmDlg.getByRole('heading', {name: 'Confirm'})).toBeVisible();
+    await confirmDlg.getByRole('button', {name: 'Do not discard changes'}).click();
+    await expect(confirmDlg).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', {name: 'fullUrl FHIRPath expression'})).toHaveValue("'urn:uuid:1'");
+
+    await dialog.getByRole('button', {name: 'Discard changes'}).first().click();
+    await confirmDlg.getByRole('button', {name: 'Discard changes', exact: true}).click();
+    await expect(dialog).toBeHidden();
+    expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(original);
   });
 
   test('warns without blocking save when rows at the same scope duplicate an extraction', async ({page}) => {
@@ -367,5 +514,134 @@ test.describe('Template-based extraction', () => {
     await page.getByRole('dialog').getByRole('button', {name: 'Delete'}).click();
     await expect(widget.locator('tbody > tr')).toHaveCount(1);
     await expect(widget.getByRole('alert')).toHaveCount(0);
+  });
+
+  test('explains why Add is disabled on a form without contained resources', async ({page}) => {
+    await PWUtils.expandAdvancedFields(page);
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    const addExtraction = formWidget.getByRole('button', {name: 'Add new template extraction', exact: true});
+    const reason = 'A contained resource is required before adding a template extraction. ' +
+      'Add one under Contained resources above.';
+    await expect(addExtraction).toBeDisabled();
+    await expect(formWidget.locator('.add-button-disabled-reason')).toHaveText(reason);
+    await expect(addExtraction).toHaveAccessibleDescription(reason);
+    await expect(formWidget.locator('.array-add-wrapper')).toHaveAttribute('title', reason);
+    await expect(addExtraction).not.toHaveAttribute('title');
+
+    await uploadContainedResource(page, 'tests/fixtures/contained-patient-r4.json');
+    await expect(addExtraction).toBeEnabled();
+    await expect(formWidget.locator('.add-button-disabled-reason')).toHaveCount(0);
+    await expect(formWidget.locator('.array-add-wrapper')).toHaveCount(0);
+  });
+
+  test('drops the old template display when another template is chosen', async ({page}) => {
+    await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#pt', display: 'Patient template'}));
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    await formWidget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    await dialog.getByLabel('Contained resource template').selectOption('#obs');
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(formWidget.locator('tbody > tr')).toContainText('Observation #obs');
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.extension[0].extension[0]).toEqual({url: 'template', valueReference: {reference: '#obs'}});
+  });
+
+  test('explains a missing template when editing its row', async ({page}) => {
+    await importQuestionnaire(page, createTemplateQuestionnaire({reference: '#gone'}));
+    const formWidget = page.locator('lfb-form-fields lfb-template-extract');
+    await expect(formWidget.locator('tbody > tr')).toContainText('#gone (missing)');
+
+    await formWidget.getByRole('button', {name: 'Edit this row'}).click();
+    const dialog = page.getByRole('dialog', {name: 'Edit template extraction'});
+    const select = dialog.getByLabel('Contained resource template');
+    await expect(select).toHaveValue('#gone');
+    await expect(select.locator('option:checked')).toHaveText('#gone (missing)');
+    await expect(select.locator('option:checked')).toBeDisabled();
+    const warning = 'The template #gone is not a contained resource in this form. ' +
+      'Choose another template to save this template extraction.';
+    await expect(dialog.getByRole('alert')).toHaveText(warning);
+    await expect(select).toHaveAccessibleDescription(warning);
+    const save = dialog.getByRole('button', {name: 'Save and close'});
+    await expect(save).toBeDisabled();
+
+    await select.selectOption('#pt');
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(formWidget.locator('tbody > tr')).toContainText('Patient #pt');
+  });
+
+  test('exports null placeholders in a contained template unchanged', async ({page}) => {
+    const templateExtractValue = {
+      extension: [{
+        url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue',
+        valueString: "item.where(linkId='g').answer.value"
+      }]
+    };
+    const questionnaire = createTemplateQuestionnaire({reference: '#pt'});
+    questionnaire.contained = [{
+      resourceType: 'Patient',
+      id: 'pt',
+      name: [{given: ['Fixed', null], _given: [null, templateExtractValue]} as fhir.HumanName]
+    }];
+    await importQuestionnaire(page, questionnaire);
+
+    for(const version of ['R5', 'R4', 'STU3'] as const) {
+      const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(output.contained, version).toEqual(questionnaire.contained);
+    }
+  });
+
+  test('keeps the help items of a contained Questionnaire template', async ({page}) => {
+    const questionnaire = await PWUtils.uploadFile(page, 'contained-q-help-text.json', false);
+
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).contained)
+      .toEqual(questionnaire.contained);
+    for(const version of ['R4', 'STU3'] as const) {
+      const output = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+      expect(output.contained, version).toEqual(questionnaire.contained);
+    }
+  });
+
+  test('exports Attachment values of a contained resource unchanged to R4', async ({page}, testInfo) => {
+    const questionnaire = await PWUtils.uploadFile(page, 'contained-resource-attachement-type-tmpl-extraction.json', false);
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).contained)
+      .toEqual(questionnaire.contained);
+
+    await PWUtils.clickMenuBarDropdownItem(page, 'Export', 'Export to file in FHIR R4 format');
+    const warningDialog = page.getByRole('dialog', {name: 'Contained resource compatibility'});
+    await expect(warningDialog).toContainText('Patient #pt');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      warningDialog.getByRole('button', {name: 'Export anyway'}).click()
+    ]);
+    const outputPath = testInfo.outputPath('contained-attachment.R4.json');
+    await download.saveAs(outputPath);
+    const output = JSON.parse(await fs.readFile(outputPath, 'utf-8'));
+
+    expect(output.contained).toEqual(questionnaire.contained);
+  });
+
+  test('imports Attachment values of a contained R4 resource unchanged', async ({page}) => {
+    const questionnaire: fhir.Questionnaire = {
+      resourceType: 'Questionnaire',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      status: 'draft',
+      contained: [{
+        resourceType: 'Patient',
+        id: 'pt',
+        extension: [{
+          url: 'http://example.org/document',
+          valueAttachment: {contentType: 'application/pdf', url: 'http://example.org/report.pdf', size: 3000}
+        }]
+      }],
+      item: [{linkId: 'q', text: 'Question', type: 'string'}]
+    };
+    await importQuestionnaire(page, questionnaire);
+
+    // R4 Attachment.size is a number; R5 would make it a string.
+    await expect.poll(async () => (await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).contained)
+      .toEqual(questionnaire.contained);
   });
 });

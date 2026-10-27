@@ -21,6 +21,9 @@
            [attr.minLength]="schema.minLength || null"
            [attr.pattern]="schema.pattern || null"
            [required]="isRequired"
+           (pointerenter)="updateTooltipVisibility()"
+           (focusin)="updateTooltipVisibility()"
+           (input)="updateTooltipVisibility()"
            [matTooltip]="getTooltipValue()"
            matTooltipClass="lfb-tooltip-pre-wrap"
            [lfbDisableControl]="schema.disabled">

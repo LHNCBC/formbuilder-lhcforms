@@ -14,12 +14,21 @@
           id="template-extract-resource"
           class="form-select form-select-sm"
           [(ngModel)]="model.templateReference"
+          [attr.aria-describedby]="getTemplateWarning() ? 'template-extract-resource-warning' : null"
         >
+          @if (missingTemplateReference) {
+            <option [value]="missingTemplateReference" disabled>{{missingTemplateReference}} (missing)</option>
+          }
           @for (resource of containedResources; track resource.reference) {
             <option [value]="resource.reference">{{resource.label}}</option>
           }
         </select>
         <div class="form-text">Choose the contained resource that will be cloned during extraction.</div>
+        @if (getTemplateWarning(); as templateWarning) {
+          <div id="template-extract-resource-warning" class="alert alert-warning mt-2 mb-0 template-extract-template-warning" role="alert">
+            {{templateWarning}}
+          </div>
+        }
       </div>
 
       <section class="bundle-fields-panel border rounded">
@@ -36,7 +45,7 @@
 
         <div id="template-extract-bundle-fields" [ngbCollapse]="bundleFieldsCollapsed">
           <div class="p-3 pb-0">
-            <p class="form-text mt-0">Use the expression editor to create valid FHIRPath. Expression fields are read-only here.</p>
+            <p class="form-text mt-0">Use the expression editor to create valid FHIRPath. Expression fields are read-only here; use Clear to remove an expression.</p>
 
             @for (field of expressionFields; track field.id) {
               <div class="mb-3 expression-field">
@@ -57,6 +66,16 @@
                   >
                     <mat-icon aria-hidden="true">edit</mat-icon>
                     <span>Create/edit expression</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    [disabled]="!model[field.id]"
+                    (click)="clearExpression(field.id)"
+                    [attr.aria-label]="'Clear '+field.label+' FHIRPath expression'"
+                  >
+                    <mat-icon aria-hidden="true">clear</mat-icon>
+                    <span>Clear</span>
                   </button>
                 </div>
                 <div class="form-text">{{field.description}}</div>

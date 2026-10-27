@@ -19,7 +19,7 @@ import {DialogService} from '../../../services/dialog.service';
 import {Util} from '../../util';
 import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 import {ExpressionEditorDlgComponent} from '../expression-editor-dlg/expression-editor-dlg.component';
-import {MessageType} from '../message-dlg/message-dlg.component';
+import {MessageDlgComponent, MessageDlgOptions, MessageType} from '../message-dlg/message-dlg.component';
 import {
   buildTemplateExtractExtension,
   ContainedResourceOption,
@@ -89,8 +89,12 @@ export class TemplateExtractDlgComponent implements OnInit {
   containedResources: ContainedResourceOption[] = [];
   isNew = true;
   bundleFieldsCollapsed = true;
+  // Reference of an edited occurrence whose template is not a contained resource, or ''.
+  missingTemplateReference = '';
   // Comparison keys of the other rows at this scope, which cannot change while the dialog is open.
   private otherRowSignatures: {rowNumber: number; signature: string}[] = [];
+  // Serialized model as initialized, to detect unsaved changes on cancel.
+  private initialModelJson = '';
 
   /** Initialize the dialog from an existing occurrence or a blank model. */
   ngOnInit(): void {
@@ -109,11 +113,71 @@ export class TemplateExtractDlgComponent implements OnInit {
     if(this.isNew && this.containedResources.length) {
       this.model.templateReference = this.containedResources[0].reference;
     }
+    if(!this.isNew && this.model.templateReference && !this.canSave()) {
+      this.missingTemplateReference = this.model.templateReference;
+    }
+    this.initialModelJson = JSON.stringify(this.model);
   }
 
-  /** Close without returning a changed extension. */
+  /**
+   * Explain why the selected template cannot be saved.
+   *
+   * @returns Warning text, or an empty string when a contained resource is selected.
+   */
+  getTemplateWarning(): string {
+    if(!this.containedResources.length) {
+      return 'This form has no contained resources to use as a template. ' +
+        'Add one under Contained resources in the form-level fields, then edit this template extraction again.';
+    }
+    if(this.missingTemplateReference && this.model.templateReference === this.missingTemplateReference) {
+      return `The template ${this.missingTemplateReference} is not a contained resource in this form. ` +
+        'Choose another template to save this template extraction.';
+    }
+    return '';
+  }
+
+  /**
+   * Close without returning a changed extension. Close right away when nothing changed;
+   * otherwise ask for confirmation and close only if the user discards the changes.
+   */
   cancel(): void {
-    this.dialogRef.close(false);
+    if(!this.hasChanges()) {
+      this.dialogRef.close(false);
+      return;
+    }
+
+    const modalRef = this.modalService.open(MessageDlgComponent, {scrollable: true});
+    const options: MessageDlgOptions = {
+      title: 'Confirm',
+      message: 'Are you sure you want to discard the changes you made?',
+      type: MessageType.INFO,
+      buttons: [
+        {label: 'Discard changes', value: 'yes'},
+        {label: 'Do not discard changes', value: 'no'}
+      ]
+    };
+    modalRef.componentInstance.options = options;
+
+    // As in TableRowDialogBase.cancel(), close the Material dialog only after the ngb modal
+    // is hidden and has restored the aria-hidden values it saved.
+    let discard = false;
+    modalRef.closed.subscribe((result) => {
+      discard = result === 'yes';
+    });
+    modalRef.hidden.subscribe(() => {
+      if(discard) {
+        // ngb reverts aria-hidden in a microtask after 'hidden'; close after it.
+        setTimeout(() => this.dialogRef.close(false));
+      }
+    });
+  }
+
+  /**
+   * Check whether the draft differs from the model the dialog was opened with.
+   * @returns True when the template or an expression was changed.
+   */
+  hasChanges(): boolean {
+    return JSON.stringify(this.model) !== this.initialModelJson;
   }
 
   /** Build the complex extension and return it to the table. */
@@ -192,6 +256,15 @@ export class TemplateExtractDlgComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  /**
+   * Remove an optional expression from the draft. The expression editor requires an
+   * expression, so it cannot be used to remove one.
+   * @param field - templateExtract child slice to clear.
+   */
+  clearExpression(field: TemplateExtractExpressionUrl): void {
+    this.model[field] = '';
   }
 
   /**
