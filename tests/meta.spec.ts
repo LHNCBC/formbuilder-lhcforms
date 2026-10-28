@@ -64,7 +64,7 @@ test.describe('Meta field tests', () => {
       .first();
     await mainPO.loadTable(tagTable, tagTableData);
 
-    // Verify the data in Preview > View/Validate Questionnaire JSON
+    // Verify the data in Preview > Validate Questionnaire JSON
     const q = await PWUtils.getQuestionnaireJSON(page, 'R5');
     expect(q.meta).toBeDefined();
     const meta = q.meta!;

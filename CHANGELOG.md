@@ -4,12 +4,15 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [12.12.0] 2026-10-27
 ### Added
-- Added a "View Extracted Resources" preview tab for FHIR R5 resources produced by
-  template- and observation-based extraction from the current form answers, with
-  a QuestionnaireResponse view, refresh, and JSON copy/download controls.
+- Added "Questionnaire Response JSON" and "Extracted Resources JSON" preview tabs for
+  FHIR R5 output from the current form answers, including template- and
+  observation-based extraction and JSON copy/download icon buttons. Both snapshots
+  update automatically when returning from "Rendered Form".
 
 ### Changed
 - Preserved entered answers and repeated groups when switching preview tabs.
+- Shortened preview tab titles and placed the response and extracted resources
+  after "Rendered Form", with "Validate Questionnaire JSON" last.
 
 ## [12.11.0] 2026-10-23
 ### Added

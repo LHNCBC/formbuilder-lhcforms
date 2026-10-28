@@ -74,15 +74,31 @@ describe('PreviewDlgComponent', () => {
     expect(JSON.parse(component.questionnaireResponseJSON)).toEqual(response);
     expect(JSON.parse(component.extractedResourcesJSON)).toEqual(bundle);
     expect(component.extractionJSON).toBe(component.extractedResourcesJSON);
-    component.activeExtractionViewIndex = 1;
+    expect(component.extractionViewLabel).toBe('extracted resources');
+    component.onPreviewTabSelected(1);
+    tick();
     expect(component.extractionJSON).toBe(component.questionnaireResponseJSON);
+    expect(component.extractionViewLabel).toBe('QuestionnaireResponse');
+    component.onPreviewTabSelected(2);
+    tick();
+    expect(component.extractionJSON).toBe(component.extractedResourcesJSON);
     expect(exportFHIR).toHaveBeenCalledTimes(1);
     expect(component.extractionInProgress).toBeFalse();
   }));
 
+  it('generates the paired snapshots when Questionnaire Response is opened first', fakeAsync(() => {
+    component.onPreviewTabSelected(1);
+    tick();
+    expect(JSON.parse(component.extractionJSON)).toEqual(response);
+    component.onPreviewTabSelected(2);
+    tick();
+    expect(JSON.parse(component.extractionJSON)).toEqual(bundle);
+    expect(exportFHIR).toHaveBeenCalledTimes(1);
+  }));
+
   it('waits for form readiness and regenerates only on refresh or reentry', fakeAsync(() => {
     component.formReady = false;
-    component.onPreviewTabSelected(2);
+    component.onPreviewTabSelected(1);
     tick();
     expect(exportFHIR).not.toHaveBeenCalled();
     component.handleFormReady();
@@ -100,6 +116,17 @@ describe('PreviewDlgComponent', () => {
     component.onPreviewTabSelected(2);
     tick();
     expect(exportFHIR).toHaveBeenCalledTimes(3);
+  }));
+
+  it('does not extract on the Questionnaire JSON tab but refreshes when returning to snapshots', fakeAsync(() => {
+    component.onPreviewTabSelected(1);
+    tick();
+    component.onPreviewTabSelected(3);
+    tick();
+    expect(exportFHIR).toHaveBeenCalledTimes(1);
+    component.onPreviewTabSelected(2);
+    tick();
+    expect(exportFHIR).toHaveBeenCalledTimes(2);
   }));
 
   it('does not use the Questionnaire JSON version selector for extraction', fakeAsync(() => {
@@ -211,7 +238,7 @@ describe('PreviewDlgComponent', () => {
     const revokeUrl = spyOn(URL, 'revokeObjectURL');
     spyOn(HTMLAnchorElement.prototype, 'dispatchEvent').and.returnValue(true);
     component.questionnaireResponseJSON = JSON.stringify(response);
-    component.activeExtractionViewIndex = 1;
+    component.activeTopLevelTabIndex = 1;
     component.downloadExtractionJSON();
     const blob = createUrl.calls.mostRecent().args[0] as Blob;
     expect(JSON.parse(await blob.text())).toEqual(response);

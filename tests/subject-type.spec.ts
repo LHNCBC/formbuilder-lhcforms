@@ -284,7 +284,7 @@ test.describe('Subject type autocomplete', () => {
     await PWUtils.typeAndSelect(subjectTypeInput, 'Citation');
 
     await PWUtils.clickMenuBarButton(page, 'Preview');
-    await page.getByRole('tab', { name: 'View/Validate Questionnaire JSON' }).click();
+    await page.getByRole('tab', { name: 'Validate Questionnaire JSON' }).click();
 
     const previewDialog = page.locator('lfb-preview-dlg');
     const r4Warning = page.getByText('This Questionnaire has subject types that are not valid in FHIR R4:');

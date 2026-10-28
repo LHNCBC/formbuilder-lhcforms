@@ -450,7 +450,7 @@ test.describe('Home page', () => {
       const downloadedJson = await saveDownload(download, downloadPath);
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByText('View/Validate Questionnaire JSON').click();
+      await page.getByText('Validate Questionnaire JSON').click();
       await page.getByText('R4 Version').click();
       await page.getByRole('button', { name: 'Copy questionnaire to clipboard' }).click();
 
@@ -489,7 +489,7 @@ test.describe('Home page', () => {
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
 
-      await page.getByText('View/Validate Questionnaire JSON').click();
+      await page.getByText('Validate Questionnaire JSON').click();
       await page.getByText('STU3 Version').click();
       await page.getByRole('button', { name: 'Copy questionnaire to clipboard' }).click();
 
@@ -515,7 +515,7 @@ test.describe('Home page', () => {
       const downloadedJson = await saveDownload(download, downloadPath);
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByText('View/Validate Questionnaire JSON').click();
+      await page.getByText('Validate Questionnaire JSON').click();
       await page.getByText('R4 Version').click();
       await page.getByRole('button', { name: 'Copy questionnaire to clipboard' }).click();
 
@@ -633,7 +633,7 @@ test.describe('Home page', () => {
       await expect(titleField).toHaveValue('Answer options form', { timeout: 10000 });
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', { name: 'View Rendered Form' }).click();
+      await page.getByRole('tab', { name: 'Rendered Form' }).click();
 
       const form = page.locator('wc-lhc-form');
       await expect(form).toBeVisible();
@@ -659,7 +659,7 @@ test.describe('Home page', () => {
       await expect(titleField).toHaveValue('US Surgeon General family health portrait', { timeout: 10000 });
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', { name: 'View Rendered Form' }).click();
+      await page.getByRole('tab', { name: 'Rendered Form' }).click();
 
       const form = page.locator('wc-lhc-form');
       await expect(form).toBeVisible({ timeout: 10000 });

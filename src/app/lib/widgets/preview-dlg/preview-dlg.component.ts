@@ -26,6 +26,7 @@ import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
 import {NgbAccordionItem, NgbAccordionModule, NgbAlertModule, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {faCopy} from '@fortawesome/free-regular-svg-icons';
+import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
 import {AsyncPipe, CommonModule} from "@angular/common";
@@ -93,7 +94,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   activeTopLevelTabIndex = 0;
   activeJsonTabIndex: number = FHIR_VERSIONS.R4;
   readonly extractionFHIRVersion = 'R5';
-  activeExtractionViewIndex = 0;
   formReady = false;
   extractionInProgress = false;
   hasTemplateExtraction = false;
@@ -123,7 +123,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   codeMirrorModel: string = '';
 
   fhirValidationMsg =
-    "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your " +
+    "Select the 'Validate Questionnaire JSON' tab to access a feature that validates your " +
     "Questionnaire against a supplied FHIR server, offering more detailed error insights.";
 
   // linkIds of items that use an external answerValueSet but have no preferred terminology
@@ -275,12 +275,17 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   /** Return the JSON snapshot selected in the extraction preview. */
   get extractionJSON(): string {
-    return this.activeExtractionViewIndex === 0 ? this.extractedResourcesJSON : this.questionnaireResponseJSON;
+    return this.activeTopLevelTabIndex === 2 ? this.extractedResourcesJSON : this.questionnaireResponseJSON;
   }
 
   /** Return the accessible name of the selected extraction snapshot. */
   get extractionViewLabel(): string {
-    return this.activeExtractionViewIndex === 0 ? 'extracted resources' : 'QuestionnaireResponse';
+    return this.activeTopLevelTabIndex === 2 ? 'extracted resources' : 'QuestionnaireResponse';
+  }
+
+  /** Return whether either of the paired extraction snapshot tabs is selected. */
+  get isExtractionTabSelected(): boolean {
+    return this.activeTopLevelTabIndex === 1 || this.activeTopLevelTabIndex === 2;
   }
 
   /**
@@ -296,12 +301,14 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Generate a fresh snapshot whenever the extraction tab is entered.
+   * Refresh both snapshots when entering from a non-extraction tab. Switching between
+   * the response and resources keeps the pair intact, including generated references.
    * @param index - Selected top-level tab index.
    */
   onPreviewTabSelected(index: number): void {
+    const wasExtractionTabSelected = this.isExtractionTabSelected;
     this.activeTopLevelTabIndex = index;
-    if(index === 2) {
+    if(this.isExtractionTabSelected && !wasExtractionTabSelected) {
       this.refreshExtraction();
     }
   }
@@ -310,7 +317,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   handleFormReady(): void {
     this.formReady = true;
     this.lformsErrors = '';
-    if(this.activeTopLevelTabIndex === 2) {
+    if(this.isExtractionTabSelected) {
       this.refreshExtraction();
     }
   }
@@ -318,7 +325,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   /** Mark an existing snapshot stale without running extraction on every input change. */
   handleFormChange(): void {
     if(this.questionnaireResponseJSON && !this.extractionInProgress) {
-      this.extractionStatus = 'Form answers changed. Refresh or reopen this tab to update the preview.';
+      this.extractionStatus = 'Form answers changed. Return from Rendered Form to update both snapshots.';
     }
   }
 
@@ -371,7 +378,8 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       if(extracted.length) {
         // Older versions can return standalone Observations alongside the template Bundle.
         this.extractedResourcesJSON = JSON.stringify(extracted.length === 1 ? extracted[0] : extracted, null, 2);
-        this.extractionStatus = 'Extraction preview updated.';
+        // The JSON itself shows success; keep the live status region empty.
+        this.extractionStatus = '';
       }
       else if(supportsTemplates) {
         this.extractionNotice = 'Extraction completed; no resources were produced.';
@@ -384,7 +392,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     catch(error) {
       this.extractedResourcesJSON = '';
       this.extractionError = error instanceof Error ? error.message : String(error);
-      this.extractionStatus = 'Extraction failed. Correct the problem and select Refresh to retry.';
+      this.extractionStatus = 'Extraction failed. Review the error details and correct the form or extraction settings.';
       // Extraction can throw before returning its response. Export a separate diagnostic
       // snapshot, explicitly labelled so it cannot be mistaken for successful engine input.
       if(!this.questionnaireResponseJSON && container && typeof LForms.Util.getFormFHIRData === 'function') {
@@ -420,7 +428,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       this.downloadObjectUrl = URL.createObjectURL(new Blob([this.extractionJSON], {type: 'application/json;charset=utf-8'}));
       const anchor = document.createElement('a');
       anchor.href = this.downloadObjectUrl;
-      anchor.download = `${this.activeExtractionViewIndex === 0 ? 'extracted-resources' : 'questionnaire-response'}.${this.extractionFHIRVersion}.json`;
+      anchor.download = `${this.activeTopLevelTabIndex === 2 ? 'extracted-resources' : 'questionnaire-response'}.${this.extractionFHIRVersion}.json`;
       anchor.dispatchEvent(new MouseEvent('click'));
     }
     catch(error) {
@@ -507,4 +515,5 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   protected readonly faCopy = faCopy;
+  protected readonly faDownload = faDownload;
 }

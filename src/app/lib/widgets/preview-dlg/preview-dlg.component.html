@@ -5,7 +5,7 @@
 </h2>
 <mat-dialog-content #dlgContent class="lfb-mat-tab-content">
   <mat-tab-group [mat-stretch-tabs]="true" [preserveContent]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="onPreviewTabSelected($event)">
-    <mat-tab label="View Rendered Form">
+    <mat-tab label="Rendered Form">
       <ng-template matTabContent>
         <div>
           <div class="pt-1">This preview is being handled by
@@ -41,9 +41,19 @@
         </div>
       </ng-template>
     </mat-tab>
+    <mat-tab label="Questionnaire Response JSON">
+      <ng-template matTabContent>
+        <ng-container *ngTemplateOutlet="extractionPreview; context: {$implicit: questionnaireResponseJSON, label: 'QuestionnaireResponse', emptyMessage: 'No QuestionnaireResponse available.'}"></ng-container>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Extracted Resources JSON">
+      <ng-template matTabContent>
+        <ng-container *ngTemplateOutlet="extractionPreview; context: {$implicit: extractedResourcesJSON, label: 'extracted resources', emptyMessage: 'No extracted resources available.', note: 'Resources are not submitted to a FHIR server.'}"></ng-container>
+      </ng-template>
+    </mat-tab>
     <mat-tab>
       <ng-template matTabLabel>
-        View/Validate Questionnaire JSON
+        Validate Questionnaire JSON
       </ng-template>
       <ng-template matTabContent>
         <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false"
@@ -78,64 +88,6 @@
         </mat-tab-group>
       </ng-template>
     </mat-tab>
-    <mat-tab label="View Extracted Resources">
-      <ng-template matTabContent>
-        <section class="extraction-preview" aria-label="Extraction preview" [attr.aria-busy]="extractionInProgress">
-          <p class="mt-2 mb-2">Preview resources extracted from the current answers. Refresh or reopen this tab after changing answers.
-            Resources are not submitted to a FHIR server.</p>
-          <div class="extraction-toolbar d-flex flex-wrap align-items-center gap-2 mb-2">
-            <button type="button" class="btn btn-sm btn-primary" (click)="refreshExtraction()"
-              [disabled]="!formReady || extractionInProgress">Refresh</button>
-            <span>FHIR {{extractionFHIRVersion}} | LForms {{formService.lformsVersion}}</span>
-            <button type="button" class="btn btn-sm btn-outline-primary ms-sm-auto"
-              [disabled]="!extractionJSON || extractionInProgress" [cdkCopyToClipboard]="extractionJSON"
-              (cdkCopyToClipboardCopied)="onExtractionCopied($event)"
-              [attr.aria-label]="'Copy ' + extractionViewLabel + ' JSON'">Copy JSON</button>
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="downloadExtractionJSON()"
-              [disabled]="!extractionJSON || extractionInProgress"
-              [attr.aria-label]="'Download ' + extractionViewLabel + ' JSON'">Download JSON</button>
-          </div>
-          <p class="extraction-status mb-2" role="status" aria-live="polite" aria-atomic="true">
-            @if(extractionInProgress) {
-              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-            }
-            {{extractionStatus}}
-          </p>
-          @if(!hasTemplateExtraction) {
-            <ngb-alert type="info" [dismissible]="false">
-              No template extraction is configured. Add a template extraction setting at questionnaire or item level
-              to preview template results. Any configured observation-based extraction is still included.
-            </ngb-alert>
-          }
-          @if(renderedFormCompatibilityWarning) {
-            <ngb-alert type="warning" [dismissible]="false">
-              <span [innerHTML]="renderedFormCompatibilityWarning"></span>
-            </ngb-alert>
-          }
-          @if(extractionUnavailable) {
-            <ngb-alert type="warning" [dismissible]="false">{{extractionUnavailable}}</ngb-alert>
-          }
-          @if(extractionError) {
-            <ngb-alert type="danger" [dismissible]="false"><span class="extraction-error">{{extractionError}}</span></ngb-alert>
-          }
-          @if(extractionNotice) {
-            <ngb-alert type="info" [dismissible]="false">{{extractionNotice}}</ngb-alert>
-          }
-          <mat-tab-group [mat-stretch-tabs]="false" [(selectedIndex)]="activeExtractionViewIndex">
-            <mat-tab label="Extracted Resources">
-              <ng-template matTabContent>
-                <ng-container *ngTemplateOutlet="extractionSnapshot; context: {$implicit: extractedResourcesJSON, label: 'Extracted resources JSON'}"></ng-container>
-              </ng-template>
-            </mat-tab>
-            <mat-tab label="QuestionnaireResponse">
-              <ng-template matTabContent>
-                <ng-container *ngTemplateOutlet="extractionSnapshot; context: {$implicit: questionnaireResponseJSON, label: 'QuestionnaireResponse JSON'}"></ng-container>
-              </ng-template>
-            </mat-tab>
-          </mat-tab-group>
-        </section>
-      </ng-template>
-    </mat-tab>
   </mat-tab-group>
   <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
 </mat-dialog-content>
@@ -143,9 +95,48 @@
   <button class="btn btn-primary" (click)="close()">Close</button>
 </mat-dialog-actions>
 
-<ng-template #extractionSnapshot let-json let-label="label">
+<ng-template #extractionPreview let-json let-label="label" let-emptyMessage="emptyMessage" let-note="note">
+  <section class="extraction-preview" [attr.aria-label]="label + ' preview'" [attr.aria-busy]="extractionInProgress">
+    <div class="extraction-toolbar d-flex flex-wrap align-items-center gap-2 mt-2 mb-2">
+      @if(note) {
+        <span>{{note}}</span>
+      }
+      <span class="ms-auto">FHIR {{extractionFHIRVersion}}</span>
+    </div>
+    <p class="extraction-status mb-2" role="status" aria-live="polite" aria-atomic="true">
+      @if(extractionInProgress) {
+        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+      }
+      {{extractionStatus}}
+    </p>
+    @if(!hasTemplateExtraction) {
+      <ngb-alert type="info" [dismissible]="false">
+        No template extraction is configured. Add a template extraction setting at questionnaire or item level
+        to preview template results. Any configured observation-based extraction is still included.
+      </ngb-alert>
+    }
+    @if(renderedFormCompatibilityWarning) {
+      <ngb-alert type="warning" [dismissible]="false">
+        <span [innerHTML]="renderedFormCompatibilityWarning"></span>
+      </ngb-alert>
+    }
+    @if(extractionUnavailable) {
+      <ngb-alert type="warning" [dismissible]="false">{{extractionUnavailable}}</ngb-alert>
+    }
+    @if(extractionError) {
+      <ngb-alert type="danger" [dismissible]="false"><span class="extraction-error">{{extractionError}}</span></ngb-alert>
+    }
+    @if(extractionNotice) {
+      <ngb-alert type="info" [dismissible]="false">{{extractionNotice}}</ngb-alert>
+    }
+    <ng-container *ngTemplateOutlet="extractionSnapshot; context: {$implicit: json, label: label, emptyMessage: emptyMessage}"></ng-container>
+  </section>
+</ng-template>
+
+<ng-template #extractionSnapshot let-json let-label="label" let-emptyMessage="emptyMessage">
   @if(json) {
-    <div role="region" [attr.aria-label]="label">
+    <!-- Overlay the export buttons on the JSON, like the Validate Questionnaire JSON copy button. -->
+    <div class="overlay-container" role="region" [attr.aria-label]="label + ' JSON'">
       <ngx-codemirror [ngModel]="json" (codeMirrorLoaded)="codeMirrorLoaded($event)"
         [options]="{
           lineNumbers: true,
@@ -156,10 +147,24 @@
           foldGutter: true,
           gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
         }"></ngx-codemirror>
+      <div class="overlay-top-right me-3 d-flex">
+        <button type="button" class="btn" [disabled]="extractionInProgress"
+          [cdkCopyToClipboard]="json" (cdkCopyToClipboardCopied)="onExtractionCopied($event)"
+          [attr.title]="'Copy ' + label + ' JSON to clipboard'"
+          [attr.aria-label]="'Copy ' + label + ' JSON'">
+          <fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon>
+        </button>
+        <button type="button" class="btn" (click)="downloadExtractionJSON()"
+          [disabled]="extractionInProgress"
+          [attr.title]="'Download ' + label + ' JSON'"
+          [attr.aria-label]="'Download ' + label + ' JSON'">
+          <fa-icon size="2x" [icon]="faDownload" aria-hidden="true"></fa-icon>
+        </button>
+      </div>
     </div>
   }
   @else {
-    <p class="m-2">No JSON snapshot available.</p>
+    <p class="m-2">{{emptyMessage}}</p>
   }
 </ng-template>
 <ng-template #validations let-fhirVersion>

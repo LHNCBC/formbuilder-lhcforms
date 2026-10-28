@@ -1060,7 +1060,7 @@ test.describe('Item control', () => {
       expect(questionnaire.item[0].item[1].text).toBe(helpText);
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', {name: 'View Rendered Form'}).click();
+      await page.getByRole('tab', {name: 'Rendered Form'}).click();
 
       const preview = page.locator('lfb-preview-dlg');
       const legalButton = preview.getByRole('button', {

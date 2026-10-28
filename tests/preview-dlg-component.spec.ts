@@ -126,7 +126,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await page.getByRole('button', {name: 'Continue'}).click();
       const fileJson = await PWUtils.uploadFile(page, 'contained-example.json');
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', { name: 'View/Validate Questionnaire JSON' }).click();
+      await page.getByRole('tab', { name: 'Validate Questionnaire JSON' }).click();
       await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
       const fbJson = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(fbJson.contained).toEqual(fileJson.contained);
@@ -218,7 +218,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
 
       // Open the preview dialog and switch to the rendered LForms widget.
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', {name: 'View Rendered Form'}).click();
+      await page.getByRole('tab', {name: 'Rendered Form'}).click();
 
       const form = page.locator('wc-lhc-form');
       await expect(form).toBeVisible({timeout: 15000});
@@ -254,7 +254,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await expect(titleField).toHaveValue('SNOMED answer value set form');
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', {name: 'View Rendered Form'}).click();
+      await page.getByRole('tab', {name: 'Rendered Form'}).click();
 
       const form = page.locator('wc-lhc-form');
       await expect(form).toBeVisible({timeout: 15000});
@@ -279,6 +279,9 @@ test.describe('preview-dlg-component.spec.ts', () => {
         .toHaveValue('Extraction preview sample');
       await PWUtils.clickMenuBarButton(page, 'Preview');
       await expect(page.locator('wc-lhc-form input[id^="name/"]')).toBeVisible();
+      await expect(page.locator('lfb-preview-dlg').getByRole('tablist').first().getByRole('tab')).toHaveText([
+        'Rendered Form', 'Questionnaire Response JSON', 'Extracted Resources JSON', 'Validate Questionnaire JSON'
+      ]);
     });
 
     test('extracts live answers, preserves repeated groups across tabs, and exports matching snapshots', async ({page}) => {
@@ -294,12 +297,27 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await measurements.nth(1).press('Tab');
       await form.evaluate(element => { window['previewWidget'] = element; });
 
-      await dialog.getByRole('tab', {name: 'View/Validate Questionnaire JSON', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Validate Questionnaire JSON', exact: true}).click();
       await dialog.getByRole('tab', {name: 'STU3 Version', exact: true}).click();
-      await dialog.getByRole('tab', {name: 'View Extracted Resources', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      const extractedPanel = dialog.getByRole('tabpanel', {name: 'Extracted Resources JSON', exact: true});
       const extractedCopy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      const extractedDownload = dialog.getByRole('button', {name: 'Download extracted resources JSON', exact: true});
       await expect(extractedCopy).toBeEnabled();
-      await expect(dialog.locator('.extraction-toolbar')).toContainText('FHIR R5');
+      await expect(extractedCopy).toHaveText('');
+      await expect(extractedCopy.locator('fa-icon svg')).toBeVisible();
+      await expect(extractedCopy).toHaveAttribute('title', 'Copy extracted resources JSON to clipboard');
+      await expect(extractedDownload).toHaveText('');
+      await expect(extractedDownload.locator('fa-icon svg')).toBeVisible();
+      await expect(extractedDownload).toHaveAttribute('title', 'Download extracted resources JSON');
+      // Export buttons overlay the JSON editor, as on the Validate Questionnaire JSON tab.
+      const extractedJSON = extractedPanel.getByRole('region', {name: 'extracted resources JSON', exact: true});
+      await expect(extractedJSON.locator('.overlay-top-right').getByRole('button')).toHaveCount(2);
+      await expect(extractedPanel.locator('.extraction-toolbar span')).toHaveText([
+        'Resources are not submitted to a FHIR server.', 'FHIR R5'
+      ]);
+      await expect(extractedPanel.locator('.extraction-status')).toHaveText('');
+      await expect(extractedPanel.getByText('Preview the QuestionnaireResponse', {exact: false})).toHaveCount(0);
       await extractedCopy.click();
       const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(bundle.resourceType).toBe('Bundle');
@@ -310,7 +328,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       expect(bundle.entry[1].request).toEqual({method: 'POST', url: 'Observation'});
 
       const bundleDownloadEvent = page.waitForEvent('download');
-      await dialog.getByRole('button', {name: 'Download extracted resources JSON', exact: true}).click();
+      await extractedDownload.click();
       const bundleDownload = await bundleDownloadEvent;
       expect(bundleDownload.suggestedFilename()).toBe('extracted-resources.R5.json');
       const bundleStream = await bundleDownload.createReadStream();
@@ -320,7 +338,11 @@ test.describe('preview-dlg-component.spec.ts', () => {
       }
       expect(JSON.parse(Buffer.concat(bundleChunks).toString())).toEqual(bundle);
 
-      await dialog.getByRole('tab', {name: 'QuestionnaireResponse', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      await expect(dialog.getByRole('button', {name: /^(Refresh|Retry)$/, includeHidden: true})).toHaveCount(0);
+      // The FHIR server note applies only to extracted resources.
+      await expect(dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true})
+        .locator('.extraction-toolbar span')).toHaveText(['FHIR R5']);
       await dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true}).click();
       const response = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(response.resourceType).toBe('QuestionnaireResponse');
@@ -339,29 +361,29 @@ test.describe('preview-dlg-component.spec.ts', () => {
       }
       expect(JSON.parse(Buffer.concat(responseChunks).toString())).toEqual(response);
 
-      await dialog.getByRole('tab', {name: 'View Rendered Form', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Rendered Form', exact: true}).click();
       expect(await form.evaluate(element => element === window['previewWidget'])).toBe(true);
       await expect(form.locator('input[id^="name/"]')).toHaveValue('Preview Person');
       await expect(measurements).toHaveCount(2);
       await expect(measurements.nth(1)).toHaveValue('7.5');
       await measurements.first().fill('22');
       await measurements.first().press('Tab');
-      await dialog.getByRole('tab', {name: 'View Extracted Resources', exact: true}).click();
-      await dialog.getByRole('tab', {name: 'Extracted Resources', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       await expect(extractedCopy).toBeEnabled();
       await extractedCopy.click();
       const updated = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(updated.entry[1].resource.valueQuantity.value).toBe(22);
-      await dialog.getByRole('button', {name: 'Refresh', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       await expect(extractedCopy).toBeEnabled();
       await extractedCopy.click();
-      expect(JSON.parse(await PWUtils.getClipboardContent(page)).entry[1].resource.valueQuantity.value).toBe(22);
+      expect(JSON.parse(await PWUtils.getClipboardContent(page))).toEqual(updated);
       expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(questionnaire);
     });
 
-    test('shows extraction errors without stale output and allows retry with response diagnostics', async ({page}) => {
+    test('shows extraction errors without stale output and recovers on reentry with response diagnostics', async ({page}) => {
       const dialog = page.locator('lfb-preview-dlg');
-      await dialog.getByRole('tab', {name: 'View Extracted Resources', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       const copy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
       await expect(copy).toBeEnabled();
       await page.evaluate(() => {
@@ -375,19 +397,55 @@ test.describe('preview-dlg-component.spec.ts', () => {
           return window['originalPreviewExport'].call(this, resourceType, version, source, options);
         };
       });
-      await dialog.getByRole('button', {name: 'Refresh', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Rendered Form', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       await expect(dialog.locator('.extraction-error')).toContainText('Test template expression failed');
-      await expect(copy).toBeDisabled();
-      await dialog.getByRole('tab', {name: 'QuestionnaireResponse', exact: true}).click();
+      await expect(dialog.locator('.extraction-status'))
+        .toHaveText('Extraction failed. Review the error details and correct the form or extraction settings.');
+      await expect(dialog.getByRole('button', {name: /^(Refresh|Retry)$/, includeHidden: true})).toHaveCount(0);
+      // Export buttons are shown only over JSON output.
+      await expect(copy).toHaveCount(0);
+      await expect(dialog.getByText('No extracted resources available.', {exact: true})).toBeVisible();
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
       await expect(dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true})).toBeEnabled();
-      await expect(dialog.getByText(/exported separately for debugging/)).toBeVisible();
+      await expect(dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true})
+        .getByText(/exported separately for debugging/)).toBeVisible();
       await page.evaluate(() => {
         window['LForms'].Util.getFormFHIRData = window['originalPreviewExport'];
       });
-      await dialog.getByRole('button', {name: 'Refresh', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Rendered Form', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
       await expect(dialog.locator('.extraction-error')).toHaveCount(0);
-      await dialog.getByRole('tab', {name: 'Extracted Resources', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       await expect(copy).toBeEnabled();
+    });
+
+    test('opens Questionnaire Response JSON first and shows the empty extracted resources message', async ({page}) => {
+      const dialog = page.locator('lfb-preview-dlg');
+      await page.evaluate(() => {
+        const util = window['LForms'].Util;
+        const originalExport = util.getFormFHIRData;
+        /** Simulate successful extraction with no resources while retaining the real response export. */
+        util.getFormFHIRData = function(resourceType, version, source, options) {
+          const response = originalExport.call(this, resourceType, version, source);
+          return options?.extract ? [response] : response;
+        };
+      });
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      const responseCopy = dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true});
+      await expect(responseCopy).toBeEnabled();
+      await expect(responseCopy).toHaveText('');
+      await expect(responseCopy.locator('fa-icon svg')).toBeVisible();
+      await responseCopy.click();
+      const response = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(response.resourceType).toBe('QuestionnaireResponse');
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      await expect(dialog.getByText('No extracted resources available.', {exact: true})).toBeVisible();
+      await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toHaveCount(0);
+      await expect(dialog.getByRole('button', {name: 'Download extracted resources JSON', exact: true})).toHaveCount(0);
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      await responseCopy.click();
+      expect(JSON.parse(await PWUtils.getClipboardContent(page))).toEqual(response);
     });
   });
 });

@@ -352,7 +352,7 @@ test.describe('enableWhen condition and behavior', () => {
 
       const fhirMsg = tabBody.locator('.fhir-validation-msg');
       await expect(fhirMsg).toHaveText(
-        "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights."
+        "Select the 'Validate Questionnaire JSON' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights."
       );
 
       await page.locator('mat-dialog-actions button:has-text("Close")').click();
