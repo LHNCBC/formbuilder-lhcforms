@@ -76,57 +76,49 @@ describe('PreviewDlgComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('opens on Rendered Form by default and remembers the selected tab by name', () => {
+  it('opens on Rendered Form by default and remembers only Questionnaire JSON or Rendered Form', () => {
     expect(formService.getStorageItem).toHaveBeenCalledWith('sessionStorage', 'previewTab');
     expect(component.activeTopLevelTabIndex).toBe(PreviewTab.RenderedForm);
     component.onPreviewTabSelected(PreviewTab.QuestionnaireJSON);
     expect(formService.setStorageItem).toHaveBeenCalledWith('sessionStorage', 'previewTab', 'QuestionnaireJSON');
+    // A snapshot tab is remembered as Rendered Form.
+    for(const tab of [PreviewTab.QuestionnaireResponse, PreviewTab.ExtractedResources, PreviewTab.RenderedForm]) {
+      component.onPreviewTabSelected(tab);
+      expect(formService.setStorageItem.calls.mostRecent().args).toEqual(['sessionStorage', 'previewTab', 'RenderedForm']);
+    }
     formService.getStorageItem.and.returnValue('QuestionnaireJSON');
     component.ngOnInit();
     expect(component.activeTopLevelTabIndex).toBe(PreviewTab.QuestionnaireJSON);
-    // Unknown and numeric values fall back to the default.
-    for(const stored of ['Unknown', '0', 'toString']) {
+    // Snapshot tabs saved by earlier versions, and unknown or numeric values, open the default.
+    for(const stored of ['QuestionnaireResponse', 'ExtractedResources', 'Unknown', '0', 'toString']) {
       formService.getStorageItem.and.returnValue(stored);
       component.ngOnInit();
       expect(component.activeTopLevelTabIndex).toBe(PreviewTab.RenderedForm);
     }
   });
 
-  it('reopens a remembered snapshot tab after the rendered form is ready', fakeAsync(() => {
-    formService.getStorageItem.and.returnValue('ExtractedResources');
+  it('enables the snapshot tabs once Rendered Form is shown', () => {
+    expect(component.renderedFormVisited).toBeTrue();
+    formService.getStorageItem.and.returnValue('QuestionnaireJSON');
+    const fromQuestionnaireJSON = TestBed.createComponent(PreviewDlgComponent).componentInstance;
+    fromQuestionnaireJSON.ngOnInit();
+    expect(fromQuestionnaireJSON.renderedFormVisited).toBeFalse();
+    fromQuestionnaireJSON.onPreviewTabSelected(PreviewTab.QuestionnaireJSON);
+    expect(fromQuestionnaireJSON.renderedFormVisited).toBeFalse();
+    fromQuestionnaireJSON.onPreviewTabSelected(PreviewTab.RenderedForm);
+    expect(fromQuestionnaireJSON.renderedFormVisited).toBeTrue();
+  });
+
+  it('generates snapshots selected while the rendered form is loading once it is ready', fakeAsync(() => {
     component.formReady = false;
-    component.ngOnInit();
-    // The rendered form must be shown first so that the widget is created.
-    expect(component.activeTopLevelTabIndex).toBe(PreviewTab.RenderedForm);
-    component.handleFormReady();
-    expect(component.activeTopLevelTabIndex).toBe(PreviewTab.ExtractedResources);
+    component.onPreviewTabSelected(PreviewTab.ExtractedResources);
     tick();
-    expect(exportFHIR).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(component.extractedResourcesJSON)).toEqual(bundle);
-    // The remembered tab is used only once.
-    component.onPreviewTabSelected(PreviewTab.RenderedForm);
-    component.handleFormReady();
-    expect(component.activeTopLevelTabIndex).toBe(PreviewTab.RenderedForm);
-  }));
-
-  it('shows a remembered snapshot tab with the error when the form fails to render', () => {
-    formService.getStorageItem.and.returnValue('QuestionnaireResponse');
-    component.formReady = false;
-    component.ngOnInit();
-    component.handleLFormsError({detail: 'Unable to render'});
-    expect(component.activeTopLevelTabIndex).toBe(PreviewTab.QuestionnaireResponse);
-    expect(component.responseError).toContain('Unable to render');
     expect(exportFHIR).not.toHaveBeenCalled();
-  });
-
-  it('keeps a tab chosen before the form is ready instead of the remembered one', () => {
-    formService.getStorageItem.and.returnValue('ExtractedResources');
-    component.formReady = false;
-    component.ngOnInit();
-    component.onPreviewTabSelected(PreviewTab.QuestionnaireJSON);
     component.handleFormReady();
-    expect(component.activeTopLevelTabIndex).toBe(PreviewTab.QuestionnaireJSON);
-  });
+    tick();
+    expect(component.activeTopLevelTabIndex).toBe(PreviewTab.ExtractedResources);
+    expect(JSON.parse(component.extractedResourcesJSON)).toEqual(bundle);
+  }));
 
   it('omits the empty message only when the tab explains the missing JSON', () => {
     expect(component.hasEmptySnapshotCause('qr')).toBeFalse();

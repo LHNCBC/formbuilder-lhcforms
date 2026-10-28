@@ -30,6 +30,7 @@ import {faCopy} from '@fortawesome/free-regular-svg-icons';
 import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {AsyncPipe, CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {ClipboardModule} from "@angular/cdk/clipboard";
@@ -85,6 +86,7 @@ export enum PreviewTab {
     MatDialogModule,
     MatIconModule,
     MatTabsModule,
+    MatTooltipModule,
     AsyncPipe,
     FormsModule,
     ClipboardModule,
@@ -109,8 +111,10 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
   activeTopLevelTabIndex: PreviewTab = PreviewTab.RenderedForm;
-  // Snapshot tab to select once the rendered form is ready; see selectInitialTab().
-  private pendingSnapshotTab: PreviewTab;
+  // The snapshot tabs read answers from the rendered form, which is created only when its
+  // lazy tab is first shown. They stay disabled until then.
+  renderedFormVisited = false;
+  readonly snapshotTabsDisabledMsg = 'Open the Rendered Form tab first.';
   activeJsonTabIndex: number = FHIR_VERSIONS.R4;
   readonly extractionFHIRVersion = 'R5';
   formReady = false;
@@ -225,23 +229,17 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   /**
    * Select the tab visited last in this browser session, or Rendered Form by default.
-   * Snapshot tabs read answers from the rendered form, which is created only when its
-   * tab is first shown. For them, show Rendered Form first and switch once it is ready.
+   * Only Questionnaire JSON and Rendered Form are restored; the snapshot tabs need answers
+   * entered in a new form, so a remembered snapshot tab opens Rendered Form instead.
    */
   private selectInitialTab(): void {
     const storedName = this.formService.getStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY) ?? '';
     const stored: unknown = PreviewTab[storedName as keyof typeof PreviewTab];
-    // Tabs are stored by name; ignore missing or unknown values.
-    const lastTab = typeof stored === 'number' ? stored as PreviewTab : PreviewTab.RenderedForm;
-    const isSnapshotTab = lastTab === PreviewTab.QuestionnaireResponse || lastTab === PreviewTab.ExtractedResources;
-    this.pendingSnapshotTab = isSnapshotTab ? lastTab : undefined;
-    this.activeTopLevelTabIndex = isSnapshotTab ? PreviewTab.RenderedForm : lastTab;
-  }
-
-  /** Select the remembered snapshot tab, if any, after the rendered form is ready or has failed. */
-  private selectPendingSnapshotTab(): void {
-    if(this.pendingSnapshotTab !== undefined) {
-      this.onPreviewTabSelected(this.pendingSnapshotTab);
+    // Tabs are stored by name; ignore missing, unknown, and snapshot tab values.
+    this.activeTopLevelTabIndex = stored === PreviewTab.QuestionnaireJSON ?
+      PreviewTab.QuestionnaireJSON : PreviewTab.RenderedForm;
+    if(this.activeTopLevelTabIndex === PreviewTab.RenderedForm) {
+      this.renderedFormVisited = true;
     }
   }
 
@@ -322,7 +320,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.questionnaireResponseJSON = '';
     this.extractionError = `The rendered form is unavailable: ${event.detail}`;
     this.responseError = this.extractionError;
-    this.selectPendingSnapshotTab();
   }
 
   /** Return the JSON snapshot selected in the extraction preview. */
@@ -414,15 +411,18 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * Refresh both snapshots when entering from a non-extraction tab. Switching between
    * the response and resources keeps the pair intact, including generated references.
    * Copy/download pop-up messages are closed so they are not shown on another tab.
-   * The tab is remembered for the next time the preview opens in this browser session.
+   * Questionnaire JSON and Rendered Form are remembered for the next time the preview
+   * opens in this browser session; a snapshot tab is remembered as Rendered Form.
    * @param index - Selected top-level tab index.
    */
   onPreviewTabSelected(index: PreviewTab): void {
     const wasExtractionTabSelected = this.isExtractionTabSelected;
     this.activeTopLevelTabIndex = index;
-    // A tab chosen before the rendered form is ready replaces the remembered one.
-    this.pendingSnapshotTab = undefined;
-    this.formService.setStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY, PreviewTab[index]);
+    if(index === PreviewTab.RenderedForm) {
+      this.renderedFormVisited = true;
+    }
+    const tabToRemember = index === PreviewTab.QuestionnaireJSON ? index : PreviewTab.RenderedForm;
+    this.formService.setStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY, PreviewTab[tabToRemember]);
     this.snackBar.dismiss();
     if(this.isExtractionTabSelected && !wasExtractionTabSelected) {
       this.refreshExtraction();
@@ -436,7 +436,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     if(this.isExtractionTabSelected) {
       this.refreshExtraction();
     }
-    this.selectPendingSnapshotTab();
   }
 
   /** Schedule extraction after allowing pending input changes to settle. */
@@ -672,6 +671,12 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   protected readonly faCopy = faCopy;
   protected readonly faDownload = faDownload;
 }
+
+
+
+
+
+
 
 
 

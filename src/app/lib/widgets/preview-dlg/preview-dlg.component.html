@@ -76,12 +76,21 @@
         </div>
       </ng-template>
     </mat-tab>
-    <mat-tab label="Questionnaire Response JSON">
+    <!-- The snapshot tabs need the rendered form, which is created when its tab is first shown. -->
+    <mat-tab [disabled]="!renderedFormVisited">
+      <ng-template matTabLabel>
+        <span class="snapshot-tab-label" [matTooltip]="snapshotTabsDisabledMsg"
+          [matTooltipDisabled]="renderedFormVisited">Questionnaire Response JSON</span>
+      </ng-template>
       <ng-template matTabContent>
         <ng-container *ngTemplateOutlet="extractionPreview; context: {$implicit: questionnaireResponseJSON, view: 'qr', label: 'QuestionnaireResponse', emptyMessage: 'No QuestionnaireResponse available.'}"></ng-container>
       </ng-template>
     </mat-tab>
-    <mat-tab label="Extracted Resources JSON">
+    <mat-tab [disabled]="!renderedFormVisited">
+      <ng-template matTabLabel>
+        <span class="snapshot-tab-label" [matTooltip]="snapshotTabsDisabledMsg"
+          [matTooltipDisabled]="renderedFormVisited">Extracted Resources JSON</span>
+      </ng-template>
       <ng-template matTabContent>
         <ng-container *ngTemplateOutlet="extractionPreview; context: {$implicit: extractedResourcesJSON, view: 'er', label: 'extracted resources', emptyMessage: 'No extracted resources available.', note: 'Resources are not submitted to a FHIR server.'}"></ng-container>
       </ng-template>

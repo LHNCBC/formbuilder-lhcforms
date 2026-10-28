@@ -466,29 +466,50 @@ test.describe('preview-dlg-component.spec.ts', () => {
       expect(JSON.parse(await PWUtils.getClipboardContent(page))).toEqual(response);
     });
 
-    test('reopens the last visited tab, including snapshot tabs with live answers', async ({page}) => {
+    test('reopens Questionnaire JSON or Rendered Form and enables snapshots after Rendered Form', async ({page}) => {
       const dialog = page.locator('lfb-preview-dlg');
-      await dialog.locator('wc-lhc-form input[id^="name/"]').fill('Remembered Person');
-      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      const responseTab = dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true});
+      const extractedTab = dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true});
+      const renderedTab = dialog.getByRole('tab', {name: 'Rendered Form', exact: true});
+      const jsonTab = dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true});
+      // Snapshot tabs are not remembered; the preview reopens on Rendered Form.
+      await extractedTab.click();
       await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toBeEnabled();
       await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
-
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      const extractedTab = dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true});
-      await expect(extractedTab).toHaveAttribute('aria-selected', 'true');
+      await expect(renderedTab).toHaveAttribute('aria-selected', 'true');
+      await expect(extractedTab).toBeEnabled();
+
+      await jsonTab.click();
+      await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await expect(jsonTab).toHaveAttribute('aria-selected', 'true');
+      await expect(dialog.getByRole('button', {name: 'Download questionnaire JSON', exact: true})).toBeVisible();
+      // The rendered form is not created yet, so the snapshot tabs are disabled and say why.
+      await expect(responseTab).toBeDisabled();
+      await expect(extractedTab).toBeDisabled();
+      await extractedTab.hover();
+      // Material tooltips are aria-hidden and have no tooltip role, so locate them by class.
+      const tooltip = page.locator('.mat-mdc-tooltip');
+      await expect(tooltip).toHaveText('Open the Rendered Form tab first.');
+      await extractedTab.click({force: true});
+      await expect(jsonTab).toHaveAttribute('aria-selected', 'true');
+
+      await renderedTab.click();
+      await expect(responseTab).toBeEnabled();
+      await expect(extractedTab).toBeEnabled();
+      await extractedTab.hover();
+      await expect(tooltip).toHaveCount(0);
+      // Leaving the rendered form keeps it, so the snapshots read its answers.
+      await dialog.locator('wc-lhc-form input[id^="name/"]').fill('Remembered Person');
+      await jsonTab.click();
+      await extractedTab.click();
       const extractedCopy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
       await expect(extractedCopy).toBeEnabled();
       await extractedCopy.click();
-      // A new preview starts with a new form, so the snapshot has no earlier answers.
-      const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
-      expect(bundle.resourceType).toBe('Bundle');
-      expect(JSON.stringify(bundle)).not.toContain('Remembered Person');
-
-      await dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
-      await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
-      await PWUtils.clickMenuBarButton(page, 'Preview');
-      await expect(dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true})).toHaveAttribute('aria-selected', 'true');
-      await expect(dialog.getByRole('button', {name: 'Download questionnaire JSON', exact: true})).toBeVisible();
+      expect(JSON.stringify(JSON.parse(await PWUtils.getClipboardContent(page)))).toContain('Remembered Person');
+      await responseTab.click();
+      await expect(dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true})).toBeEnabled();
     });
 
     test('downloads the questionnaire JSON next to the copy button', async ({page}) => {

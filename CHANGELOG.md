@@ -14,8 +14,10 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Preserved entered answers and repeated groups when switching preview tabs.
 - Shortened preview tab titles. The order is now "Questionnaire JSON",
   "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
-- The preview opens on "Rendered Form" by default, and on the last visited tab
-  after that in the same browser session.
+- The preview opens on "Rendered Form" by default. After that, in the same browser
+  session, it reopens on "Questionnaire JSON" if that was the last visited tab.
+  "Questionnaire Response JSON" and "Extracted Resources JSON" are disabled until
+  "Rendered Form" has been shown.
 - "Extracted Resources JSON" explains when no resources were extracted, and lists
   items whose observation extraction relationship has no extracted ancestor item.
   The item editor warns about such a relationship.
