@@ -282,7 +282,7 @@ test.describe('Contained resource local-file import', () => {
     await page.getByRole('button', {name: 'Preview'}).click();
     await expect(page.locator('.contained-resource-version-warning'))
       .toContainText('Patient #patient-template was imported as FHIR R4');
-    await page.getByRole('tab', {name: 'Validate Questionnaire JSON'}).click();
+    await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
     await page.getByRole('tab', {name: 'R4 Version'}).click();
 
     // Inactive tabs retain their warnings, so inspect only the selected version panel.
@@ -445,7 +445,7 @@ test.describe('Contained ValueSet version compatibility', () => {
     await expect(preview.getByRole('tab', {name: 'Rendered Form'})).toHaveAttribute('aria-selected', 'true');
     await expect(preview.locator('wc-lhc-form')).toBeVisible();
     await expect(preview.locator('.contained-resource-version-warning')).toHaveCount(0);
-    await preview.getByRole('tab', {name: 'Validate Questionnaire JSON'}).click();
+    await preview.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
     for(const format of ['R4', 'STU3', 'R5']) {
       const tab = preview.getByRole('tab', {name: `${format} Version`});
       await tab.click();

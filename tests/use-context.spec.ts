@@ -694,7 +694,7 @@ test.describe('Usage Context field tests', () => {
 
     await page.getByRole('button', {name: 'Preview'}).click();
     const previewDialog = page.locator('lfb-preview-dlg');
-    await previewDialog.getByText('Validate Questionnaire JSON', {exact: true}).click();
+    await previewDialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
     const compatibilityError =
       'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
 

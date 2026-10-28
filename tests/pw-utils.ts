@@ -110,7 +110,7 @@ export class PWUtils {
    */
   static async getQuestionnaireJSON (page: Page, version = 'R4'): Promise<fhir.Questionnaire> {
     await page.getByRole('button', {name: 'Preview'}).click();
-    await page.getByText('Validate Questionnaire JSON', {exact: true}).first().click();
+    await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).first().click();
     await page.getByText(version + ' Version').click();
     await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
     const ret = JSON.parse(await PWUtils.getClipboardContent(page)) as fhir.Questionnaire;

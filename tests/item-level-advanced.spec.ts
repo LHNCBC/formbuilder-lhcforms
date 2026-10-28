@@ -227,6 +227,48 @@ test.describe('Home page', () => {
         expect(updatedJson.item[0].extension).toBeUndefined();
       });
 
+      test('should warn when a relationship has no extracted ancestor item', async ({ page }) => {
+        await page.locator('[for^="radio_Yes_observationExtract"]').click();
+        const relationshipWarning = page.locator('lfb-observation-extract .relationship-without-parent-warning');
+        await expect(relationshipWarning).toHaveCount(0);
+
+        await page.locator('[for^="radio_obs_relation_member_"]').click();
+        await expect(relationshipWarning).toContainText('This item is not extracted.');
+        expect((await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).item[0].extension).toEqual([{
+          url: observationExtractExtUrl,
+          valueCode: 'member'
+        }]);
+
+        await page.locator('[for^="radio_obs_relation_null_"]').click();
+        await expect(relationshipWarning).toHaveCount(0);
+        // Switching the relationship back to None restores valueBoolean.
+        expect((await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).item[0].extension).toEqual([{
+          url: observationExtractExtUrl,
+          valueBoolean: true
+        }]);
+
+        // A child item with a relationship is extracted under 'Item 0', which uses extraction with None.
+        const parentNode = await PWUtils.getTreeNode(page, 'Item 0');
+        await parentNode.locator('button.dropdown-toggle').click();
+        await PWUtils.clickMoreOptionsDropdownItem(page, 'Insert a new child item');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('New item 1');
+        // The new item does not inherit the extraction setting shown for the previous item.
+        await expect(page.locator('[id^="radio_No_observationExtract"]')).toBeChecked();
+        await page.locator('[for^="radio_Yes_observationExtract"]').click();
+        await page.locator('[for^="radio_obs_relation_member_"]').click();
+        await expect(page.locator('[id^="radio_obs_relation_member_"]')).toBeChecked();
+        await expect(relationshipWarning).toHaveCount(0);
+        expect((await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).item[0].item[0].extension).toEqual([{
+          url: observationExtractExtUrl,
+          valueCode: 'member'
+        }]);
+
+        // Returning to the parent shows its own setting.
+        await PWUtils.clickTreeNode(page, 'Item 0');
+        await expect(page.locator('[id^="radio_Yes_observationExtract"]')).toBeChecked();
+        await expect(page.locator('[id^="radio_obs_relation_null_"]')).toBeChecked();
+      });
+
       test('should import item with observation-extract extension', async ({ page }) => {
         const sampleFile = 'observation-extract.json';
         const fixtureJson = await PWUtils.readJSONFile(sampleFile);

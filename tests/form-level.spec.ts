@@ -450,7 +450,7 @@ test.describe('Home page', () => {
       const downloadedJson = await saveDownload(download, downloadPath);
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByText('Validate Questionnaire JSON').click();
+      await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
       await page.getByText('R4 Version').click();
       await page.getByRole('button', { name: 'Copy questionnaire to clipboard' }).click();
 
@@ -489,7 +489,7 @@ test.describe('Home page', () => {
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
 
-      await page.getByText('Validate Questionnaire JSON').click();
+      await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
       await page.getByText('STU3 Version').click();
       await page.getByRole('button', { name: 'Copy questionnaire to clipboard' }).click();
 
@@ -515,7 +515,7 @@ test.describe('Home page', () => {
       const downloadedJson = await saveDownload(download, downloadPath);
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByText('Validate Questionnaire JSON').click();
+      await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
       await page.getByText('R4 Version').click();
       await page.getByRole('button', { name: 'Copy questionnaire to clipboard' }).click();
 

@@ -126,7 +126,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await page.getByRole('button', {name: 'Continue'}).click();
       const fileJson = await PWUtils.uploadFile(page, 'contained-example.json');
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', { name: 'Validate Questionnaire JSON' }).click();
+      await page.getByRole('tab', { name: 'Questionnaire JSON', exact: true }).click();
       await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
       const fbJson = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(fbJson.contained).toEqual(fileJson.contained);
@@ -280,8 +280,11 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await PWUtils.clickMenuBarButton(page, 'Preview');
       await expect(page.locator('wc-lhc-form input[id^="name/"]')).toBeVisible();
       await expect(page.locator('lfb-preview-dlg').getByRole('tablist').first().getByRole('tab')).toHaveText([
-        'Rendered Form', 'Questionnaire Response JSON', 'Extracted Resources JSON', 'Validate Questionnaire JSON'
+        'Questionnaire JSON', 'Rendered Form', 'Questionnaire Response JSON', 'Extracted Resources JSON'
       ]);
+      // Rendered Form is selected by default.
+      await expect(page.locator('lfb-preview-dlg').getByRole('tab', {name: 'Rendered Form', exact: true}))
+        .toHaveAttribute('aria-selected', 'true');
     });
 
     test('extracts live answers, preserves repeated groups across tabs, and exports matching snapshots', async ({page}) => {
@@ -297,7 +300,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await measurements.nth(1).press('Tab');
       await form.evaluate(element => { window['previewWidget'] = element; });
 
-      await dialog.getByRole('tab', {name: 'Validate Questionnaire JSON', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
       await dialog.getByRole('tab', {name: 'STU3 Version', exact: true}).click();
       await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       const extractedPanel = dialog.getByRole('tabpanel', {name: 'Extracted Resources JSON', exact: true});
@@ -310,15 +313,17 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await expect(extractedDownload).toHaveText('');
       await expect(extractedDownload.locator('fa-icon svg')).toBeVisible();
       await expect(extractedDownload).toHaveAttribute('title', 'Download extracted resources JSON');
-      // Export buttons overlay the JSON editor, as on the Validate Questionnaire JSON tab.
+      // Export buttons overlay the JSON editor, as on the Questionnaire JSON tab.
       const extractedJSON = extractedPanel.getByRole('region', {name: 'extracted resources JSON', exact: true});
       await expect(extractedJSON.locator('.overlay-top-right').getByRole('button')).toHaveCount(2);
-      await expect(extractedPanel.locator('.extraction-toolbar span')).toHaveText([
-        'Resources are not submitted to a FHIR server.', 'FHIR R5'
-      ]);
-      await expect(extractedPanel.locator('.extraction-status')).toHaveText('');
+      await expect(extractedPanel.locator('.extraction-note')).toHaveText('Resources are not submitted to a FHIR server.');
+      await expect(extractedPanel.getByText('FHIR R5', {exact: true})).toHaveCount(0);
       await expect(extractedPanel.getByText('Preview the QuestionnaireResponse', {exact: false})).toHaveCount(0);
+      const popup = page.locator('mat-snack-bar-container');
       await extractedCopy.click();
+      // Copy feedback appears in a pop-up, not inside the tab.
+      await expect(popup).toHaveText('Copied extracted resources JSON.');
+      await expect(extractedPanel.getByText('Copied extracted resources JSON.')).toHaveCount(0);
       const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(bundle.resourceType).toBe('Bundle');
       expect(bundle.type).toBe('transaction');
@@ -340,10 +345,16 @@ test.describe('preview-dlg-component.spec.ts', () => {
 
       await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
       await expect(dialog.getByRole('button', {name: /^(Refresh|Retry)$/, includeHidden: true})).toHaveCount(0);
-      // The FHIR server note applies only to extracted resources.
-      await expect(dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true})
-        .locator('.extraction-toolbar span')).toHaveText(['FHIR R5']);
+      // The FHIR server note applies only to extracted resources, and no FHIR version label is shown.
+      const responsePanel = dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true});
+      await expect(responsePanel.locator('.extraction-note')).toHaveCount(0);
+      await expect(responsePanel.getByText('FHIR R5', {exact: true})).toHaveCount(0);
+      // The pop-up from the Extracted Resources tab closes on tab change.
+      await expect(popup).toHaveCount(0);
       await dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true}).click();
+      await expect(popup).toHaveText('Copied QuestionnaireResponse JSON.');
+      // The pop-up closes on its own after a few seconds.
+      await expect(popup).toHaveCount(0, {timeout: 6000});
       const response = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(response.resourceType).toBe('QuestionnaireResponse');
       expect(response.item.find(item => item.linkId === 'name').answer[0].valueString).toBe('Preview Person');
@@ -367,9 +378,12 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await expect(measurements).toHaveCount(2);
       await expect(measurements.nth(1)).toHaveValue('7.5');
       await measurements.first().fill('22');
-      await measurements.first().press('Tab');
+      // Switch immediately after editing, before LForms' debounced change event fires.
       await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       await expect(extractedCopy).toBeEnabled();
+      // Let the debounced change event (360 ms in LForms) arrive; no stale message may appear.
+      await page.waitForTimeout(1000);
+      await expect(dialog.getByText(/Form answers changed/)).toHaveCount(0);
       await extractedCopy.click();
       const updated = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(updated.entry[1].resource.valueQuantity.value).toBe(22);
@@ -381,7 +395,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       expect(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).toEqual(questionnaire);
     });
 
-    test('shows extraction errors without stale output and recovers on reentry with response diagnostics', async ({page}) => {
+    test('shows extraction errors only on Extracted Resources JSON and recovers on reentry', async ({page}) => {
       const dialog = page.locator('lfb-preview-dlg');
       await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
       const copy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
@@ -389,7 +403,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await page.evaluate(() => {
         const util = window['LForms'].Util;
         window['originalPreviewExport'] = util.getFormFHIRData;
-        /** Fail extraction only, preserving the public response export for diagnostics. */
+        /** Fail extraction only, preserving the public response export. */
         util.getFormFHIRData = function(resourceType, version, source, options) {
           if(options?.extract) {
             throw new Error('Test template expression failed');
@@ -399,17 +413,18 @@ test.describe('preview-dlg-component.spec.ts', () => {
       });
       await dialog.getByRole('tab', {name: 'Rendered Form', exact: true}).click();
       await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
-      await expect(dialog.locator('.extraction-error')).toContainText('Test template expression failed');
-      await expect(dialog.locator('.extraction-status'))
-        .toHaveText('Extraction failed. Review the error details and correct the form or extraction settings.');
+      const extractedPanel = dialog.getByRole('tabpanel', {name: 'Extracted Resources JSON', exact: true});
+      await expect(extractedPanel.locator('.extraction-error')).toHaveText('Test template expression failed');
       await expect(dialog.getByRole('button', {name: /^(Refresh|Retry)$/, includeHidden: true})).toHaveCount(0);
       // Export buttons are shown only over JSON output.
       await expect(copy).toHaveCount(0);
-      await expect(dialog.getByText('No extracted resources available.', {exact: true})).toBeVisible();
+      // The error explains the missing JSON, so the generic empty message is omitted.
+      await expect(extractedPanel.getByText('No extracted resources available.', {exact: true})).toHaveCount(0);
       await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      const responsePanel = dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true});
       await expect(dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true})).toBeEnabled();
-      await expect(dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true})
-        .getByText(/exported separately for debugging/)).toBeVisible();
+      // Extraction messages do not apply to the response tab.
+      await expect(responsePanel.locator('ngb-alert')).toHaveCount(0);
       await page.evaluate(() => {
         window['LForms'].Util.getFormFHIRData = window['originalPreviewExport'];
       });
@@ -420,7 +435,7 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await expect(copy).toBeEnabled();
     });
 
-    test('opens Questionnaire Response JSON first and shows the empty extracted resources message', async ({page}) => {
+    test('opens Questionnaire Response JSON first and explains when no resources are extracted', async ({page}) => {
       const dialog = page.locator('lfb-preview-dlg');
       await page.evaluate(() => {
         const util = window['LForms'].Util;
@@ -440,12 +455,105 @@ test.describe('preview-dlg-component.spec.ts', () => {
       const response = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(response.resourceType).toBe('QuestionnaireResponse');
       await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
-      await expect(dialog.getByText('No extracted resources available.', {exact: true})).toBeVisible();
+      await expect(dialog.locator('.no-resources-extracted')).toHaveText('No resources were extracted from the current answers.');
+      // The explanation makes the generic empty message redundant.
+      await expect(dialog.getByText('No extracted resources available.', {exact: true})).toHaveCount(0);
+      await expect(dialog.getByText(/Extraction completed/)).toHaveCount(0);
       await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toHaveCount(0);
       await expect(dialog.getByRole('button', {name: 'Download extracted resources JSON', exact: true})).toHaveCount(0);
       await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
       await responseCopy.click();
       expect(JSON.parse(await PWUtils.getClipboardContent(page))).toEqual(response);
+    });
+
+    test('reopens the last visited tab, including snapshot tabs with live answers', async ({page}) => {
+      const dialog = page.locator('lfb-preview-dlg');
+      await dialog.locator('wc-lhc-form input[id^="name/"]').fill('Remembered Person');
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toBeEnabled();
+      await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
+
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const extractedTab = dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true});
+      await expect(extractedTab).toHaveAttribute('aria-selected', 'true');
+      const extractedCopy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      await expect(extractedCopy).toBeEnabled();
+      await extractedCopy.click();
+      // A new preview starts with a new form, so the snapshot has no earlier answers.
+      const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(bundle.resourceType).toBe('Bundle');
+      expect(JSON.stringify(bundle)).not.toContain('Remembered Person');
+
+      await dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
+      await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await expect(dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true})).toHaveAttribute('aria-selected', 'true');
+      await expect(dialog.getByRole('button', {name: 'Download questionnaire JSON', exact: true})).toBeVisible();
+    });
+
+    test('downloads the questionnaire JSON next to the copy button', async ({page}) => {
+      const dialog = page.locator('lfb-preview-dlg');
+      await dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'R5 Version', exact: true}).click();
+      const buttons = dialog.locator('.overlay-top-right').filter({
+        has: page.getByRole('button', {name: 'Download questionnaire JSON', exact: true})
+      }).getByRole('button');
+      await expect(buttons).toHaveCount(2);
+      await expect(buttons.first()).toHaveAttribute('title', 'Copy questionnaire to clipboard');
+      const downloadEvent = page.waitForEvent('download');
+      await buttons.nth(1).click();
+      const download = await downloadEvent;
+      expect(download.suggestedFilename()).toBe('Extraction-preview-sample.R5.json');
+      const chunks = [];
+      for await (const chunk of await download.createReadStream()) {
+        chunks.push(chunk);
+      }
+      expect(JSON.parse(Buffer.concat(chunks).toString())).toEqual(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5'));
+    });
+  });
+
+  test.describe('Observation extraction preview', () => {
+    test('explains missing Observations and extracts an answered item', async ({page}) => {
+      const mainPO = new MainPO(page);
+      await mainPO.mockSnomedEditions();
+      await page.goto('/');
+      await mainPO.loadHomePage();
+      await page.locator('input[type="radio"][value="existing"]').click();
+      await page.locator('input[type="radio"][value="local"]').click();
+      await PWUtils.importLocalFile(page, 'observation-extract.json');
+      await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
+        .toHaveValue('Form with observation extract');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const dialog = page.locator('lfb-preview-dlg');
+      const extractedTab = dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true});
+      await extractedTab.click();
+      // Without answers, nothing is extracted, and the tab says why.
+      await expect(dialog.locator('.no-resources-extracted')).toHaveText(
+        'No resources were extracted from the current answers. Observations are extracted only from answered items.'
+      );
+      await expect(dialog.getByText('No extracted resources available.', {exact: true})).toHaveCount(0);
+      // 'l2' uses a relationship without an extracted ancestor item.
+      const relationshipWarning = dialog.locator('.unextracted-relationship-items');
+      await expect(relationshipWarning).toContainText('Not extracted (linkId): l2.');
+
+      await dialog.getByRole('tab', {name: 'Rendered Form', exact: true}).click();
+      const input = dialog.locator('wc-lhc-form input[id^="l1/"]');
+      await input.fill('16.5');
+      await input.press('Tab');
+      await dialog.locator('wc-lhc-form input[id^="l2/"]').fill('17.5');
+      await dialog.locator('wc-lhc-form input[id^="l2/"]').press('Tab');
+      await extractedTab.click();
+      await expect(dialog.locator('.no-resources-extracted')).toHaveCount(0);
+      await expect(relationshipWarning).toBeVisible();
+      const copy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      await expect(copy).toBeEnabled();
+      await copy.click();
+      const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(bundle.entry).toHaveLength(1);
+      expect(bundle.entry[0].resource.resourceType).toBe('Observation');
+      expect(bundle.entry[0].resource.code.coding).toEqual([{code: 'Code1'}]);
+      // LForms 44.2.0 exports this unitless decimal answer as a string; compare the number.
+      expect(Number(bundle.entry[0].resource.valueQuantity.value)).toBe(16.5);
     });
   });
 });

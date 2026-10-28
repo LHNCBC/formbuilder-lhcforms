@@ -9,6 +9,7 @@ import {
   CUSTOM_ELEMENTS_SCHEMA
 } from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import fhir from 'fhir/r4';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import {FormService} from '../../../services/form.service';
@@ -39,7 +40,8 @@ import {
   ContainedResourceService,
   ContainedResourceVersionRecord
 } from '../../../services/contained-resource.service';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
+import {ObservationExtractComponent} from '../observation-extract/observation-extract.component';
 declare var LForms: any;
 
 /**
@@ -54,6 +56,20 @@ export interface PreviewData {
 type NoErrorsMap = {
   [key in FHIR_VERSION_TYPE]: boolean;
 };
+
+/** How long copy/download feedback stays visible, in milliseconds. */
+const ACTION_MESSAGE_DURATION = 3000;
+
+/** Session storage key of the last visited top-level preview tab. */
+const PREVIEW_TAB_STORAGE_KEY = 'previewTab';
+
+/** Top-level preview tabs; the values are the tab indices in display order. */
+export enum PreviewTab {
+  QuestionnaireJSON,
+  RenderedForm,
+  QuestionnaireResponse,
+  ExtractedResources
+}
 
 @Component({
   selector: 'lfb-preview-dlg',
@@ -83,6 +99,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   private fhirService = inject(FhirService);
   private subjectTypeService = inject(SubjectTypeService);
   private containedResourceService = inject(ContainedResourceService);
+  private snackBar = inject(MatSnackBar);
   dialogRef = inject<MatDialogRef<PreviewDlgComponent>>(MatDialogRef);
   data = inject<PreviewData>(MAT_DIALOG_DATA);
 
@@ -91,16 +108,24 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('extractionFormContainer', {read: ElementRef}) extractionFormContainer: ElementRef<HTMLElement>;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
-  activeTopLevelTabIndex = 0;
+  activeTopLevelTabIndex: PreviewTab = PreviewTab.RenderedForm;
+  // Snapshot tab to select once the rendered form is ready; see selectInitialTab().
+  private pendingSnapshotTab: PreviewTab;
   activeJsonTabIndex: number = FHIR_VERSIONS.R4;
   readonly extractionFHIRVersion = 'R5';
   formReady = false;
   extractionInProgress = false;
   hasTemplateExtraction = false;
-  extractionStatus = 'Waiting for the rendered form to be ready.';
+  hasObservationExtraction = false;
+  // linkIds of items whose observation extraction relationship has no extracted ancestor.
+  unextractedRelationshipLinkIds: string[] = [];
+  // Whether extraction ran without error but produced no resources.
+  noResourcesExtracted = false;
+  // Extraction messages belong to the Extracted Resources tab only.
   extractionError = '';
   extractionUnavailable = '';
-  extractionNotice = '';
+  // Response export failures belong to the Questionnaire Response tab only.
+  responseError = '';
   extractedResourcesJSON = '';
   questionnaireResponseJSON = '';
   private extractionTimer: ReturnType<typeof setTimeout>;
@@ -123,7 +148,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   codeMirrorModel: string = '';
 
   fhirValidationMsg =
-    "Select the 'Validate Questionnaire JSON' tab to access a feature that validates your " +
+    "Select the 'Questionnaire JSON' tab to access a feature that validates your " +
     "Questionnaire against a supplied FHIR server, offering more detailed error insights.";
 
   // linkIds of items that use an external answerValueSet but have no preferred terminology
@@ -183,9 +208,12 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * compatible with R5. Then select the default JSON version tab.
    */
   ngOnInit() {
-    this.activeTopLevelTabIndex = 0;
+    this.selectInitialTab();
     this.activeJsonTabIndex = FHIR_VERSIONS.R4;
-    this.hasTemplateExtraction = this.hasExtractionTemplate(this.data.questionnaire);
+    this.hasTemplateExtraction = this.hasContainedTemplate(this.data.questionnaire);
+    this.hasObservationExtraction = this.hasObservationExtract(this.data.questionnaire);
+    this.unextractedRelationshipLinkIds = [];
+    this.findUnextractedRelationshipItems(this.data.questionnaire?.item, [this.data.questionnaire?.extension || []]);
     this.missingTerminologyServerLinkIds = Util.getItemsMissingPreferredTerminologyServer(this.data.questionnaire);
     this.preferredTerminologyServerMsg = this.buildPreferredTerminologyServerMsg(this.missingTerminologyServerLinkIds);
     this.renderedFormCompatibilityWarning = this.containedResourceService.getCompatibilityWarning(
@@ -193,6 +221,28 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       'R5'
     );
     this.onJsonVersionSelected(this.activeJsonTabIndex);
+  }
+
+  /**
+   * Select the tab visited last in this browser session, or Rendered Form by default.
+   * Snapshot tabs read answers from the rendered form, which is created only when its
+   * tab is first shown. For them, show Rendered Form first and switch once it is ready.
+   */
+  private selectInitialTab(): void {
+    const storedName = this.formService.getStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY) ?? '';
+    const stored: unknown = PreviewTab[storedName as keyof typeof PreviewTab];
+    // Tabs are stored by name; ignore missing or unknown values.
+    const lastTab = typeof stored === 'number' ? stored as PreviewTab : PreviewTab.RenderedForm;
+    const isSnapshotTab = lastTab === PreviewTab.QuestionnaireResponse || lastTab === PreviewTab.ExtractedResources;
+    this.pendingSnapshotTab = isSnapshotTab ? lastTab : undefined;
+    this.activeTopLevelTabIndex = isSnapshotTab ? PreviewTab.RenderedForm : lastTab;
+  }
+
+  /** Select the remembered snapshot tab, if any, after the rendered form is ready or has failed. */
+  private selectPendingSnapshotTab(): void {
+    if(this.pendingSnapshotTab !== undefined) {
+      this.onPreviewTabSelected(this.pendingSnapshotTab);
+    }
   }
 
   /**
@@ -267,47 +317,113 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.formReady = false;
     clearTimeout(this.extractionTimer);
     this.extractionInProgress = false;
+    this.noResourcesExtracted = false;
     this.extractedResourcesJSON = '';
     this.questionnaireResponseJSON = '';
     this.extractionError = `The rendered form is unavailable: ${event.detail}`;
-    this.extractionStatus = 'Extraction is unavailable.';
+    this.responseError = this.extractionError;
+    this.selectPendingSnapshotTab();
   }
 
   /** Return the JSON snapshot selected in the extraction preview. */
   get extractionJSON(): string {
-    return this.activeTopLevelTabIndex === 2 ? this.extractedResourcesJSON : this.questionnaireResponseJSON;
+    return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ?
+      this.extractedResourcesJSON : this.questionnaireResponseJSON;
   }
 
   /** Return the accessible name of the selected extraction snapshot. */
   get extractionViewLabel(): string {
-    return this.activeTopLevelTabIndex === 2 ? 'extracted resources' : 'QuestionnaireResponse';
+    return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ? 'extracted resources' : 'QuestionnaireResponse';
   }
 
   /** Return whether either of the paired extraction snapshot tabs is selected. */
   get isExtractionTabSelected(): boolean {
-    return this.activeTopLevelTabIndex === 1 || this.activeTopLevelTabIndex === 2;
+    return this.activeTopLevelTabIndex === PreviewTab.QuestionnaireResponse ||
+      this.activeTopLevelTabIndex === PreviewTab.ExtractedResources;
   }
 
   /**
-   * Look for template extraction on the questionnaire or any nested item.
-   * @param scope - Questionnaire or item whose extensions and children should be inspected.
-   * @returns Whether a template extraction setting exists in this scope or its descendants.
+   * Return whether snapshot tabs can show their results. Content is hidden while the
+   * export runs or while waiting for the rendered form, so tabs show only final results.
    */
-  private hasExtractionTemplate(scope: fhir.Questionnaire | fhir.QuestionnaireItem): boolean {
-    return !!scope && (!!scope.extension?.some(extension =>
-      extension.url === EXTENSION_URL_TEMPLATE_EXTRACT ||
-      extension.url === `${EXTENSION_URL_TEMPLATE_EXTRACT}Bundle`
-    ) || !!scope.item?.some(item => this.hasExtractionTemplate(item)));
+  get snapshotsSettled(): boolean {
+    return !this.extractionInProgress && (this.formReady || !!this.responseError);
+  }
+
+  /**
+   * Return whether a snapshot tab already shows why it has no JSON, which makes the
+   * generic empty message redundant.
+   * @param view - 'qr' for Questionnaire Response JSON, 'er' for Extracted Resources JSON.
+   * @returns Whether an error or an explanation of the missing output is shown on the tab.
+   */
+  hasEmptySnapshotCause(view: 'qr' | 'er'): boolean {
+    if(view === 'qr') {
+      return !!this.responseError;
+    }
+    const noExtractionConfigured = !this.hasTemplateExtraction && !this.hasObservationExtraction;
+    return noExtractionConfigured || this.noResourcesExtracted || !!this.extractionUnavailable || !!this.extractionError;
+  }
+
+  /**
+   * Collect linkIds of items whose observation extraction relationship (valueCode) has no
+   * extracted ancestor. Such items are not extracted.
+   * @param items - Items to inspect, including their descendants.
+   * @param ancestorExtensions - Extension lists of the ancestors, from the nearest ancestor up
+   *   to the questionnaire.
+   */
+  private findUnextractedRelationshipItems(items: fhir.QuestionnaireItem[] = [], ancestorExtensions: fhir.Extension[][]): void {
+    for(const item of items) {
+      const extension = item.extension?.find(ext => ext.url === ObservationExtractComponent.extUrl);
+      if(extension?.valueCode &&
+        !ObservationExtractComponent.isRelationshipItemExtracted(ancestorExtensions, item.code)) {
+        this.unextractedRelationshipLinkIds.push(item.linkId);
+      }
+      this.findUnextractedRelationshipItems(item.item, [item.extension || [], ...ancestorExtensions]);
+    }
+  }
+
+  /**
+   * Check whether template extraction is usable: a templateExtract or templateExtractBundle
+   * extension references a resource that exists in Questionnaire.contained.
+   * @param questionnaire - Questionnaire to inspect.
+   * @returns Whether a referenced contained template exists.
+   */
+  private hasContainedTemplate(questionnaire: fhir.Questionnaire): boolean {
+    return !!questionnaire?.contained?.some(resource => hasTemplateExtractReference(questionnaire, resource.id));
+  }
+
+  /**
+   * Look for an enabled observationExtract extension on the questionnaire, items, or item codes.
+   * @param scope - Questionnaire or item whose extensions and children should be inspected.
+   * @returns Whether observation-based extraction is configured in this scope or its descendants.
+   */
+  private hasObservationExtract(scope: fhir.Questionnaire | fhir.QuestionnaireItem): boolean {
+    /**
+     * Check a list of extensions for an observationExtract that is not disabled.
+     * @param extensions - Extensions to inspect.
+     * @returns Whether an enabled observationExtract extension is present.
+     */
+    const isEnabled = (extensions: fhir.Extension[] = []): boolean => extensions.some(extension =>
+      extension.url === ObservationExtractComponent.extUrl && extension.valueBoolean !== false);
+    return !!scope && (isEnabled(scope.extension) ||
+      !!(scope as fhir.QuestionnaireItem).code?.some(coding => isEnabled(coding.extension)) ||
+      !!scope.item?.some(item => this.hasObservationExtract(item)));
   }
 
   /**
    * Refresh both snapshots when entering from a non-extraction tab. Switching between
    * the response and resources keeps the pair intact, including generated references.
+   * Copy/download pop-up messages are closed so they are not shown on another tab.
+   * The tab is remembered for the next time the preview opens in this browser session.
    * @param index - Selected top-level tab index.
    */
-  onPreviewTabSelected(index: number): void {
+  onPreviewTabSelected(index: PreviewTab): void {
     const wasExtractionTabSelected = this.isExtractionTabSelected;
     this.activeTopLevelTabIndex = index;
+    // A tab chosen before the rendered form is ready replaces the remembered one.
+    this.pendingSnapshotTab = undefined;
+    this.formService.setStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY, PreviewTab[index]);
+    this.snackBar.dismiss();
     if(this.isExtractionTabSelected && !wasExtractionTabSelected) {
       this.refreshExtraction();
     }
@@ -320,25 +436,19 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     if(this.isExtractionTabSelected) {
       this.refreshExtraction();
     }
+    this.selectPendingSnapshotTab();
   }
 
-  /** Mark an existing snapshot stale without running extraction on every input change. */
-  handleFormChange(): void {
-    if(this.questionnaireResponseJSON && !this.extractionInProgress) {
-      this.extractionStatus = 'Form answers changed. Return from Rendered Form to update both snapshots.';
-    }
-  }
-
-  /** Schedule extraction after allowing the busy state and pending input changes to render. */
+  /** Schedule extraction after allowing pending input changes to settle. */
   refreshExtraction(): void {
     if(!this.formReady || this.extractionInProgress) {
       return;
     }
     this.extractionInProgress = true;
-    this.extractionStatus = 'Generating extraction preview...';
     this.extractionError = '';
     this.extractionUnavailable = '';
-    this.extractionNotice = '';
+    this.noResourcesExtracted = false;
+    this.responseError = '';
     this.extractedResourcesJSON = '';
     this.questionnaireResponseJSON = '';
     this.extractionTimer = setTimeout(() => this.generateExtraction(), 0);
@@ -357,14 +467,16 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       const version = this.formService.lformsVersion || '';
       const match = /^(\d+)\.(\d+)\./.exec(version);
       const supportsTemplates = match && (+match[1] > 38 || (+match[1] === 38 && +match[2] >= 7));
-      if(!supportsTemplates) {
-        this.extractionUnavailable = `Template extraction requires LForms 38.7.0 or later. Loaded version: ${version || 'unknown'}. Only the QuestionnaireResponse is available.`;
+      if(this.hasTemplateExtraction && !supportsTemplates) {
+        this.extractionUnavailable = `Template extraction requires LForms 38.7.0 or later. Loaded version: ${version || 'unknown'}.`;
       }
 
-      const result = LForms.Util.getFormFHIRData(
-        'QuestionnaireResponse', this.extractionFHIRVersion,
-        container, {extract: !!supportsTemplates}
-      );
+      // Request extraction only when something is configured to extract; otherwise LForms
+      // returns just the QuestionnaireResponse.
+      const extract = this.hasObservationExtraction || (this.hasTemplateExtraction && !!supportsTemplates);
+      const result = extract ?
+        LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container, {extract: true}) :
+        LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container);
       const resources = Array.isArray(result) ? result : [result];
       const response = resources[0];
       if(response?.resourceType !== 'QuestionnaireResponse') {
@@ -375,40 +487,18 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       if(extracted.some(resource => !resource?.resourceType)) {
         throw new Error('LForms returned an unexpected extraction result.');
       }
+      // Older versions can return standalone Observations alongside the template Bundle.
+      // With no resources, the tab explains why when extraction was requested.
       if(extracted.length) {
-        // Older versions can return standalone Observations alongside the template Bundle.
         this.extractedResourcesJSON = JSON.stringify(extracted.length === 1 ? extracted[0] : extracted, null, 2);
-        // The JSON itself shows success; keep the live status region empty.
-        this.extractionStatus = '';
       }
-      else if(supportsTemplates) {
-        this.extractionNotice = 'Extraction completed; no resources were produced.';
-        this.extractionStatus = this.extractionNotice;
-      }
-      else {
-        this.extractionStatus = 'QuestionnaireResponse updated; template extraction is unavailable.';
-      }
+      this.noResourcesExtracted = extract && !extracted.length;
     }
     catch(error) {
       this.extractedResourcesJSON = '';
-      this.extractionError = error instanceof Error ? error.message : String(error);
-      this.extractionStatus = 'Extraction failed. Review the error details and correct the form or extraction settings.';
-      // Extraction can throw before returning its response. Export a separate diagnostic
-      // snapshot, explicitly labelled so it cannot be mistaken for successful engine input.
-      if(!this.questionnaireResponseJSON && container && typeof LForms.Util.getFormFHIRData === 'function') {
-        try {
-          const response = LForms.Util.getFormFHIRData(
-            'QuestionnaireResponse', this.extractionFHIRVersion, container
-          );
-          if(response?.resourceType !== 'QuestionnaireResponse') {
-            throw new Error('LForms did not return a QuestionnaireResponse.');
-          }
-          this.questionnaireResponseJSON = JSON.stringify(response, null, 2);
-          this.extractionNotice = 'The QuestionnaireResponse was exported separately for debugging after extraction failed; generated IDs may differ.';
-        }
-        catch(responseError) {
-          this.extractionError += ` Response export also failed: ${responseError instanceof Error ? responseError.message : String(responseError)}`;
-        }
+      this.extractionError = this.errorMessage(error);
+      if(!this.questionnaireResponseJSON) {
+        this.exportResponseOnly(container);
       }
     }
     finally {
@@ -416,32 +506,96 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Export the QuestionnaireResponse alone after extraction failed before returning it,
+   * so the Questionnaire Response tab still shows the answers or its own export error.
+   * @param container - Element containing the preview widget, if available.
+   */
+  private exportResponseOnly(container: HTMLElement | undefined): void {
+    try {
+      if(!container || typeof LForms.Util.getFormFHIRData !== 'function') {
+        throw new Error('The LForms response export API is unavailable.');
+      }
+      const response = LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container);
+      if(response?.resourceType !== 'QuestionnaireResponse') {
+        throw new Error('LForms did not return a QuestionnaireResponse.');
+      }
+      this.questionnaireResponseJSON = JSON.stringify(response, null, 2);
+    }
+    catch(error) {
+      this.responseError = this.errorMessage(error);
+    }
+  }
+
+  /**
+   * Convert a thrown value to displayable text.
+   * @param error - Thrown value.
+   * @returns The error message, or the value as a string.
+   */
+  private errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+  }
+
   /** Download the selected snapshot without submitting it to a FHIR server. */
   downloadExtractionJSON(): void {
     if(!this.extractionJSON || this.extractionInProgress) {
       return;
     }
+    const name = this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ?
+      'extracted-resources' : 'questionnaire-response';
+    this.downloadJSON(this.extractionJSON, `${name}.${this.extractionFHIRVersion}.json`);
+  }
+
+  /**
+   * Download the questionnaire shown on the selected version tab. The file is named like
+   * the Export menu's file: the questionnaire name, else its title, else 'form'.
+   */
+  downloadQuestionnaireJSON(): void {
+    if(!this.codeMirrorModel) {
+      return;
+    }
+    const questionnaire = this.data.questionnaire;
+    const baseName = (questionnaire?.name || questionnaire?.title || 'form').replace(/\s/g, '-');
+    this.downloadJSON(this.codeMirrorModel, `${baseName}.${this.format}.json`);
+  }
+
+  /**
+   * Save JSON text as a file, releasing the previous download URL. Failures are shown
+   * in a pop-up message.
+   * @param json - JSON text to save.
+   * @param fileName - Suggested file name.
+   */
+  private downloadJSON(json: string, fileName: string): void {
     try {
       if(this.downloadObjectUrl) {
         URL.revokeObjectURL(this.downloadObjectUrl);
       }
-      this.downloadObjectUrl = URL.createObjectURL(new Blob([this.extractionJSON], {type: 'application/json;charset=utf-8'}));
+      this.downloadObjectUrl = URL.createObjectURL(new Blob([json], {type: 'application/json;charset=utf-8'}));
       const anchor = document.createElement('a');
       anchor.href = this.downloadObjectUrl;
-      anchor.download = `${this.activeTopLevelTabIndex === 2 ? 'extracted-resources' : 'questionnaire-response'}.${this.extractionFHIRVersion}.json`;
+      anchor.download = fileName;
       anchor.dispatchEvent(new MouseEvent('click'));
     }
     catch(error) {
-      this.extractionError = `Download failed: ${error instanceof Error ? error.message : String(error)}`;
+      this.showActionMessage(`Download failed: ${this.errorMessage(error)}`);
     }
   }
 
   /**
-   * Announce clipboard results, including failures rather than silently ignoring them.
+   * Announce clipboard results in a pop-up message, including failures.
    * @param copied - Whether the browser accepted the clipboard write.
    */
   onExtractionCopied(copied: boolean): void {
-    this.extractionStatus = copied ? `Copied ${this.extractionViewLabel} JSON.` : 'Copy failed. Try Download JSON instead.';
+    this.showActionMessage(copied ?
+      `Copied ${this.extractionViewLabel} JSON.` : 'Copy failed. Try Download JSON instead.');
+  }
+
+  /**
+   * Show copy/download feedback in a short-lived pop-up, also announced to screen readers.
+   * @param message - Text to show.
+   */
+  private showActionMessage(message: string): void {
+    this.snackBar.open(message, undefined, {duration: ACTION_MESSAGE_DURATION});
   }
 
   /**
@@ -502,10 +656,11 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clean up subscriptions, scheduled extraction, and download URLs.
+   * Clean up subscriptions, scheduled extraction, download URLs, and pop-up messages.
    */
   ngOnDestroy() {
     clearTimeout(this.extractionTimer);
+    this.snackBar.dismiss();
     if(this.downloadObjectUrl) {
       URL.revokeObjectURL(this.downloadObjectUrl);
     }
@@ -517,3 +672,10 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   protected readonly faCopy = faCopy;
   protected readonly faDownload = faDownload;
 }
+
+
+
+
+
+
+

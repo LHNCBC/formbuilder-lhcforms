@@ -8,11 +8,23 @@ This project follows [Semantic Versioning](http://semver.org/).
   FHIR R5 output from the current form answers, including template- and
   observation-based extraction and JSON copy/download icon buttons. Both snapshots
   update automatically when returning from "Rendered Form".
+- Added a download button next to the copy button on the "Questionnaire JSON" tab.
 
 ### Changed
 - Preserved entered answers and repeated groups when switching preview tabs.
-- Shortened preview tab titles and placed the response and extracted resources
-  after "Rendered Form", with "Validate Questionnaire JSON" last.
+- Shortened preview tab titles. The order is now "Questionnaire JSON",
+  "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
+- The preview opens on "Rendered Form" by default, and on the last visited tab
+  after that in the same browser session.
+- "Extracted Resources JSON" explains when no resources were extracted, and lists
+  items whose observation extraction relationship has no extracted ancestor item.
+  The item editor warns about such a relationship.
+
+### Fixed
+- Changing the observation extraction relationship back to None kept the previous
+  relationship in the questionnaire.
+- A newly selected item showed the observation extraction setting of the previously
+  selected item.
 
 ## [12.11.0] 2026-10-23
 ### Added
