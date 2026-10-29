@@ -6,26 +6,16 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added
 - Added "Questionnaire Response JSON" and "Extracted Resources JSON" preview tabs for
   FHIR R5 output from the current form answers, including template- and
-  observation-based extraction and JSON copy/download icon buttons. Both snapshots
-  update automatically when returning from "Rendered Form". If LHC-Forms reports an
-  error but still renders the form, for example when an answer list cannot be loaded,
-  both snapshots are generated and show the error as a warning.
+  observation-based extraction.
 - Added a download button next to the copy button on the "Questionnaire JSON" tab.
-  It saves the selected version as the Export menu does, asking the same compatibility
-  questions first.
+- The item editor warns about items whose observation extraction relationship has
+  no extracted ancestor item.
 
 ### Changed
-- Preserved entered answers and repeated groups when switching preview tabs.
 - Shortened preview tab titles. The order is now "Questionnaire JSON",
   "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
 - The preview opens on "Rendered Form" by default. After that, in the same browser
   session, it reopens on "Questionnaire JSON" if that was the last visited tab.
-  "Questionnaire Response JSON" and "Extracted Resources JSON" are disabled until
-  "Rendered Form" has been shown. The reason is shown on mouse hover or keyboard
-  focus and is announced to screen readers.
-- "Extracted Resources JSON" explains when no resources were extracted, and lists
-  items whose observation extraction relationship has no extracted ancestor item.
-  The item editor warns about such a relationship.
 
 ### Fixed
 - Changing the observation extraction relationship back to None kept the previous
