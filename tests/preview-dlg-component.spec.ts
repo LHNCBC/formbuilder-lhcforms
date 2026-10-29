@@ -488,9 +488,21 @@ test.describe('preview-dlg-component.spec.ts', () => {
       // The rendered form is not created yet, so the snapshot tabs are disabled and say why.
       await expect(responseTab).toBeDisabled();
       await expect(extractedTab).toBeDisabled();
-      await extractedTab.hover();
       // Material tooltips are aria-hidden and have no tooltip role, so locate them by class.
       const tooltip = page.locator('.mat-mdc-tooltip');
+      // Keyboard focus on a disabled tab shows the reason and announces it to screen readers.
+      await jsonTab.focus();
+      await page.keyboard.press('ArrowRight');
+      await page.keyboard.press('ArrowRight');
+      await expect(responseTab).toBeFocused();
+      await expect(tooltip).toHaveText('Open the Rendered Form tab first.');
+      await expect(page.locator('.cdk-live-announcer-element')).toHaveText('Open the Rendered Form tab first.');
+      await page.keyboard.press('ArrowLeft');
+      await expect(renderedTab).toBeFocused();
+      await expect(tooltip).toHaveCount(0);
+      await expect(jsonTab).toHaveAttribute('aria-selected', 'true');
+
+      await extractedTab.hover();
       await expect(tooltip).toHaveText('Open the Rendered Form tab first.');
       await extractedTab.click({force: true});
       await expect(jsonTab).toHaveAttribute('aria-selected', 'true');
@@ -530,6 +542,76 @@ test.describe('preview-dlg-component.spec.ts', () => {
         chunks.push(chunk);
       }
       expect(JSON.parse(Buffer.concat(chunks).toString())).toEqual(await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5'));
+    });
+  });
+
+  test.describe('Questionnaire JSON download compatibility', () => {
+    test('asks the Export menu subject type question before saving', async ({page}) => {
+      const mainPO = new MainPO(page);
+      await mainPO.mockSnomedEditions();
+      await page.goto('/');
+      await mainPO.loadHomePage();
+      await page.locator('input[type="radio"][value="scratch"]').click();
+      await page.getByRole('button', {name: 'Continue'}).click();
+      await PWUtils.expandAdvancedFields(page);
+      const subjectTypeInput = page.locator('input[id^="subjectType"][id$="_ac"]:visible').first();
+      await PWUtils.typeAndSelect(subjectTypeInput, 'Patient');
+      await PWUtils.typeAndSelect(subjectTypeInput, 'Citation');
+
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const dialog = page.locator('lfb-preview-dlg');
+      await dialog.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
+      await dialog.getByRole('tab', {name: 'R4 Version', exact: true}).click();
+      const download = dialog.getByRole('button', {name: 'Download questionnaire JSON', exact: true});
+      const warningDialog = page.getByRole('dialog', {name: 'Subject type compatibility'});
+      const downloads = [];
+      page.on('download', d => downloads.push(d));
+
+      /**
+       * Click the download button, answer the subject type question, and read the saved file.
+       * @param answer - Name of the button to click in the subject type question.
+       * @returns The suggested file name and the parsed questionnaire.
+       */
+      const downloadWith = async (answer: string) => {
+        await download.click();
+        await expect(warningDialog).toContainText('Citation');
+        const [saved] = await Promise.all([
+          page.waitForEvent('download'),
+          warningDialog.getByRole('button', {name: answer, exact: true}).click()
+        ]);
+        const chunks = [];
+        for await (const chunk of await saved.createReadStream()) {
+          chunks.push(chunk);
+        }
+        return {fileName: saved.suggestedFilename(), questionnaire: JSON.parse(Buffer.concat(chunks).toString())};
+      };
+
+      // Cancel saves nothing and returns to the preview.
+      await download.click();
+      await warningDialog.getByRole('button', {name: 'Cancel', exact: true}).click();
+      await expect(warningDialog).toHaveCount(0);
+      await expect(dialog).toBeVisible();
+      // From the keyboard, Escape closes only the question, not the preview behind it.
+      await download.focus();
+      await page.keyboard.press('Enter');
+      await expect(warningDialog).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(warningDialog).toHaveCount(0);
+      await expect(dialog).toBeVisible();
+      expect(downloads).toHaveLength(0);
+
+      const removed = await downloadWith('Remove incompatible types and export');
+      expect(removed.fileName).toBe('New-Form.R4.json');
+      expect(removed.questionnaire.subjectType).toEqual(['Patient']);
+
+      const kept = await downloadWith('Export anyway');
+      expect(kept.fileName).toBe('New-Form.R4.json');
+      expect(kept.questionnaire.subjectType).toEqual(['Patient', 'Citation']);
+      await expect(dialog).toBeVisible();
+      // Once the question is answered, Escape closes the preview again.
+      await download.focus();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
     });
   });
 
@@ -575,6 +657,70 @@ test.describe('preview-dlg-component.spec.ts', () => {
       expect(bundle.entry[0].resource.code.coding).toEqual([{code: 'Code1'}]);
       // LForms 44.2.0 exports this unitless decimal answer as a string; compare the number.
       expect(Number(bundle.entry[0].resource.valueQuantity.value)).toBe(16.5);
+    });
+  });
+
+  test.describe('Snapshots after LHC-Forms errors', () => {
+    test.beforeEach(async ({page}) => {
+      const mainPO = new MainPO(page);
+      await mainPO.mockSnomedEditions();
+      await page.goto('/');
+      await mainPO.loadHomePage();
+      await page.locator('input[type="radio"][value="existing"]').click();
+      await page.locator('input[type="radio"][value="local"]').click();
+    });
+
+    test('exports a form that is rendered although an answer list fails to load', async ({page}) => {
+      // The empty expansion is reported by LHC-Forms as a ValueSet load error, after it renders the form.
+      await page.route('**/ValueSet/$expand**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/fhir+json',
+          json: {resourceType: 'ValueSet', expansion: {contains: []}}
+        });
+      });
+      await PWUtils.importLocalFile(page, 'answer-value-set-sample.json');
+      await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true})).toHaveValue('Answer value set form');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const dialog = page.locator('lfb-preview-dlg');
+      await expect(dialog.locator('.lforms-validation')).toContainText('Unable to load ValueSet');
+      await expect(dialog.locator('wc-lhc-form')).toContainText('Item with answer value set');
+
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      const responsePanel = dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true});
+      const responseCopy = dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true});
+      await expect(responseCopy).toBeEnabled();
+      await expect(responsePanel.locator('.form-load-warning')).toContainText(
+        'The form was rendered with an error: Error: Unable to load ValueSet http://example.org from FHIR server.'
+      );
+      await expect(responsePanel.locator('.response-error')).toHaveCount(0);
+      await responseCopy.click();
+      expect(JSON.parse(await PWUtils.getClipboardContent(page)).resourceType).toBe('QuestionnaireResponse');
+
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      const extractedPanel = dialog.getByRole('tabpanel', {name: 'Extracted Resources JSON', exact: true});
+      await expect(extractedPanel.locator('.form-load-warning')).toBeVisible();
+      await expect(extractedPanel.locator('.extraction-error')).toHaveCount(0);
+      await expect(extractedPanel.getByText('No extraction is configured.', {exact: false})).toBeVisible();
+    });
+
+    test('reports the form as unavailable when LHC-Forms cannot render it', async ({page}) => {
+      await PWUtils.importLocalFile(page, 'questionnaire-enableWhen-missing-linkId.json');
+      await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
+        .toHaveValue('Questionnaire where enableWhen contains an invalid linkId');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const dialog = page.locator('lfb-preview-dlg');
+      const lformsError = "Question with linkId 'q3' contains enableWhen pointing to a question with linkId 'q11' that does not exist.";
+      await expect(dialog.locator('.lforms-validation')).toHaveText(lformsError);
+
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      await expect(dialog.locator('.response-error')).toHaveText(`The rendered form is unavailable: ${lformsError}`);
+      await expect(dialog.locator('.form-load-warning')).toHaveCount(0);
+      await expect(dialog.getByRole('button', {name: 'Copy QuestionnaireResponse JSON', exact: true})).toHaveCount(0);
+
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      await expect(dialog.locator('.extraction-error')).toHaveText(`The rendered form is unavailable: ${lformsError}`);
+      await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toHaveCount(0);
     });
   });
 });

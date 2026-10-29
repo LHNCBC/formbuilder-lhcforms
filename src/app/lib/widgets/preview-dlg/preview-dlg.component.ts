@@ -3,7 +3,9 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
+  QueryList,
   ViewChild,
+  ViewChildren,
   ViewEncapsulation,
   inject,
   CUSTOM_ELEMENTS_SCHEMA
@@ -30,7 +32,8 @@ import {faCopy} from '@fortawesome/free-regular-svg-icons';
 import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
-import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatTooltip, MatTooltipModule} from "@angular/material/tooltip";
+import {LiveAnnouncer} from "@angular/cdk/a11y";
 import {AsyncPipe, CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {ClipboardModule} from "@angular/cdk/clipboard";
@@ -52,6 +55,11 @@ export interface PreviewData {
   questionnaire: fhir.Questionnaire;
   lfData?: any;
   containedResourceVersionRecords?: ContainedResourceVersionRecord[];
+  /**
+   * Save the questionnaire as the Export menu does, including its compatibility prompts.
+   * Takes the FHIR version to save, and resolves when the file is saved or the user cancels.
+   */
+  exportQuestionnaire: (version: FHIR_VERSION_TYPE) => Promise<void>;
 }
 
 type NoErrorsMap = {
@@ -102,6 +110,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   private subjectTypeService = inject(SubjectTypeService);
   private containedResourceService = inject(ContainedResourceService);
   private snackBar = inject(MatSnackBar);
+  private liveAnnouncer = inject(LiveAnnouncer);
   dialogRef = inject<MatDialogRef<PreviewDlgComponent>>(MatDialogRef);
   data = inject<PreviewData>(MAT_DIALOG_DATA);
 
@@ -109,6 +118,8 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
   @ViewChild('extractionFormContainer', {read: ElementRef}) extractionFormContainer: ElementRef<HTMLElement>;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
+  // Tooltips of the Questionnaire Response and Extracted Resources tab labels, in tab order.
+  @ViewChildren('snapshotTabTooltip', {read: MatTooltip}) snapshotTabTooltips: QueryList<MatTooltip>;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
   activeTopLevelTabIndex: PreviewTab = PreviewTab.RenderedForm;
   // The snapshot tabs read answers from the rendered form, which is created only when its
@@ -130,6 +141,8 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   extractionUnavailable = '';
   // Response export failures belong to the Questionnaire Response tab only.
   responseError = '';
+  // Shown on both snapshot tabs when LHC-Forms reported an error but still rendered the form.
+  formLoadWarning = '';
   extractedResourcesJSON = '';
   questionnaireResponseJSON = '';
   private extractionTimer: ReturnType<typeof setTimeout>;
@@ -307,7 +320,10 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle errors from <wc-lhc-form> and discard unavailable extraction snapshots.
+   * Handle errors from <wc-lhc-form>. LHC-Forms also reports errors after it has rendered the
+   * form, for example when an answer list cannot be loaded, and then never reports the form as
+   * ready. An open snapshot tab is therefore regenerated; the export checks whether a form was
+   * rendered.
    * @param event - Event object emitted by wc-lhc-form.
    */
   handleLFormsError(event) {
@@ -315,11 +331,9 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.formReady = false;
     clearTimeout(this.extractionTimer);
     this.extractionInProgress = false;
-    this.noResourcesExtracted = false;
-    this.extractedResourcesJSON = '';
-    this.questionnaireResponseJSON = '';
-    this.extractionError = `The rendered form is unavailable: ${event.detail}`;
-    this.responseError = this.extractionError;
+    if(this.isExtractionTabSelected) {
+      this.refreshExtraction();
+    }
   }
 
   /** Return the JSON snapshot selected in the extraction preview. */
@@ -344,7 +358,12 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * export runs or while waiting for the rendered form, so tabs show only final results.
    */
   get snapshotsSettled(): boolean {
-    return !this.extractionInProgress && (this.formReady || !!this.responseError);
+    return !this.extractionInProgress && this.formSettled;
+  }
+
+  /** Return whether the rendered form has finished loading, successfully or with an error. */
+  private get formSettled(): boolean {
+    return this.formReady || !!this.lformsErrors;
   }
 
   /**
@@ -429,6 +448,39 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Explain a disabled snapshot tab when keyboard focus moves to it. Its tooltip otherwise
+   * appears only on mouse hover, so it is shown here and its text is announced to screen readers.
+   * @param index - Index of the top-level tab that received keyboard focus.
+   */
+  onPreviewTabFocused(index: number): void {
+    this.hideSnapshotTabTooltips();
+    const isSnapshotTab = index === PreviewTab.QuestionnaireResponse || index === PreviewTab.ExtractedResources;
+    if(this.renderedFormVisited || !isSnapshotTab) {
+      return;
+    }
+    this.snapshotTabTooltips?.get(index - PreviewTab.QuestionnaireResponse)?.show(0);
+    this.liveAnnouncer.announce(this.snapshotTabsDisabledMsg);
+  }
+
+  /**
+   * Hide the tooltips shown for keyboard focus when focus leaves the top-level tab labels.
+   * Moving between the labels is handled by onPreviewTabFocused().
+   * @param event - focusout event from the top-level tab group.
+   */
+  onPreviewTabsFocusOut(event: FocusEvent): void {
+    const tabHeader = (event.currentTarget as HTMLElement).querySelector('mat-tab-header');
+    const next = event.relatedTarget as HTMLElement | null;
+    if(!tabHeader || next?.closest('mat-tab-header') !== tabHeader) {
+      this.hideSnapshotTabTooltips();
+    }
+  }
+
+  /** Hide the tooltips of the snapshot tab labels. */
+  private hideSnapshotTabTooltips(): void {
+    this.snapshotTabTooltips?.forEach(tooltip => tooltip.hide(0));
+  }
+
   /** Allow extraction only after the widget has finished its initial processing and rendering. */
   handleFormReady(): void {
     this.formReady = true;
@@ -440,7 +492,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   /** Schedule extraction after allowing pending input changes to settle. */
   refreshExtraction(): void {
-    if(!this.formReady || this.extractionInProgress) {
+    if(!this.formSettled || this.extractionInProgress) {
       return;
     }
     this.extractionInProgress = true;
@@ -448,6 +500,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.extractionUnavailable = '';
     this.noResourcesExtracted = false;
     this.responseError = '';
+    this.formLoadWarning = '';
     this.extractedResourcesJSON = '';
     this.questionnaireResponseJSON = '';
     this.extractionTimer = setTimeout(() => this.generateExtraction(), 0);
@@ -460,8 +513,10 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   private generateExtraction(): void {
     const container = this.extractionFormContainer?.nativeElement;
     try {
-      if(!container || typeof LForms.Util.getFormFHIRData !== 'function') {
-        throw new Error('The LForms response export API is unavailable.');
+      this.assertFormExportable(container);
+      if(this.lformsErrors) {
+        this.formLoadWarning = `The form was rendered with an error: ${this.lformsErrors}. ` +
+          'The JSON reflects the form as shown on the Rendered Form tab.';
       }
       const version = this.formService.lformsVersion || '';
       const match = /^(\d+)\.(\d+)\./.exec(version);
@@ -512,9 +567,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    */
   private exportResponseOnly(container: HTMLElement | undefined): void {
     try {
-      if(!container || typeof LForms.Util.getFormFHIRData !== 'function') {
-        throw new Error('The LForms response export API is unavailable.');
-      }
+      this.assertFormExportable(container);
       const response = LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container);
       if(response?.resourceType !== 'QuestionnaireResponse') {
         throw new Error('LForms did not return a QuestionnaireResponse.');
@@ -523,6 +576,36 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     }
     catch(error) {
       this.responseError = this.errorMessage(error);
+    }
+  }
+
+  /**
+   * Check that the preview widget can be exported. After an LHC-Forms error, export only
+   * when the form was still rendered.
+   * @param container - Element containing the preview widget, if available.
+   * @throws Error when the export API, the widget, or the rendered form is unavailable.
+   */
+  private assertFormExportable(container: HTMLElement | undefined): void {
+    if(!container || typeof LForms.Util.getFormFHIRData !== 'function') {
+      throw new Error('The LForms response export API is unavailable.');
+    }
+    if(this.lformsErrors && !this.hasRenderedForm(container)) {
+      throw new Error(`The rendered form is unavailable: ${this.lformsErrors}`);
+    }
+  }
+
+  /**
+   * Check whether LHC-Forms rendered a form in the container. A failure to read the form data
+   * means that no usable form exists; the reported LHC-Forms error is shown instead.
+   * @param container - Element containing the preview widget.
+   * @returns Whether the form data of a rendered form is available.
+   */
+  private hasRenderedForm(container: HTMLElement): boolean {
+    try {
+      return !!LForms.Util.getFormData?.(container);
+    }
+    catch {
+      return false;
     }
   }
 
@@ -546,16 +629,22 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Download the questionnaire shown on the selected version tab. The file is named like
-   * the Export menu's file: the questionnaire name, else its title, else 'form'.
+   * Save the questionnaire in the selected version tab's FHIR version through the Export
+   * menu's save, so the same compatibility questions are asked before the file is saved.
+   * Failures not reported by the export itself are shown in a pop-up message. While the
+   * export runs, the preview does not close on Escape, so Escape reaches its prompts.
    */
   downloadQuestionnaireJSON(): void {
     if(!this.codeMirrorModel) {
       return;
     }
-    const questionnaire = this.data.questionnaire;
-    const baseName = (questionnaire?.name || questionnaire?.title || 'form').replace(/\s/g, '-');
-    this.downloadJSON(this.codeMirrorModel, `${baseName}.${this.format}.json`);
+    const disableClose = this.dialogRef.disableClose;
+    this.dialogRef.disableClose = true;
+    this.data.exportQuestionnaire(this.format).catch((error) => {
+      this.showActionMessage(`Download failed: ${this.errorMessage(error)}`);
+    }).finally(() => {
+      this.dialogRef.disableClose = disableClose;
+    });
   }
 
   /**

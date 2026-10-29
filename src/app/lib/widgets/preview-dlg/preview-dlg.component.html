@@ -4,7 +4,9 @@
   </button>
 </h2>
 <mat-dialog-content #dlgContent class="lfb-mat-tab-content">
-  <mat-tab-group [mat-stretch-tabs]="true" [preserveContent]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="onPreviewTabSelected($event)">
+  <mat-tab-group [mat-stretch-tabs]="true" [preserveContent]="true" [selectedIndex]="activeTopLevelTabIndex"
+    (selectedIndexChange)="onPreviewTabSelected($event)" (focusChange)="onPreviewTabFocused($event.index)"
+    (focusout)="onPreviewTabsFocusOut($event)">
     <!-- Keep the tab order in sync with PreviewTab in the component. -->
     <mat-tab label="Questionnaire JSON">
       <ng-template matTabContent>
@@ -79,7 +81,7 @@
     <!-- The snapshot tabs need the rendered form, which is created when its tab is first shown. -->
     <mat-tab [disabled]="!renderedFormVisited">
       <ng-template matTabLabel>
-        <span class="snapshot-tab-label" [matTooltip]="snapshotTabsDisabledMsg"
+        <span class="snapshot-tab-label" #snapshotTabTooltip [matTooltip]="snapshotTabsDisabledMsg"
           [matTooltipDisabled]="renderedFormVisited">Questionnaire Response JSON</span>
       </ng-template>
       <ng-template matTabContent>
@@ -88,7 +90,7 @@
     </mat-tab>
     <mat-tab [disabled]="!renderedFormVisited">
       <ng-template matTabLabel>
-        <span class="snapshot-tab-label" [matTooltip]="snapshotTabsDisabledMsg"
+        <span class="snapshot-tab-label" #snapshotTabTooltip [matTooltip]="snapshotTabsDisabledMsg"
           [matTooltipDisabled]="renderedFormVisited">Extracted Resources JSON</span>
       </ng-template>
       <ng-template matTabContent>
@@ -109,6 +111,9 @@
     }
     <!-- Show only final results, after the export completes or fails. -->
     @if(snapshotsSettled) {
+      @if(formLoadWarning) {
+        <ngb-alert type="warning" class="form-load-warning" [dismissible]="false">{{formLoadWarning}}</ngb-alert>
+      }
       @if(view === 'er') {
         @if(!hasTemplateExtraction) {
           <ngb-alert type="info" [dismissible]="false">

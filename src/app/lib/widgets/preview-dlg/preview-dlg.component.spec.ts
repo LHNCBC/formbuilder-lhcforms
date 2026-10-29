@@ -2,6 +2,7 @@ import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing'
 import {ElementRef} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {PreviewData, PreviewDlgComponent, PreviewTab} from './preview-dlg.component';
 import {FormService} from '../../../services/form.service';
 import {FhirService} from '../../../services/fhir.service';
@@ -33,7 +34,8 @@ describe('PreviewDlgComponent', () => {
       extension: [{url: EXTENSION_URL_TEMPLATE_EXTRACT, extension: [
         {url: 'template', valueReference: {reference: '#obs-template'}}
       ]}]
-    }};
+    },
+    exportQuestionnaire: jasmine.createSpy('exportQuestionnaire').and.returnValue(Promise.resolve())};
     formService = {
       lformsVersion: '44.0.0',
       convertFromR5: jasmine.createSpy('convertFromR5').and.callFake(questionnaire => questionnaire),
@@ -183,20 +185,26 @@ describe('PreviewDlgComponent', () => {
     expect(component.noResourcesExtracted).toBeFalse();
   }));
 
-  it('downloads the questionnaire JSON of the selected version', async () => {
-    const createUrl = spyOn(URL, 'createObjectURL').and.returnValue('blob:questionnaire');
-    const dispatch = spyOn(HTMLAnchorElement.prototype, 'dispatchEvent').and.returnValue(true);
-    data.questionnaire.title = 'My form';
+  it('saves the questionnaire JSON of the selected version through the Export menu save', fakeAsync(() => {
+    const exportQuestionnaire = data.exportQuestionnaire as jasmine.Spy;
+    let finishExport: () => void;
+    exportQuestionnaire.and.returnValue(new Promise<void>(resolve => finishExport = resolve));
+    component.dialogRef.disableClose = false;
     component.onJsonVersionSelected(2);
     component.downloadQuestionnaireJSON();
-    const blob = createUrl.calls.mostRecent().args[0] as Blob;
-    expect(JSON.parse(await blob.text())).toEqual(data.questionnaire);
-    const anchor = dispatch.calls.mostRecent().object as HTMLAnchorElement;
-    expect(anchor.download).toBe('My-form.STU3.json');
-    data.questionnaire.name = 'short name';
+    expect(exportQuestionnaire).toHaveBeenCalledOnceWith('STU3');
+    // The preview stays open on Escape until the export and its prompts finish.
+    expect(component.dialogRef.disableClose).toBeTrue();
+    finishExport();
+    tick();
+    expect(component.dialogRef.disableClose).toBeFalse();
+    // Failures the export does not report itself are shown in the pop-up message.
+    exportQuestionnaire.and.returnValue(Promise.reject(new Error('Blocked')));
     component.downloadQuestionnaireJSON();
-    expect((dispatch.calls.mostRecent().object as HTMLAnchorElement).download).toBe('short-name.STU3.json');
-  });
+    tick();
+    expect(snackBar.open.calls.mostRecent().args[0]).toBe('Download failed: Blocked');
+    expect(component.dialogRef.disableClose).toBeFalse();
+  }));
 
   it('generates both snapshots in one R5 call using the widget container', fakeAsync(() => {
     component.onPreviewTabSelected(PreviewTab.ExtractedResources);
@@ -390,17 +398,89 @@ describe('PreviewDlgComponent', () => {
     expect(component.extractionInProgress).toBeFalse();
   }));
 
-  it('cancels a pending extraction when the widget reports an error', fakeAsync(() => {
+  it('reports an unavailable form when the widget fails without rendering a form', fakeAsync(() => {
+    spyOn(LForms.Util, 'getFormData').and.returnValue(undefined);
     component.onPreviewTabSelected(PreviewTab.ExtractedResources);
     component.handleLFormsError({detail: 'Unable to render'});
+    expect(component.snapshotsSettled).toBeFalse();
     tick();
     expect(exportFHIR).not.toHaveBeenCalled();
     expect(component.formReady).toBeFalse();
     expect(component.extractionInProgress).toBeFalse();
-    expect(component.extractionError).toContain('Unable to render');
-    expect(component.responseError).toContain('Unable to render');
+    expect(component.extractionError).toBe('The rendered form is unavailable: Unable to render');
+    expect(component.responseError).toBe('The rendered form is unavailable: Unable to render');
+    expect(component.formLoadWarning).toBe('');
     expect(component.snapshotsSettled).toBeTrue();
   }));
+
+  it('exports a form rendered despite a widget error and shows the error as a warning', fakeAsync(() => {
+    const getFormData = spyOn(LForms.Util, 'getFormData').and.returnValue({items: []});
+    component.formReady = false;
+    component.onPreviewTabSelected(PreviewTab.QuestionnaireResponse);
+    tick();
+    expect(exportFHIR).not.toHaveBeenCalled();
+    // LHC-Forms reports some load errors, such as an answer list, without reporting readiness.
+    component.handleLFormsError({detail: 'Unable to load ValueSet'});
+    tick();
+    expect(getFormData).toHaveBeenCalledWith(component.extractionFormContainer.nativeElement);
+    expect(exportFHIR).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(component.questionnaireResponseJSON)).toEqual(response);
+    expect(JSON.parse(component.extractedResourcesJSON)).toEqual(bundle);
+    expect(component.responseError).toBe('');
+    expect(component.extractionError).toBe('');
+    expect(component.formLoadWarning).toContain('rendered with an error: Unable to load ValueSet');
+    // Reentry regenerates the snapshots from the rendered form.
+    component.onPreviewTabSelected(PreviewTab.RenderedForm);
+    component.onPreviewTabSelected(PreviewTab.ExtractedResources);
+    tick();
+    expect(exportFHIR).toHaveBeenCalledTimes(2);
+    // A later successful render clears the warning on the next refresh.
+    component.handleFormReady();
+    component.refreshExtraction();
+    tick();
+    expect(component.formLoadWarning).toBe('');
+  }));
+
+  it('explains a disabled snapshot tab when it receives keyboard focus', () => {
+    const announcer = TestBed.inject(LiveAnnouncer);
+    const announce = spyOn(announcer, 'announce').and.resolveTo();
+    const tooltips = [jasmine.createSpyObj('MatTooltip', ['show', 'hide']), jasmine.createSpyObj('MatTooltip', ['show', 'hide'])];
+    component.snapshotTabTooltips = {
+      get: (index: number) => tooltips[index],
+      forEach: (callback) => tooltips.forEach(callback)
+    } as any;
+    // Enabled snapshot tabs need no explanation.
+    component.onPreviewTabFocused(PreviewTab.ExtractedResources);
+    expect(tooltips[1].show).not.toHaveBeenCalled();
+    expect(announce).not.toHaveBeenCalled();
+
+    component.renderedFormVisited = false;
+    component.onPreviewTabFocused(PreviewTab.ExtractedResources);
+    expect(tooltips[1].show).toHaveBeenCalledOnceWith(0);
+    expect(announce).toHaveBeenCalledOnceWith('Open the Rendered Form tab first.');
+    // Moving to another tab hides the tooltip.
+    component.onPreviewTabFocused(PreviewTab.RenderedForm);
+    expect(tooltips[1].hide).toHaveBeenCalledWith(0);
+    expect(announce).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the keyboard tooltips only when focus leaves the tab labels', () => {
+    const tooltip = jasmine.createSpyObj('MatTooltip', ['show', 'hide']);
+    component.snapshotTabTooltips = {get: () => tooltip, forEach: (callback) => callback(tooltip)} as any;
+    const group = document.createElement('div');
+    const header = document.createElement('mat-tab-header');
+    const tab = document.createElement('div');
+    header.appendChild(tab);
+    group.appendChild(header);
+    const focusOut = (relatedTarget: Element | null) =>
+      ({currentTarget: group, relatedTarget} as unknown as FocusEvent);
+    component.onPreviewTabsFocusOut(focusOut(tab));
+    expect(tooltip.hide).not.toHaveBeenCalled();
+    component.onPreviewTabsFocusOut(focusOut(document.body));
+    expect(tooltip.hide).toHaveBeenCalledTimes(1);
+    component.onPreviewTabsFocusOut(focusOut(null));
+    expect(tooltip.hide).toHaveBeenCalledTimes(2);
+  });
 
   it('downloads the selected JSON and releases object URLs', async () => {
     const createUrl = spyOn(URL, 'createObjectURL').and.returnValue('blob:preview');
