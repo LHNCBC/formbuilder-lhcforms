@@ -9,7 +9,7 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {ISchema, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
+import {ISchema, PropertyGroup, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
 import {ContainedResourceService} from './contained-resource.service';
 import {Util} from '../lib/util';
 
@@ -399,6 +399,33 @@ describe('FormService', () => {
         expect(exported.item[0].initial[0].valueAttachment.size).toBeUndefined();
       }
     });
+  });
+
+  it('should show the element field of a value[x] only with its value type', () => {
+    const extensionSchema = service.getExtensionSchema();
+    expect(extensionSchema.properties._valueString.visibleIf)
+      .toEqual(extensionSchema.properties.valueString.visibleIf);
+    expect(extensionSchema.properties._valueString.visibleIf.allOf[0]).toEqual({__$valueType: ['valueString']});
+
+    const schema: ISchema = JSON.parse(JSON.stringify(extensionSchema));
+    SchemaPreprocessor.preprocess(schema);
+    const property = CommonTestingModule.createProperty(schema, {
+      url: 'https://example.org/StructureDefinition/string',
+      __$isValueX: true,
+      __$valueType: 'valueString',
+      __$valueTypeCategory: '__$valueTypePrimitive',
+      __$valueTypePrimitive: 'valueString',
+      valueString: 'a',
+      _valueString: {id: 'note'}
+    }) as PropertyGroup;
+    expect(property.value._valueString.id).toBe('note');
+
+    property.getProperty('__$valueType').setValue('valueInteger', false);
+    property.getProperty('__$valueTypePrimitive').setValue('valueInteger', false);
+    property.getProperty('valueInteger').setValue(1, false);
+    expect(property.getProperty('_valueString').visible).toBeFalse();
+    expect(property.value._valueString).toBeUndefined();
+    expect(property.value.valueInteger).toBe(1);
   });
 
   it('should retain primitive metadata in inline and referenced Attachment schema-form models', () => {

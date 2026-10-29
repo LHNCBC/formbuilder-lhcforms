@@ -218,6 +218,12 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
     const formPropertyNode = formProperty as FormPropertyNode;
 
     if (Array.isArray(formPropertyNode.properties)) {
+      if (this.hasElementArray(formPropertyNode)) {
+        // The null entries align the values with their element array, e.g. given with _given.
+        // The property keeps them and realigns the element array on edits; see
+        // PlaceholderArrayProperty. Dropping them here would shift the values against it.
+        return this.isEmptyValue(formProperty.value) ? undefined : copy(formProperty.value);
+      }
       const value = formPropertyNode.properties
         .map((child) => this.getCurrentFormPropertyValue(child))
         .filter((childValue) => !this.isEmptyValue(childValue));
@@ -247,6 +253,22 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
     }
 
     return formProperty.value;
+  }
+
+  /**
+   * Check whether an array property has a sibling element array, e.g. _given of given, that
+   * holds the ids and/or extensions of its values.
+   *
+   * @param property - Array property to check.
+   * @returns True if the parent object has an array value in the '_' prefixed sibling field.
+   */
+  private hasElementArray(property: FormPropertyNode): boolean {
+    const siblings = (property.parent as FormPropertyNode)?.properties;
+    if (!siblings || Array.isArray(siblings)) {
+      return false;
+    }
+    const key = Object.keys(siblings).find((name) => siblings[name] === property);
+    return !!key && !key.startsWith('_') && Array.isArray(siblings['_' + key]?.value);
   }
 
   /**

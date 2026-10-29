@@ -510,18 +510,14 @@ export class ExtensionsService {
 
 
   /**
-   * Remove value[x] fields other than the selected value type from an extension value.
+   * Remove value[x] fields other than the selected value type from an extension value,
+   * along with their element fields, e.g. _valueString. See Util.removeValueChoices().
    *
    * @param value - Extension JSON value.
    * @param keepValueType - value[x] to keep.
    */
   private pruneUnusedValueFields(value: fhir.Extension, keepValueType: string): void {
-    const keys = Object.keys(value);
-    for (const key of keys) {
-      if(value.hasOwnProperty(key) && key.startsWith('value') && key !== keepValueType) {
-        delete value[key];
-      }
-    }
+    Util.removeValueChoices(value, keepValueType);
   }
 
 
@@ -537,6 +533,11 @@ export class ExtensionsService {
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
       this.updateExtension(value);
+      // Prune before resetting, so the child properties of the other value[x] fields and
+      // of their element fields, e.g. _valueString, are reset to empty.
+      if(valueType) {
+        this.pruneUnusedValueFields(value, valueType);
+      }
 
       // Extension ObjectProperties are intentionally sparse: ngx-schema-form creates only
       // the value[x] property present in imported JSON. reset() now adds a missing
@@ -547,7 +548,6 @@ export class ExtensionsService {
       const valueTypePropertyMissing = valueType &&
         !(extProp as PropertyGroup).getProperty(valueType);
       if(valueTypePropertyMissing) {
-        this.pruneUnusedValueFields(value, valueType);
         const extIndex = (this.extensionsProp.properties as FormProperty[]).indexOf(extProp);
         const extensions = [...this.extensionsProp.value];
         extensions[extIndex] = value;
@@ -639,9 +639,11 @@ export class ExtensionsService {
       // If the new value is an extension, we need to set the __$isValueX and __$valueType properties
       // so that the dialog can handle it correctly.
       Util.eliminateEmptyFields(newValue);
-      const valueX = Object.keys(newValue).find((key) => {
-        return key.startsWith('value');
-      });
+      // A value[x] may be absent while its element field is present, e.g. only _valueString
+      // with a data-absent-reason extension. Its value type is still valueString.
+      const keys = Object.keys(newValue);
+      const valueX = keys.find((key) => key.startsWith('value')) ||
+        keys.find((key) => key.startsWith('_value'))?.slice(1);
       newValue['__$isValueX'] = !!valueX;
       if(newValue['__$isValueX']) {
         newValue['__$valueType'] = valueX;

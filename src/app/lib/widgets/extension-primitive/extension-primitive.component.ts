@@ -6,6 +6,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgClass} from '@angular/common';
 import {LabelComponent} from '../label/label.component';
 import {IntegerDirective} from '../../directives/integer.directive';
+import {Util} from '../../util';
 import fhir from 'fhir/r4';
 
 @Component({
@@ -170,7 +171,8 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
   }
 
   /**
-   * Update an extension's primitive value while retaining metadata such as its id.
+   * Update an extension's primitive value while retaining metadata such as its id. The
+   * element field of a previous value type, e.g. _valueInteger, is removed.
    */
   private mergeExtensionValue(
     currentExtension: fhir.Extension | null,
@@ -183,12 +185,7 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
       url: extUrl,
       [valueX]: value
     };
-    Object.keys(extension).forEach((key) => {
-      if(key.startsWith('value') && key !== valueX) {
-        delete extension[key];
-      }
-    });
-    return extension;
+    return Util.removeValueChoices(extension, valueX);
   }
 
   private removeLegacyExtensions(): void {

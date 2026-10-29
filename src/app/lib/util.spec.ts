@@ -609,6 +609,25 @@ describe('Util', () => {
     });
   });
 
+  describe('removeValueChoices', () => {
+    const metadata = {id: 'm1'};
+
+    it('should remove the other value[x] fields with their element fields', () => {
+      const extension: any = {
+        url: 'http://example.org/x', id: 'ext',
+        valueString: 'a', _valueString: metadata, valueInteger: 1, _valueInteger: {id: 'm2'}, _valueCode: metadata
+      };
+
+      expect(Util.removeValueChoices(extension, 'valueInteger'))
+        .toEqual({url: 'http://example.org/x', id: 'ext', valueInteger: 1, _valueInteger: {id: 'm2'}});
+    });
+
+    it('should remove all value[x] fields and element fields when no value[x] is kept', () => {
+      expect(Util.removeValueChoices({url: 'u', valueString: 'a', _valueString: metadata, extension: []} as any))
+        .toEqual({url: 'u', extension: []});
+    });
+  });
+
   describe('FHIR Field Ordering', () => {
     it('should order root Questionnaire fields according to FHIR canonical order', () => {
       const unorderedQ = {

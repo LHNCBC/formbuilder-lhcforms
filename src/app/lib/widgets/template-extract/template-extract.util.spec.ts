@@ -203,6 +203,21 @@ describe('templateExtract utilities', () => {
       const rebuilt = buildTemplateExtractExtension(model);
       expect(rebuilt.extension.map(child => child.url)).toEqual(['template', 'fullUrl']);
     });
+
+    it('removes the element fields of other value types', () => {
+      const extension = createExtension() as any;
+      extension._valueString = dataAbsentReason;
+      extension.extension[0]._valueCanonical = dataAbsentReason;
+      extension.extension[2].valueCode = 'old';
+      extension.extension[2]._valueCode = dataAbsentReason;
+      const model = parseTemplateExtractExtension(extension);
+      model.resourceId = "'patient-2'";
+
+      const rebuilt = buildTemplateExtractExtension(model) as any;
+      expect(rebuilt._valueString).toBeUndefined();
+      expect(rebuilt.extension[0]).toEqual({url: 'template', valueReference: {reference: '#patient'}});
+      expect(rebuilt.extension[2]).toEqual({url: 'resourceId', valueString: "'patient-2'"});
+    });
   });
 
   describe('duplicate detection', () => {

@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import fhir from 'fhir/r4';
 import {
   ArrayProperty,
   DefaultLogService,
   FormPropertyFactory,
+  ISchema,
   JEXLExpressionCompilerFactory,
   PropertyBindingRegistry,
   PropertyGroup,
@@ -299,6 +301,88 @@ describe('ExtensionsService', () => {
       (service.getFirstExtensionFormPropertyByUrl(extensionUrl) as PropertyGroup)
         .getProperty('valuePositiveInt')
     ).toBeDefined();
+  });
+
+  describe('value type changes with element fields', () => {
+    const extensionUrl = 'http://example.org/value-type-change';
+    const metadata = {id: 'value-note'};
+
+    /**
+     * Set the service's extensions to a form property loaded with the given extensions.
+     *
+     * @param extensions - Extensions to load.
+     */
+    function loadExtensions(extensions: fhir.Extension[]): void {
+      const factory = new FormPropertyFactory(new ZSchemaValidatorFactory(), new ValidatorRegistry(),
+        new PropertyBindingRegistry(), new JEXLExpressionCompilerFactory(), new DefaultLogService(3));
+      const element: ISchema = {type: 'object', properties: {id: {type: 'string'}, extension: {type: 'array', items: {type: 'object'}}}};
+      const extensionsProperty = factory.createProperty({
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            url: {type: 'string'},
+            extension: {type: 'array', items: {type: 'object', properties: {}}},
+            valueAddress: {type: 'object', properties: {}},
+            valueAge: {type: 'object', properties: {}},
+            valueString: {type: 'string'},
+            _valueString: element,
+            valueInteger: {type: 'integer'},
+            _valueInteger: element,
+            '__$isValueX': {type: 'boolean'},
+            '__$valueType': {type: 'string'},
+            '__$valueTypeCategory': {type: 'string'},
+            '__$primitiveType': {type: 'string'},
+            '__$stringify': {type: 'string'}
+          }
+        }
+      }) as ArrayProperty;
+      extensionsProperty.setValue(extensions, false);
+      service.setExtensions(extensionsProperty);
+    }
+
+    it('should drop the element field of the previous value type', () => {
+      loadExtensions([{url: extensionUrl, valueString: 'a', _valueString: metadata} as fhir.Extension]);
+
+      service.resetExtension(extensionUrl,
+        {url: extensionUrl, valueInteger: 2, _valueString: metadata} as fhir.Extension, 'valueInteger', false);
+
+      const extension = service.getFirstExtensionByUrl(extensionUrl) as any;
+      expect(extension.valueInteger).toBe(2);
+      expect(extension.valueString).toBeUndefined();
+      expect(extension._valueString).toBeUndefined();
+    });
+
+    it('should drop a stale element field when the value type property exists', () => {
+      loadExtensions([{url: extensionUrl, valueInteger: 1} as fhir.Extension]);
+
+      service.resetExtension(extensionUrl,
+        {url: extensionUrl, valueInteger: 2, _valueString: metadata} as fhir.Extension, 'valueInteger', false);
+
+      const extension = service.getFirstExtensionByUrl(extensionUrl) as any;
+      expect(extension.valueInteger).toBe(2);
+      expect(extension._valueString).toBeUndefined();
+    });
+
+    it('should keep the element field of the kept value type', () => {
+      loadExtensions([{url: extensionUrl, valueInteger: 1, _valueInteger: metadata} as fhir.Extension]);
+
+      service.resetExtension(extensionUrl,
+        {url: extensionUrl, valueInteger: 2, _valueInteger: metadata} as fhir.Extension, 'valueInteger', false);
+
+      const extension = service.getFirstExtensionByUrl(extensionUrl) as any;
+      expect(extension.valueInteger).toBe(2);
+      expect(extension._valueInteger.id).toBe(metadata.id);
+    });
+
+    it('should detect the value type of a value with only its element field', () => {
+      const result = service.updateExtension({url: extensionUrl, _valueString: metadata} as fhir.Extension);
+
+      expect(result['__$isValueX']).toBeTrue();
+      expect(result['__$valueType']).toBe('valueString');
+      expect(result['__$valueTypeCategory']).toBe('__$primitiveType');
+    });
   });
 
   describe('updateExtension', () => {
