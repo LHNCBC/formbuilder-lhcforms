@@ -44,4 +44,3 @@ describe('ObservationExtractComponent extraction rules', () => {
     expect(extracted([], [{code: 'C1', extension: [{url, valueBoolean: true}]}])).toBeTrue();
   });
 });
-

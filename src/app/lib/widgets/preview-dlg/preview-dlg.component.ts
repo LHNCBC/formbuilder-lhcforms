@@ -343,16 +343,18 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Return the JSON snapshot selected in the extraction preview.
-   * @return The JSON string.
-   * */
+  /**
+   * Return the JSON snapshot selected in the extraction preview.
+   * @returns The JSON text of the selected snapshot.
+   */
   get extractionJSON(): string {
     return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ?
       this.extractedResourcesJSON : this.questionnaireResponseJSON;
   }
 
-  /** Return the accessible name of the selected extraction snapshot.
-   * @return The accessible name.
+  /**
+   * Return the accessible name of the selected extraction snapshot.
+   * @returns The accessible name.
    */
   get extractionViewLabel(): string {
     return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ? 'extracted resources' : 'QuestionnaireResponse';
@@ -845,16 +847,3 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   protected readonly faCopy = faCopy;
   protected readonly faDownload = faDownload;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
