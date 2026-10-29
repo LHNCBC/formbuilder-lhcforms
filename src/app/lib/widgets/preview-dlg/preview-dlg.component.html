@@ -141,6 +141,23 @@
             {{unextractedRelationshipLinkIds.join(', ')}}.
           </ngb-alert>
         }
+        @if(hasTemplateExtraction && multipleTemplateExtractLevels.length) {
+          <ngb-alert type="warning" class="multiple-template-extract-levels" [dismissible]="false">
+            LHC-Forms extracts only the first template-based extraction setting at each level, so the other
+            settings are not included. Levels with more than one setting: {{multipleTemplateExtractLevels.join(', ')}}.
+          </ngb-alert>
+        }
+        @if(extractionExpressionErrors.length) {
+          <ngb-alert type="warning" class="extraction-expression-errors" [dismissible]="false">
+            LHC-Forms could not evaluate some extraction expressions, so the extracted resources may be incomplete
+            or incorrect. Errors:
+            <ul class="mb-0">
+              @for(error of extractionExpressionErrors; track error) {
+                <li>{{error}}</li>
+              }
+            </ul>
+          </ngb-alert>
+        }
         @if(renderedFormCompatibilityWarning) {
           <ngb-alert type="warning" [dismissible]="false">
             <span [innerHTML]="renderedFormCompatibilityWarning"></span>

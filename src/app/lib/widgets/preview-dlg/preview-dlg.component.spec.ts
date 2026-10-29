@@ -165,6 +165,60 @@ describe('PreviewDlgComponent', () => {
     expect(component.unextractedRelationshipLinkIds).toEqual(['under-off']);
   });
 
+  it('finds levels with more than one templateExtract, since LHC-Forms extracts only the first', () => {
+    expect(component.multipleTemplateExtractLevels).toEqual([]);
+    const templateExtract = {url: EXTENSION_URL_TEMPLATE_EXTRACT, extension: [
+      {url: 'template', valueReference: {reference: '#obs-template'}}
+    ]};
+    data.questionnaire.extension = [templateExtract, {url: 'http://example.org/other'}, templateExtract];
+    data.questionnaire.item = [
+      {linkId: 'single', type: 'decimal', extension: [templateExtract]},
+      {linkId: 'group', type: 'group', item: [
+        {linkId: 'nested', type: 'decimal', extension: [templateExtract, templateExtract, templateExtract]}
+      ]}
+    ];
+    component.ngOnInit();
+    expect(component.multipleTemplateExtractLevels).toEqual(['form level', "linkId 'nested'"]);
+  });
+
+  it('reports expression errors that LForms logs instead of throwing during extraction', fakeAsync(() => {
+    // Keep the test output clean; the spy is also the console method that must be restored.
+    const consoleLog = spyOn(console, 'log');
+    exportFHIR.and.callFake((_resource, _version, _container, options) => {
+      if(options?.extract) {
+        console.log(new Error('Not implemented: unknownFunction'));
+        console.log(new Error('Not implemented: unknownFunction'));
+        console.log('Not an error');
+      }
+      return [response, bundle];
+    });
+    component.onPreviewTabSelected(PreviewTab.ExtractedResources);
+    tick();
+    expect(component.extractionExpressionErrors).toEqual(['Not implemented: unknownFunction']);
+    // The output is still shown with the warning, and the messages still reach the console.
+    expect(JSON.parse(component.extractedResourcesJSON)).toEqual(bundle);
+    expect(component.extractionError).toBe('');
+    expect(consoleLog).toHaveBeenCalledTimes(3);
+    expect(console.log).toBe(consoleLog);
+    // A later extraction without errors clears the warning.
+    exportFHIR.and.returnValue([response, bundle]);
+    component.refreshExtraction();
+    tick();
+    expect(component.extractionExpressionErrors).toEqual([]);
+  }));
+
+  it('restores the console when extraction throws', fakeAsync(() => {
+    const consoleError = console.error;
+    exportFHIR.and.callFake(() => {
+      throw new Error('Failed');
+    });
+    component.onPreviewTabSelected(PreviewTab.ExtractedResources);
+    tick();
+    expect(component.extractionError).toBe('Failed');
+    expect(component.extractionExpressionErrors).toEqual([]);
+    expect(console.error).toBe(consoleError);
+  }));
+
   it('reports when requested extraction produces no resources', fakeAsync(() => {
     exportFHIR.and.returnValue([response]);
     component.onPreviewTabSelected(PreviewTab.ExtractedResources);

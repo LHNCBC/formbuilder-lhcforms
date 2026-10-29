@@ -1,4 +1,6 @@
 import {test, expect} from '@playwright/test';
+import fs from 'node:fs/promises';
+import path from 'path';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 
@@ -319,6 +321,9 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await expect(extractedPanel.locator('.extraction-note')).toHaveText('Resources are not submitted to a FHIR server.');
       await expect(extractedPanel.getByText('FHIR R5', {exact: true})).toHaveCount(0);
       await expect(extractedPanel.getByText('Preview the QuestionnaireResponse', {exact: false})).toHaveCount(0);
+      // A successful extraction from one setting per level has no extraction warnings.
+      await expect(extractedPanel.locator('.multiple-template-extract-levels, .extraction-expression-errors'))
+        .toHaveCount(0);
       const popup = page.locator('mat-snack-bar-container');
       await extractedCopy.click();
       // Copy feedback appears in a pop-up, not inside the tab.
@@ -612,6 +617,88 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await download.focus();
       await page.keyboard.press('Escape');
       await expect(dialog).toHaveCount(0);
+    });
+  });
+
+  test.describe('Template extraction warnings', () => {
+    /**
+     * Open the preview of a changed copy of template-extract-preview.json, enter answers, and
+     * show Extracted Resources JSON.
+     * @param page - Browser page.
+     * @param change - Changes the parsed questionnaire before it is imported.
+     * @returns The preview dialog.
+     */
+    async function previewChangedQuestionnaire(page, change: (questionnaire: any) => void) {
+      const fixture = path.join(__dirname, 'fixtures', 'template-extract-preview.json');
+      const questionnaire = JSON.parse(await fs.readFile(fixture, 'utf-8'));
+      change(questionnaire);
+      const mainPO = new MainPO(page);
+      await mainPO.mockSnomedEditions();
+      await page.goto('/');
+      await mainPO.loadHomePage();
+      await page.locator('input[type="radio"][value="existing"]').click();
+      await page.locator('input[type="radio"][value="local"]').click();
+      await page.locator('input[type="file"]').setInputFiles({
+        name: 'template-extract-preview.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from(JSON.stringify(questionnaire))
+      });
+      await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
+        .toHaveValue('Extraction preview sample');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const dialog = page.locator('lfb-preview-dlg');
+      const form = dialog.locator('wc-lhc-form');
+      await form.locator('input[id^="name/"]').fill('Preview Person');
+      await form.locator('input[id^="measurement/"]').fill('12.5');
+      await form.locator('input[id^="measurement/"]').press('Tab');
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      return dialog;
+    }
+
+    test('warns that only the first template extraction setting at a level is extracted', async ({page}) => {
+      const dialog = await previewChangedQuestionnaire(page, questionnaire => {
+        questionnaire.extension.push({
+          url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract',
+          extension: [
+            {url: 'template', valueReference: {reference: '#patient-template'}},
+            {url: 'resourceId', valueString: "'second-patient'"}
+          ]
+        });
+      });
+      await expect(dialog.locator('.multiple-template-extract-levels')).toHaveText(
+        'LHC-Forms extracts only the first template-based extraction setting at each level, so the other ' +
+        'settings are not included. Levels with more than one setting: form level.'
+      );
+      // The output of the extracted settings is still available.
+      await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toBeEnabled();
+      await expect(dialog.locator('.extraction-expression-errors')).toHaveCount(0);
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      const responsePanel = dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true});
+      await expect(responsePanel.locator('.multiple-template-extract-levels')).toHaveCount(0);
+    });
+
+    test('reports template expression errors that LHC-Forms only logs to the console', async ({page}) => {
+      const dialog = await previewChangedQuestionnaire(page, questionnaire => {
+        questionnaire.contained[0].name[0]._text.extension[0].valueString = 'unknownFunction()';
+      });
+      const errors = dialog.locator('.extraction-expression-errors');
+      await expect(errors).toContainText(
+        'LHC-Forms could not evaluate some extraction expressions, so the extracted resources may be incomplete ' +
+        'or incorrect. Errors:'
+      );
+      await expect(errors.locator('li')).toHaveText([/unknownFunction/]);
+      // The output is shown with the warning, so the result of the failed expression can be inspected.
+      const copy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      await expect(copy).toBeEnabled();
+      await copy.click();
+      const bundle = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(bundle.entry[0].resource.resourceType).toBe('Patient');
+      expect(bundle.entry[1].resource.valueQuantity.value).toBe(12.5);
+      await expect(dialog.locator('.extraction-error')).toHaveCount(0);
+      // The warning applies to the extracted resources only.
+      await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
+      const responsePanel = dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true});
+      await expect(responsePanel.locator('.extraction-expression-errors')).toHaveCount(0);
     });
   });
 

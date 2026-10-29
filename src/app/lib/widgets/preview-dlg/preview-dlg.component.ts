@@ -46,6 +46,7 @@ import {
 } from '../../../services/contained-resource.service';
 import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
 import {ObservationExtractComponent} from '../observation-extract/observation-extract.component';
+import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
 declare var LForms: any;
 
 /**
@@ -134,6 +135,11 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   hasObservationExtraction = false;
   // linkIds of items whose observation extraction relationship has no extracted ancestor.
   unextractedRelationshipLinkIds: string[] = [];
+  // Levels with more than one templateExtract extension, e.g. "form level" or "linkId 'a'".
+  // LHC-Forms extracts only the first one at each level.
+  multipleTemplateExtractLevels: string[] = [];
+  // Expression errors that LHC-Forms logged instead of reporting during the last extraction.
+  extractionExpressionErrors: string[] = [];
   // Whether extraction ran without error but produced no resources.
   noResourcesExtracted = false;
   // Extraction messages belong to the Extracted Resources tab only.
@@ -231,6 +237,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.hasObservationExtraction = this.hasObservationExtract(this.data.questionnaire);
     this.unextractedRelationshipLinkIds = [];
     this.findUnextractedRelationshipItems(this.data.questionnaire?.item, [this.data.questionnaire?.extension || []]);
+    this.multipleTemplateExtractLevels = this.findMultipleTemplateExtractLevels(this.data.questionnaire);
     this.missingTerminologyServerLinkIds = Util.getItemsMissingPreferredTerminologyServer(this.data.questionnaire);
     this.preferredTerminologyServerMsg = this.buildPreferredTerminologyServerMsg(this.missingTerminologyServerLinkIds);
     this.renderedFormCompatibilityWarning = this.containedResourceService.getCompatibilityWarning(
@@ -336,13 +343,17 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Return the JSON snapshot selected in the extraction preview. */
+  /** Return the JSON snapshot selected in the extraction preview.
+   * @return The JSON string.
+   * */
   get extractionJSON(): string {
     return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ?
       this.extractedResourcesJSON : this.questionnaireResponseJSON;
   }
 
-  /** Return the accessible name of the selected extraction snapshot. */
+  /** Return the accessible name of the selected extraction snapshot.
+   * @return The accessible name.
+   */
   get extractionViewLabel(): string {
     return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ? 'extracted resources' : 'QuestionnaireResponse';
   }
@@ -396,6 +407,44 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       }
       this.findUnextractedRelationshipItems(item.item, [item.extension || [], ...ancestorExtensions]);
     }
+  }
+
+  /**
+   * Find the levels that have more than one templateExtract extension. LHC-Forms extracts
+   * only the first templateExtract at each level, so the others are missing from the output.
+   * @param questionnaire - Questionnaire to inspect.
+   * @returns "form level" for the questionnaire, and "linkId '<linkId>'" for each item, in
+   *   questionnaire order.
+   */
+  private findMultipleTemplateExtractLevels(questionnaire: fhir.Questionnaire): string[] {
+    const levels: string[] = [];
+
+    /**
+     * Check whether a list of extensions has more than one templateExtract extension.
+     * @param extensions - Extensions of the questionnaire or of an item.
+     * @returns Whether there is more than one templateExtract extension.
+     */
+    const hasMultiple = (extensions: fhir.Extension[] = []): boolean =>
+      extensions.filter(extension => extension.url === EXTENSION_URL_TEMPLATE_EXTRACT).length > 1;
+
+    /**
+     * Add the items with more than one templateExtract extension, including descendants.
+     * @param items - Items to inspect.
+     */
+    const addItems = (items: fhir.QuestionnaireItem[] = []): void => {
+      for(const item of items) {
+        if(hasMultiple(item.extension)) {
+          levels.push(`linkId '${item.linkId}'`);
+        }
+        addItems(item.item);
+      }
+    };
+
+    if(hasMultiple(questionnaire?.extension)) {
+      levels.push('form level');
+    }
+    addItems(questionnaire?.item);
+    return levels;
   }
 
   /**
@@ -499,6 +548,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.extractionError = '';
     this.extractionUnavailable = '';
     this.noResourcesExtracted = false;
+    this.extractionExpressionErrors = [];
     this.responseError = '';
     this.formLoadWarning = '';
     this.extractedResourcesJSON = '';
@@ -509,6 +559,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   /**
    * Export one response and its extracted resources from the preserved widget.
    * Older runtimes can still export a response, but must not silently omit templates.
+   * Expression errors that LForms only logs during extraction are kept for a warning.
    */
   private generateExtraction(): void {
     const container = this.extractionFormContainer?.nativeElement;
@@ -528,8 +579,12 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       // Request extraction only when something is configured to extract; otherwise LForms
       // returns just the QuestionnaireResponse.
       const extract = this.hasObservationExtraction || (this.hasTemplateExtraction && !!supportsTemplates);
+      const expressionErrors: string[] = [];
       const result = extract ?
-        LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container, {extract: true}) :
+        this.collectLoggedErrors(
+          () => LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container, {extract: true}),
+          expressionErrors
+        ) :
         LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container);
       const resources = Array.isArray(result) ? result : [result];
       const response = resources[0];
@@ -547,6 +602,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
         this.extractedResourcesJSON = JSON.stringify(extracted.length === 1 ? extracted[0] : extracted, null, 2);
       }
       this.noResourcesExtracted = extract && !extracted.length;
+      this.extractionExpressionErrors = expressionErrors;
     }
     catch(error) {
       this.extractedResourcesJSON = '';
@@ -557,6 +613,35 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     }
     finally {
       this.extractionInProgress = false;
+    }
+  }
+
+  /**
+   * Run an LForms call and collect the messages of the errors that it writes to the console.
+   * LForms catches FHIRPath errors in extraction expressions and only logs them, so
+   * extraction otherwise looks successful. The messages are still written to the console.
+   * @param run - Synchronous LForms call.
+   * @param errors - Receives each distinct error message, in the order logged.
+   * @returns The value returned by run.
+   */
+  private collectLoggedErrors<T>(run: () => T, errors: string[]): T {
+    const methods = ['log', 'warn', 'error'] as const;
+    const originals = methods.map(method => console[method]);
+    methods.forEach((method, index) => {
+      console[method] = (...args: unknown[]) => {
+        args.filter(arg => arg instanceof Error).forEach((error: Error) => {
+          if(!errors.includes(error.message)) {
+            errors.push(error.message);
+          }
+        });
+        originals[index].apply(console, args);
+      };
+    });
+    try {
+      return run();
+    }
+    finally {
+      methods.forEach((method, index) => console[method] = originals[index]);
     }
   }
 
