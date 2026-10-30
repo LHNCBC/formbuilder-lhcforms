@@ -49,7 +49,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 - A contained resource cannot be deleted while anything else in the
   Questionnaire refers to it by its local reference, such as an item's
   `answerValueSet`, an extension's `valueReference`, or another contained
-  resource. The message shows where it is referenced.
+  resource. The message shows where it is referenced. Only reference and
+  canonical fields are checked, so ordinary text such as an item's `text` or
+  `prefix` of `#1` does not prevent deleting the contained resource `1`.
 ### Changed
 - The ValueSet editor schema no longer carries its own unused copy of the FHIR
   definitions. Like the item and form-level schemas, it uses the definitions

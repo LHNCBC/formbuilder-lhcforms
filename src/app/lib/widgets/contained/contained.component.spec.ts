@@ -4,6 +4,7 @@ import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} f
 import {TableComponent} from '../table/table.component';
 import {ContainedComponent} from './contained.component';
 import fhir from 'fhir/r4';
+import type fhir5 from 'fhir/r5';
 import {of} from 'rxjs';
 
 describe('ContainedComponent', () => {
@@ -263,10 +264,13 @@ describe('ContainedComponent', () => {
      * Set up the form-level model and the current items, then try to delete the first
      * contained resource.
      *
-     * @param formLevel - Form-level fields, including contained; the first one is deleted.
+     * @param formLevel - R4 or R5 form-level fields, including contained; the first one is deleted.
      * @param items - Current Questionnaire items.
      */
-    function removeFirstResource(formLevel: Partial<fhir.Questionnaire>, items: fhir.QuestionnaireItem[] = []): void {
+    function removeFirstResource(
+      formLevel: Partial<fhir.Questionnaire> | Partial<fhir5.Questionnaire>,
+      items: fhir.QuestionnaireItem[] = []
+    ): void {
       const sharedObjectService = new SharedObjectService();
       sharedObjectService.currentQuestionnaire = {resourceType: 'Questionnaire', status: 'draft', item: items};
       Object.defineProperty(component, 'sharedObjectService', {value: sharedObjectService});
@@ -331,6 +335,31 @@ describe('ContainedComponent', () => {
       ));
     });
 
+    it('escapes the resource id in the template extraction warning', () => {
+      removeFirstResource({
+        contained: [{resourceType: 'Patient', id: 'x<b>y</b>&z'}],
+        extension: [{
+          url: EXTENSION_URL_TEMPLATE_EXTRACT,
+          extension: [{url: 'template', valueReference: {reference: '#x<b>y</b>&z'}}]
+        }]
+      });
+
+      expectBlocked(
+        'The contained resource #x&lt;b&gt;y&lt;/b&gt;&amp;z is referenced by Template-based extraction and cannot be deleted.'
+      );
+    });
+
+    it('escapes the resource id and location once in the generic reference warning', () => {
+      removeFirstResource({
+        contained: [{resourceType: 'ValueSet', id: 'x<b>y</b>&z', status: 'active'}]
+      }, [{linkId: 'q<&>', type: 'choice', answerValueSet: '#x<b>y</b>&z'}]);
+
+      expectBlocked(
+        'The contained resource #x&lt;b&gt;y&lt;/b&gt;&amp;z is referenced at ' +
+        'Questionnaire.item.where(linkId=&#39;q&lt;&amp;&gt;&#39;).answerValueSet and cannot be deleted.'
+      );
+    });
+
     it('blocks deleting a ValueSet referenced by a nested item answerValueSet, and escapes the location', () => {
       removeFirstResource({contained: [{resourceType: 'ValueSet', id: 'vs1', status: 'active'} as fhir.ValueSet]}, [{
         linkId: 'group',
@@ -367,6 +396,106 @@ describe('ContainedComponent', () => {
       expect(showDialog).not.toHaveBeenCalled();
       expect(parentConfirm).toHaveBeenCalledOnceWith(0, 'Are you sure you want to delete this row?');
     });
+
+    it('asks for confirmation when only ordinary text fields look like the local reference', () => {
+      removeFirstResource({
+        contained: [
+          {resourceType: 'Patient', id: '1'},
+          {resourceType: 'ValueSet', id: 'vs2', status: 'active', compose: {include: [{
+            system: 'http://example.org/codes', concept: [{code: '#1', display: '#1'}]
+          }]}} as fhir.ValueSet
+        ],
+        extension: [{url: 'http://example.org/note', valueString: '#1'}]
+      }, [{
+        linkId: 'q1',
+        type: 'choice',
+        text: '#1',
+        prefix: '#1',
+        answerOption: [{valueString: '#1'}],
+        initial: [{valueString: '#1'}]
+      }]);
+
+      expect(showDialog).not.toHaveBeenCalled();
+      expect(parentConfirm).toHaveBeenCalledOnceWith(0, 'Are you sure you want to delete this row?');
+    });
+
+    it('blocks deleting a resource referenced by an extension valueCanonical', () => {
+      removeFirstResource({
+        contained: [{resourceType: 'ValueSet', id: 'vs1', status: 'active'} as fhir.ValueSet],
+        extension: [{url: 'http://example.org/value-set', valueCanonical: '#vs1'}]
+      });
+
+      expectBlocked(referencedAt(
+        'vs1', "Questionnaire.extension('http://example.org/value-set').valueCanonical"
+      ));
+    });
+
+    it('blocks deleting a ValueSet included by another contained ValueSet', () => {
+      removeFirstResource({contained: [
+        {resourceType: 'ValueSet', id: 'vs1', status: 'active'} as fhir.ValueSet,
+        {resourceType: 'ValueSet', id: 'vs2', status: 'active', compose: {include: [{valueSet: ['#vs1']}]}} as fhir.ValueSet
+      ]});
+
+      expectBlocked(referencedAt(
+        'vs1', "Questionnaire.contained.where(id='vs2').compose.include[0].valueSet[0]"
+      ));
+    });
+
+    it('blocks deleting a resource referenced by another canonical field', () => {
+      removeFirstResource({contained: [
+        {resourceType: 'Questionnaire', id: 'q1', status: 'active'} as fhir.Questionnaire,
+        {resourceType: 'Questionnaire', id: 'q2', status: 'active', derivedFrom: ['#q1']} as fhir.Questionnaire
+      ]});
+
+      expectBlocked(referencedAt('q1', "Questionnaire.contained.where(id='q2').derivedFrom[0]"));
+    });
+
+    for(const field of ['validCodedValueSet', 'normalCodedValueSet', 'abnormalCodedValueSet', 'criticalCodedValueSet']) {
+      it(`blocks deleting a ValueSet referenced by R5 ObservationDefinition ${field}`, () => {
+        const definition: fhir5.ObservationDefinition = {
+          resourceType: 'ObservationDefinition', id: 'od', status: 'active', code: {text: 'Example'},
+          qualifiedValue: [{[field]: '#vs1'}]
+        };
+        removeFirstResource({contained: [
+          {resourceType: 'ValueSet', id: 'vs1', status: 'active'}, definition
+        ]});
+
+        expectBlocked(referencedAt(
+          'vs1', `Questionnaire.contained.where(id='od').qualifiedValue[0].${field}`
+        ));
+      });
+    }
+
+    it('blocks deleting a SubscriptionTopic referenced by an R5 trigger datatype', () => {
+      const topic: fhir5.SubscriptionTopic = {
+        resourceType: 'SubscriptionTopic', id: 'topic', status: 'active', url: 'http://example.org/topic'
+      };
+      const plan: fhir5.PlanDefinition = {
+        resourceType: 'PlanDefinition', id: 'plan', status: 'active',
+        action: [{trigger: [{type: 'data-added', subscriptionTopic: '#topic'}]}]
+      };
+      removeFirstResource({contained: [topic, plan]});
+
+      expectBlocked(referencedAt(
+        'topic', "Questionnaire.contained.where(id='plan').action[0].trigger[0].subscriptionTopic"
+      ));
+    });
+
+    for(const field of ['specimenRequirement', 'observationRequirement', 'observationResultRequirement']) {
+      it(`blocks deleting a definition referenced by R5 ActivityDefinition ${field}`, () => {
+        const target: fhir5.SpecimenDefinition | fhir5.ObservationDefinition = field === 'specimenRequirement'
+          ? {resourceType: 'SpecimenDefinition', id: 'definition', status: 'active'}
+          : {resourceType: 'ObservationDefinition', id: 'definition', status: 'active', code: {text: 'Example'}};
+        const activity: fhir5.ActivityDefinition = {
+          resourceType: 'ActivityDefinition', id: 'activity', status: 'active', [field]: ['#definition']
+        };
+        removeFirstResource({contained: [target, activity]});
+
+        expectBlocked(referencedAt(
+          'definition', `Questionnaire.contained.where(id='activity').${field}[0]`
+        ));
+      });
+    }
   });
 
   describe('importing from a FHIR server', () => {
