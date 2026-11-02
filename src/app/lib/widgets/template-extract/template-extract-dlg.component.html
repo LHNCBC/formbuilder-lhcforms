@@ -1,0 +1,100 @@
+<div class="lfb-row-dialog template-extract-dlg-container">
+  <h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">
+    {{isNew ? 'Add template extraction' : 'Edit template extraction'}}
+    <button mat-icon-button class="close-button mt-2" (click)="cancel()" aria-label="Discard changes">
+      <mat-icon class="close-icon" matTooltip="Discard changes">close</mat-icon>
+    </button>
+  </h2>
+
+  <mat-dialog-content class="dlg-content">
+    <div class="container py-3">
+      <div class="mb-3">
+        <label for="template-extract-resource" class="form-label">Contained resource template</label>
+        <select
+          id="template-extract-resource"
+          class="form-select form-select-sm"
+          [(ngModel)]="model.templateReference"
+          [attr.aria-describedby]="getTemplateWarning() ? 'template-extract-resource-warning' : null"
+        >
+          @if (missingTemplateReference) {
+            <option [value]="missingTemplateReference" disabled>{{missingTemplateReference}} (missing)</option>
+          }
+          @for (resource of containedResources; track resource.reference) {
+            <option [value]="resource.reference">{{resource.label}}</option>
+          }
+        </select>
+        <div class="form-text">Choose the contained resource that will be cloned during extraction.</div>
+        @if (getTemplateWarning(); as templateWarning) {
+          <div id="template-extract-resource-warning" class="alert alert-warning mt-2 mb-0 template-extract-template-warning" role="alert">
+            {{templateWarning}}
+          </div>
+        }
+      </div>
+
+      <section class="bundle-fields-panel border rounded">
+        <button
+          type="button"
+          class="bundle-fields-toggle btn btn-light w-100 rounded-0 text-start"
+          (click)="toggleBundleFields()"
+          [attr.aria-expanded]="!bundleFieldsCollapsed"
+          aria-controls="template-extract-bundle-fields"
+        >
+          <mat-icon aria-hidden="true">{{bundleFieldsCollapsed ? 'chevron_right' : 'expand_more'}}</mat-icon>
+          <span>Bundle entry fields</span>
+        </button>
+
+        <div id="template-extract-bundle-fields" [ngbCollapse]="bundleFieldsCollapsed">
+          <div class="p-3 pb-0">
+            <p class="form-text mt-0">Use the expression editor to create valid FHIRPath. Expression fields are read-only here; use Clear to remove an expression.</p>
+
+            @for (field of expressionFields; track field.id) {
+              <div class="mb-3 expression-field">
+                <label class="form-label" [for]="'template-extract-'+field.id">{{field.label}}</label>
+                <div class="input-group input-group-sm">
+                  <input
+                    class="form-control"
+                    [id]="'template-extract-'+field.id"
+                    [value]="model[field.id]"
+                    [attr.aria-label]="field.label+' FHIRPath expression'"
+                    readonly
+                  >
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    (click)="editExpression(field.id)"
+                    [attr.aria-label]="'Create or edit '+field.label+' FHIRPath expression'"
+                  >
+                    <mat-icon aria-hidden="true">edit</mat-icon>
+                    <span>Create/edit expression</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    [disabled]="!model[field.id]"
+                    (click)="clearExpression(field.id)"
+                    [attr.aria-label]="'Clear '+field.label+' FHIRPath expression'"
+                  >
+                    <mat-icon aria-hidden="true">clear</mat-icon>
+                    <span>Clear</span>
+                  </button>
+                </div>
+                <div class="form-text">{{field.description}}</div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      @if (getDuplicateWarning(); as duplicateWarning) {
+        <div class="alert alert-warning mt-3 mb-0 template-extract-duplicate-warning" role="alert">
+          {{duplicateWarning}}
+        </div>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+    <button type="button" class="btn btn-primary" (click)="cancel()">Discard changes</button>
+    <button type="button" class="btn btn-primary ms-2" [disabled]="!canSave()" (click)="save()">Save and close</button>
+  </mat-dialog-actions>
+</div>

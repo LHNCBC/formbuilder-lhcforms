@@ -1,0 +1,50 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"]
+  },
+  "status": "draft",
+  "title": "Template extraction with a metadata-only expression",
+  "contained": [
+    {
+      "resourceType": "Patient",
+      "id": "patient-template"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#patient-template"
+          }
+        },
+        {
+          "url": "fullUrl",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+                "valueCode": "unknown"
+              }
+            ]
+          }
+        },
+        {
+          "url": "resourceId",
+          "valueString": "'patient-1'"
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "linkId": "name",
+      "text": "Name",
+      "type": "string"
+    }
+  ]
+}
+

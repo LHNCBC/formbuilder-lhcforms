@@ -9,7 +9,9 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {ISchema, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
+import {ISchema, PropertyGroup, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
+import {ContainedResourceService} from './contained-resource.service';
+import {Util} from '../lib/util';
 
 describe('FormService', () => {
   let service: FormService;
@@ -25,6 +27,115 @@ describe('FormService', () => {
   it('should be created', async () => {
     expect(service).toBeTruthy();
     expect(service.lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
+  });
+
+  it('autosaves clean Questionnaire JSON and contained-resource version provenance separately', () => {
+    const containedResourceService = TestBed.inject(ContainedResourceService);
+    const patient = {resourceType: 'Patient', id: 'patient-1'} as fhir.Resource;
+    containedResourceService.annotateContainedResources({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    } as fhir.Questionnaire, 'R4');
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    } as fhir.Questionnaire;
+    const autoSaveSpy = spyOn(service, 'autoSave');
+    spyOn(service, 'notifyWindowOpener').and.returnValue(false);
+
+    service.autoSaveForm(questionnaire);
+
+    const cleanQuestionnaire = autoSaveSpy.calls.argsFor(0)[1];
+    expect((cleanQuestionnaire.contained[0] as any).__$fhirVersionInfo).toBeUndefined();
+    expect(autoSaveSpy.calls.argsFor(1)).toEqual([
+      'containedResourceVersions',
+      [{
+        resourceType: 'Patient',
+        id: 'patient-1',
+        info: {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
+      }]
+    ]);
+  });
+
+  describe('contained-resource versions on import', () => {
+    /**
+     * Create an R4 Questionnaire with an unprofiled contained Patient.
+     *
+     * @returns A Questionnaire whose FHIR version is detectable only from its own profile.
+     */
+    const r4QuestionnaireWithUnprofiledResource = (): fhir.Questionnaire => ({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      contained: [{resourceType: 'Patient', id: 'patient-1'}],
+      item: [{linkId: 'q1', type: 'string', text: 'Question 1'}]
+    });
+
+    it('records the source version when an R4 file is parsed', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+
+      const imported = service.parseQuestionnaire(JSON.stringify(r4QuestionnaireWithUnprofiledResource()));
+
+      expect(imported.meta.profile).toEqual([Util.R5_PROFILE_URL]);
+      expect(containedResourceService.getVersionInfo(imported.contained[0])).toEqual(
+        {version: 'R4', confidence: 'inferred', source: 'questionnaire'}
+      );
+    });
+
+    it('keeps the source version when the converted Questionnaire is converted again', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+
+      // Server import converts once, then setQuestionnaire() converts the R5 result again.
+      const imported = service.convertToR5(service.convertToR5(r4QuestionnaireWithUnprofiledResource()));
+
+      expect(containedResourceService.getVersionInfo(imported.contained[0])?.version).toBe('R4');
+    });
+
+    it('does not replace version information that is already present', () => {
+      const containedResourceService = TestBed.inject(ContainedResourceService);
+      const questionnaire = r4QuestionnaireWithUnprofiledResource();
+      containedResourceService.annotateEditorResource(questionnaire.contained[0]);
+
+      const imported = service.convertToR5(questionnaire);
+
+      expect(containedResourceService.getVersionInfo(imported.contained[0])?.source).toBe('editor');
+    });
+  });
+
+  describe('contained-resource versions of a legacy autosave', () => {
+    let containedResourceService: ContainedResourceService;
+
+    beforeEach(() => {
+      containedResourceService = TestBed.inject(ContainedResourceService);
+    });
+
+    it('uses only resource evidence, not the autosaved R5 Questionnaire, when no records are stored', () => {
+      // Autosaved before version records were stored: an R5 Questionnaire and no records.
+      spyOn(service, 'autoLoad').and.callFake((key: string) => key === 'fhirQuestionnaire'
+        ? {
+          resourceType: 'Questionnaire',
+          status: 'draft',
+          meta: {profile: [Util.R5_PROFILE_URL]},
+          contained: [
+            {resourceType: 'Patient', id: 'unprofiled'},
+            {
+              resourceType: 'Patient',
+              id: 'profiled',
+              meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Patient']}
+            }
+          ]
+        }
+        : null);
+
+      const loaded = service.convertToR5(service.autoLoadForm());
+
+      expect(containedResourceService.getVersionInfo(loaded.contained[0]))
+        .toEqual({version: null, confidence: 'unknown', source: 'unknown'});
+      expect(containedResourceService.getVersionInfo(loaded.contained[1]))
+        .toEqual({version: 'R4', confidence: 'inferred', source: 'meta.profile'});
+    });
   });
 
   it('should apply explicitly requested widget presets without sharing mutable objects', () => {
@@ -288,6 +399,33 @@ describe('FormService', () => {
         expect(exported.item[0].initial[0].valueAttachment.size).toBeUndefined();
       }
     });
+  });
+
+  it('should show the element field of a value[x] only with its value type', () => {
+    const extensionSchema = service.getExtensionSchema();
+    expect(extensionSchema.properties._valueString.visibleIf)
+      .toEqual(extensionSchema.properties.valueString.visibleIf);
+    expect(extensionSchema.properties._valueString.visibleIf.allOf[0]).toEqual({__$valueType: ['valueString']});
+
+    const schema: ISchema = JSON.parse(JSON.stringify(extensionSchema));
+    SchemaPreprocessor.preprocess(schema);
+    const property = CommonTestingModule.createProperty(schema, {
+      url: 'https://example.org/StructureDefinition/string',
+      __$isValueX: true,
+      __$valueType: 'valueString',
+      __$valueTypeCategory: '__$valueTypePrimitive',
+      __$valueTypePrimitive: 'valueString',
+      valueString: 'a',
+      _valueString: {id: 'note'}
+    }) as PropertyGroup;
+    expect(property.value._valueString.id).toBe('note');
+
+    property.getProperty('__$valueType').setValue('valueInteger', false);
+    property.getProperty('__$valueTypePrimitive').setValue('valueInteger', false);
+    property.getProperty('valueInteger').setValue(1, false);
+    expect(property.getProperty('_valueString').visible).toBeFalse();
+    expect(property.value._valueString).toBeUndefined();
+    expect(property.value.valueInteger).toBe(1);
   });
 
   it('should retain primitive metadata in inline and referenced Attachment schema-form models', () => {

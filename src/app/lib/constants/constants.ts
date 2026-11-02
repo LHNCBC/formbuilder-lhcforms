@@ -54,6 +54,8 @@ export const EXTENSION_URL_CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/S
 // formerly ANSWER_EXPRESSION
 export const EXTENSION_URL_ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression';
 export const EXTENSION_URL_ENABLEWHEN_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
+export const EXTENSION_URL_TEMPLATE_EXTRACT = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract';
+export const EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle';
 export const EXTENSION_URL_CHOICE_ORIENTATION = 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation';
 export const EXTENSION_URL_COLUMN_COUNT = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount';
 export const EXTENSION_URL_COLUMN_COUNT_LEGACY = 'http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount';

@@ -2,12 +2,14 @@ import { TestBed } from '@angular/core/testing';
 
 import { ImportQuestionnaireService } from './import.questionnaire.service';
 import {
+  EXTENSION_URL_TEMPLATE_EXTRACT,
   EXTENSION_URL_CHOICE_ORIENTATION,
   EXTENSION_URL_COLUMN_COUNT,
   EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_QUESTIONNAIRE_HIDDEN
 } from '../lib/constants/constants';
 import fhir from 'fhir/r4';
+import {Util} from '../lib/util';
 
 describe('ImportQuestionnaireService', () => {
   let service: ImportQuestionnaireService;
@@ -19,6 +21,26 @@ describe('ImportQuestionnaireService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('copies repeatable templateExtract extensions into the widget field', () => {
+    /**
+     * Build a templateExtract extension with only a template child.
+     *
+     * @param reference - Local reference to the template resource, e.g. '#one'.
+     * @returns The templateExtract extension.
+     */
+    const extension = (reference: string) => ({
+      url: EXTENSION_URL_TEMPLATE_EXTRACT,
+      extension: [{url: 'template', valueReference: {reference}}]
+    });
+    const parent: any = {extension: [extension('#one'), extension('#two')]};
+
+    service.updateExtensionRelatedCustomFields(parent);
+
+    expect(parent.__$templateExtract.length).toBe(2);
+    expect(parent.__$templateExtract[0].extension[0].valueReference.reference).toBe('#one');
+    expect(parent.__$templateExtract[1].extension[0].valueReference.reference).toBe('#two');
   });
 
   it('should project a true questionnaire-hidden extension into the item editor state', () => {
@@ -175,5 +197,51 @@ describe('ImportQuestionnaireService', () => {
     service.updateRawQuestionnaire(questionnaire, {} as any);
     expect((questionnaire.item[1].enableWhen[0] as any).__$answerType).toBe('attachment');
     expect(questionnaire.item[1].enableWhen[0].answerBoolean).toBeFalse();
+  });
+
+  it('leaves opaque contained resources, such as help items of a contained Questionnaire, unchanged', () => {
+    /**
+     * Build a string item with a help display item.
+     *
+     * @param linkId - linkId of the string item.
+     * @returns The item.
+     */
+    const itemWithHelp = (linkId: string): fhir.QuestionnaireItem => ({
+      linkId,
+      type: 'string',
+      text: 'Question',
+      item: [{
+        linkId: `${linkId}-help`,
+        type: 'display',
+        text: 'Help text',
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{system: 'http://hl7.org/fhir/questionnaire-item-control', code: 'help'}]
+          }
+        }]
+      }]
+    });
+    const contained: any[] = [
+      {resourceType: 'Questionnaire', id: 'template', status: 'draft', item: [itemWithHelp('nested')]},
+      {resourceType: 'Patient', id: 'pt', extension: [{url: 'http://example.org/x', valueString: 'x'}]}
+    ];
+    const questionnaire: fhir.Questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: JSON.parse(JSON.stringify(contained)),
+      item: [itemWithHelp('root')]
+    };
+
+    service.updateRawQuestionnaire(questionnaire, {} as any);
+
+    expect(questionnaire.contained).toEqual(contained);
+    // The help item of the questionnaire itself is still converted for editing.
+    expect((questionnaire.item[0] as any).__$helpText.linkId).toBe('root-help');
+    expect(questionnaire.item[0].item).toBeUndefined();
+
+    const exported = Util.convertToQuestionnaireJSON(questionnaire);
+    expect(exported.contained).toEqual(contained);
+    expect(exported.item[0].item.map((item) => item.linkId)).toEqual(['root-help']);
   });
 });

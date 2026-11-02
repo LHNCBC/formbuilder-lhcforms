@@ -31,6 +31,7 @@ import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/res
 import {RestrictionsValueComponent} from './widgets/restrictions-value/restrictions-value.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
 import {ObservationExtractComponent} from './widgets/observation-extract/observation-extract.component';
+import {TemplateExtractComponent} from './widgets/template-extract/template-extract.component';
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 import {NumberComponent} from './widgets/number/number.component';
@@ -82,6 +83,9 @@ import {QuestionnaireHiddenComponent} from './widgets/questionnaire-hidden/quest
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
+  /**
+   * Register Form Builder's custom widgets by the widget ids used in the layout and schema files.
+   */
   constructor() {
     super();
     this.register('answer-value-set', AnswerValueSetComponent);
@@ -125,6 +129,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('restrictions-value', RestrictionsValueComponent);
     this.register('observation-link-period', ObservationLinkPeriodComponent);
     this.register('observation-extract', ObservationExtractComponent);
+    this.register('template-extract', TemplateExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
     this.register('terminology-server', TerminologyServerComponent);
     this.register('editable-link-id', EditableLinkIdComponent);

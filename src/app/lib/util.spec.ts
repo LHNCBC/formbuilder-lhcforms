@@ -2,6 +2,8 @@ import {Util} from './util';
 import {TestBed} from "@angular/core/testing";
 import {HttpClient, provideHttpClient} from "@angular/common/http";
 
+declare var LForms: any;
+
 describe('Util', () => {
   it('should traverse to ancestors', () => {
     const e = 'x';
@@ -146,6 +148,45 @@ describe('Util', () => {
 
       expect(convertedQ.meta.tag.length).toEqual(1);
       expect(convertedQ.meta.tag[0].code).toEqual('should-exist');
+    });
+  });
+
+  it('should preserve template extraction resources and annotations during version conversion', () => {
+    const templateExtractUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract';
+    const templateValueUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue';
+    const questionnaire: any = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      meta: {profile: ['http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire']},
+      contained: [{
+        resourceType: 'Observation',
+        id: 'observation-template',
+        status: 'final',
+        code: {text: 'Measurement'},
+        _valueString: {
+          extension: [{url: templateValueUrl, valueString: 'answer.value.first()'}]
+        }
+      }],
+      item: [{
+        linkId: 'measurement',
+        text: 'Measurement',
+        type: 'string',
+        extension: [{
+          url: templateExtractUrl,
+          extension: [{url: 'template', valueReference: {reference: '#observation-template'}}]
+        }]
+      }]
+    };
+
+    const convertedToR5: any = Util.convertQuestionnaire(questionnaire, 'R5');
+    const convertedBackToR4: any = Util.convertQuestionnaire(convertedToR5, 'R4');
+
+    [convertedToR5, convertedBackToR4].forEach(converted => {
+      expect(converted.item[0].extension[0]).toEqual(questionnaire.item[0].extension[0]);
+      expect(converted.contained[0]._valueString.extension[0]).toEqual({
+        url: templateValueUrl,
+        valueString: 'answer.value.first()'
+      });
     });
   });
 
@@ -333,6 +374,258 @@ describe('Util', () => {
     const flSchema = results[json5Files[1]];
     expect(itemSchema.properties.linkId.type).toBe('string');
     expect(flSchema.properties.resourceType.enum).toEqual(['Questionnaire']);
+  });
+
+  describe('Contained resources in questionnaire JSON', () => {
+    const templateExtractValue = {
+      extension: [{
+        url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue',
+        valueString: "item.where(linkId='g').answer.value"
+      }]
+    };
+
+    it('should keep null placeholders and remove only __$ fields in opaque resources', () => {
+      const patient = {
+        resourceType: 'Patient',
+        id: 'pt',
+        __$fhirVersionInfo: {version: 'R5'},
+        name: [{given: ['Fixed', null], _given: [null, templateExtractValue], family: ''}]
+      };
+      const questionnaire = {resourceType: 'Questionnaire', status: 'draft', contained: [patient]};
+
+      const result = Util.convertToQuestionnaireJSON(questionnaire);
+
+      expect(result.contained).toEqual([{
+        resourceType: 'Patient',
+        id: 'pt',
+        name: [{given: ['Fixed', null], _given: [null, templateExtractValue], family: ''}]
+      }]);
+      expect(patient.__$fhirVersionInfo).toEqual({version: 'R5'}); // Source is unchanged.
+    });
+
+    it('should prune contained ValueSets and drop empty resources, keeping the order', () => {
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        contained: [
+          {resourceType: 'ValueSet', id: 'vs1', status: '', compose: {include: [{system: 'http://x', concept: [null, {code: 'a'}]}]}},
+          {},
+          null,
+          {resourceType: 'Observation', id: 'obs', note: [null, {text: 'n'}]}
+        ]
+      };
+
+      const result = Util.convertToQuestionnaireJSON(questionnaire);
+
+      expect(result.contained).toEqual([
+        {resourceType: 'ValueSet', id: 'vs1', compose: {include: [{system: 'http://x', concept: [{code: 'a'}]}]}},
+        {resourceType: 'Observation', id: 'obs', note: [null, {text: 'n'}]}
+      ]);
+    });
+
+    it('should omit contained when no resource remains', () => {
+      const result = Util.convertToQuestionnaireJSON({resourceType: 'Questionnaire', status: 'draft', contained: [{}]});
+      expect(result.contained).toBeUndefined();
+    });
+
+    it('should convert a single contained resource for display', () => {
+      expect(Util.convertContainedResourceToJSON(
+        {resourceType: 'Patient', id: 'pt', __$resourceDisplay: 'x', name: [{given: [null, 'Alice']}]}
+      )).toEqual({resourceType: 'Patient', id: 'pt', name: [{given: [null, 'Alice']}]});
+      expect(Util.convertContainedResourceToJSON(
+        {resourceType: 'ValueSet', id: 'vs', status: '', __$fhirVersionInfo: {version: 'R5'}}
+      )).toEqual({resourceType: 'ValueSet', id: 'vs'});
+    });
+  });
+
+  describe('Null placeholders in repeating primitive fields', () => {
+    const note = (text: string) => ({extension: [{url: 'http://example.org/note', valueString: text}]});
+
+    it('should keep nulls that align primitive values with their extensions', () => {
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: [null, 'http://example.org/Questionnaire/base'],
+        _derivedFrom: [note('first'), null],
+        item: [{
+          linkId: 'q1',
+          type: 'string',
+          extension: [{
+            url: 'http://example.org/name',
+            valueHumanName: {given: ['Fixed', null], _given: [null, note('second')]}
+          }]
+        }],
+        contained: [{
+          resourceType: 'ValueSet',
+          id: 'vs',
+          compose: {include: [{valueSet: ['http://example.org/vs1', null], _valueSet: [null, note('third')]}]}
+        }]
+      };
+
+      const result = Util.convertToQuestionnaireJSON(questionnaire);
+
+      expect(result.derivedFrom).toEqual(questionnaire.derivedFrom);
+      expect(result._derivedFrom).toEqual(questionnaire._derivedFrom);
+      expect(result.item[0].extension[0].valueHumanName)
+        .toEqual({given: ['Fixed', null], _given: [null, note('second')]});
+      expect(result.contained[0].compose.include[0])
+        .toEqual({valueSet: ['http://example.org/vs1', null], _valueSet: [null, note('third')]});
+    });
+
+    it('should remove only the entries that are empty in both arrays', () => {
+      const questionnaire = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: ['http://example.org/a', null, '', 'http://example.org/b'],
+        _derivedFrom: [null, {}, null, note('b')]
+      };
+
+      const result = Util.convertToQuestionnaireJSON(questionnaire);
+
+      expect(result.derivedFrom).toEqual(['http://example.org/a', 'http://example.org/b']);
+      expect(result._derivedFrom).toEqual([null, note('b')]);
+    });
+
+    it('should keep an all-null value array that has extensions', () => {
+      const result = Util.convertToQuestionnaireJSON({
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: [null],
+        _derivedFrom: [note('only')]
+      });
+
+      expect(result.derivedFrom).toEqual([null]);
+      expect(result._derivedFrom).toEqual([note('only')]);
+    });
+
+    it('should remove an extension array without extensions, and pad a shorter one', () => {
+      const result = Util.convertToQuestionnaireJSON({
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: ['http://example.org/a', 'http://example.org/b'],
+        _derivedFrom: [null, {extension: []}],
+        subjectType: ['Patient', 'Group'],
+        _subjectType: [note('patient')]
+      });
+
+      expect(result.derivedFrom).toEqual(['http://example.org/a', 'http://example.org/b']);
+      expect(result._derivedFrom).toBeUndefined();
+      expect(result.subjectType).toEqual(['Patient', 'Group']);
+      expect(result._subjectType).toEqual([note('patient'), null]);
+    });
+
+    it('should still remove nulls from arrays without an extension array', () => {
+      const result = Util.convertToQuestionnaireJSON({
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: ['http://example.org/a', null, 'http://example.org/b']
+      });
+
+      expect(result.derivedFrom).toEqual(['http://example.org/a', 'http://example.org/b']);
+    });
+
+    it('should keep nulls aligned with elements that have an id, with or without extensions', () => {
+      const result = Util.convertToQuestionnaireJSON({
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: [null, 'http://example.org/a', null],
+        _derivedFrom: [{id: 'd1'}, null, {id: 'd3', ...note('third')}],
+        subjectType: ['Patient', null],
+        _subjectType: [null, {id: 's2'}]
+      });
+
+      expect(result.derivedFrom).toEqual([null, 'http://example.org/a', null]);
+      expect(result._derivedFrom).toEqual([{id: 'd1'}, null, {id: 'd3', ...note('third')}]);
+      expect(result.subjectType).toEqual(['Patient', null]);
+      expect(result._subjectType).toEqual([null, {id: 's2'}]);
+    });
+
+    it('should treat an element with an empty id and no extensions as empty', () => {
+      const result = Util.convertToQuestionnaireJSON({
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        derivedFrom: [null, 'http://example.org/a'],
+        _derivedFrom: [{id: ''}, {id: '', extension: []}]
+      });
+
+      expect(result.derivedFrom).toEqual(['http://example.org/a']);
+      expect(result._derivedFrom).toBeUndefined();
+    });
+
+    it('should keep aligned nulls when eliminating empty fields of an extension', () => {
+      const extension = {
+        url: 'http://example.org/name',
+        valueHumanName: {family: '', given: [null, 'Alice', null], _given: [note('first'), null, null]}
+      };
+
+      Util.eliminateEmptyFields(extension);
+
+      expect(extension).toEqual({
+        url: 'http://example.org/name',
+        valueHumanName: {given: [null, 'Alice'], _given: [note('first'), null]}
+      } as any);
+    });
+
+    it('should keep nulls aligned with id-only elements when eliminating empty fields', () => {
+      const extension = {
+        url: 'http://example.org/name',
+        valueHumanName: {given: ['Alice', null], _given: [null, {id: 'g2'}]}
+      };
+
+      Util.eliminateEmptyFields(extension);
+
+      expect(extension).toEqual({
+        url: 'http://example.org/name',
+        valueHumanName: {given: ['Alice', null], _given: [null, {id: 'g2'}]}
+      } as any);
+    });
+
+    it('should detect the FHIR version of a questionnaire with null placeholders and no profile', () => {
+      const questionnaire: any = {
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        subjectType: ['Patient', null],
+        _subjectType: [null, {id: 's2'}],
+        item: [{
+          linkId: 'q1',
+          type: 'string',
+          extension: [{
+            url: 'http://example.org/name',
+            valueHumanName: {given: ['Alice', null], _given: [null, note('second')]}
+          }]
+        }]
+      };
+      const original = structuredClone(questionnaire);
+
+      // LForms.Util.guessFHIRVersion() fails on nulls.
+      expect(() => LForms.Util.guessFHIRVersion(structuredClone(questionnaire))).toThrowError(TypeError);
+      expect(Util.detectFHIRVersion(questionnaire)).toBe(LForms.Util.guessFHIRVersion(Util.copyWithoutNulls(original)));
+      expect(questionnaire).toEqual(original);
+    });
+
+    it('should copy a JSON value without nulls', () => {
+      expect(Util.copyWithoutNulls({a: [null, 'x', {b: null, c: [1, null]}], d: null, e: 0, f: false}))
+        .toEqual({a: ['x', {c: [1]}], e: 0, f: false});
+    });
+  });
+
+  describe('removeValueChoices', () => {
+    const metadata = {id: 'm1'};
+
+    it('should remove the other value[x] fields with their element fields', () => {
+      const extension: any = {
+        url: 'http://example.org/x', id: 'ext',
+        valueString: 'a', _valueString: metadata, valueInteger: 1, _valueInteger: {id: 'm2'}, _valueCode: metadata
+      };
+
+      expect(Util.removeValueChoices(extension, 'valueInteger'))
+        .toEqual({url: 'http://example.org/x', id: 'ext', valueInteger: 1, _valueInteger: {id: 'm2'}});
+    });
+
+    it('should remove all value[x] fields and element fields when no value[x] is kept', () => {
+      expect(Util.removeValueChoices({url: 'u', valueString: 'a', _valueString: metadata, extension: []} as any))
+        .toEqual({url: 'u', extension: []});
+    });
   });
 
   describe('FHIR Field Ordering', () => {

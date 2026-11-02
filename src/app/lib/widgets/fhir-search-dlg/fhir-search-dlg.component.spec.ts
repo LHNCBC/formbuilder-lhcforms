@@ -8,7 +8,7 @@ import {
 import { FhirSearchDlgComponent } from './fhir-search-dlg.component';
 import {CommonTestingModule} from '../../../testing/common-testing.module';
 import {TestUtil} from '../../../testing/util';
-import {of} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
 
 describe('FhirSearchDlgComponent', () => {
   let component: FhirSearchDlgComponent;
@@ -16,6 +16,9 @@ describe('FhirSearchDlgComponent', () => {
 
   let searchButton: HTMLButtonElement;
   let inputEl: HTMLInputElement;
+
+  // Server-advertised parameters behind 'Any text field' and 'Resource ID'.
+  const contentAndIdParameters = [{name: '_content', type: 'string'}, {name: '_id', type: 'token'}];
 
   afterAll(() => {
     TestBed.resetTestingModule();
@@ -37,6 +40,239 @@ describe('FhirSearchDlgComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should require a server-advertised resource type for contained-resource searches', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([{
+      resourceType: 'Practitioner',
+      searchParameters: [...contentAndIdParameters, {name: 'name', type: 'string'}]
+    }]));
+
+    component.configureForContainedResourceImport();
+    flush();
+    fixture.detectChanges();
+
+    expect(component.mode).toBe('contained-resource');
+    expect(component.resourceTypes).toEqual(['Practitioner']);
+    expect(component.canSearch()).toBeFalse();
+
+    component.onResourceTypeChange('Practitioner');
+
+    expect(component.canSearch()).toBeTrue();
+    expect(component.searchFieldList.map((field) => field.field))
+      .toEqual(['_content', '_id', 'name']);
+    expect(component.searchField.field).toBe('_content');
+  }));
+
+  it('should search and return a type-qualified contained-resource selection', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([{
+      resourceType: 'Practitioner',
+      searchParameters: contentAndIdParameters
+    }]));
+    const bundle = {
+      resourceType: 'Bundle',
+      type: 'searchset',
+      total: 1,
+      entry: [{resource: {
+        resourceType: 'Practitioner',
+        id: 'p2',
+        active: true,
+        name: [{family: 'Roe', given: ['Jane']}]
+      }}]
+    } as any;
+    const searchSpy = spyOn(component.fhirService, 'searchResources')
+      .withArgs('Practitioner', 'Jane', '_content', {_count: 20}, 'string')
+      .and.returnValue(of(bundle));
+    const closeSpy = spyOn(component, 'close');
+
+    component.configureForContainedResourceImport();
+    component.onResourceTypeChange('Practitioner');
+    component.inputTerm = 'Jane';
+    component.searchInput();
+    flush();
+    fixture.detectChanges();
+
+    expect(searchSpy).toHaveBeenCalled();
+    expect(component.resources.length).toBe(1);
+    expect(component.getResourceDisplay(component.resources[0])).toBe('Jane Roe');
+
+    component.selectResource(component.resources[0]);
+
+    expect(closeSpy).toHaveBeenCalledWith({resourceType: 'Practitioner', id: 'p2'});
+  }));
+
+  [
+    {
+      description: 'omit Any text field and default to Resource ID without _content',
+      parameters: [{name: 'status', type: 'token'}, {name: '_id', type: 'token'}, {name: 'code', type: 'token'}],
+      fields: ['_id', 'status', 'code']
+    },
+    {
+      description: 'default to the first advertised parameter without _content and _id',
+      parameters: [{name: 'status', type: 'token'}, {name: 'code', type: 'token'}],
+      fields: ['status', 'code']
+    },
+    {
+      description: 'offer no search fields when none are usable',
+      parameters: [{name: '_lastUpdated', type: 'date'}, {name: 'date', type: 'date'}],
+      fields: []
+    }
+  ].forEach(({description, parameters, fields}) => {
+    it(`should ${description}`, fakeAsync(() => {
+      spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([
+        {resourceType: 'Observation', searchParameters: parameters}
+      ]));
+      component.configureForContainedResourceImport();
+      flush();
+      component.onResourceTypeChange('Observation');
+      fixture.detectChanges();
+
+      expect(component.searchFieldList.map((field) => field.field)).toEqual(fields);
+      expect(component.searchField?.field).toBe(fields[0]);
+      expect(component.canSearch()).toBe(fields.length > 0);
+    }));
+  });
+
+  it('should pass the type of the selected search parameter, which decides the escaping', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([{
+      resourceType: 'Observation',
+      searchParameters: [...contentAndIdParameters, {name: 'code', type: 'token'}]
+    }]));
+    const searchSpy = spyOn(component.fhirService, 'searchResources')
+      .and.returnValue(of({resourceType: 'Bundle', type: 'searchset'} as any));
+    component.configureForContainedResourceImport();
+    flush();
+    component.onResourceTypeChange('Observation');
+    component.searchField = component.searchFieldList.find((field) => field.field === 'code');
+    component.inputTerm = 'http://loinc.org|8867-4';
+    component.searchInput();
+    flush();
+
+    expect(searchSpy).toHaveBeenCalledOnceWith(
+      'Observation', 'http://loinc.org|8867-4', 'code', {_count: 20}, 'token'
+    );
+  }));
+
+  it('should reset the search field when the new resource type does not offer it', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([
+      {resourceType: 'Practitioner', searchParameters: [...contentAndIdParameters, {name: 'name', type: 'string'}]},
+      {resourceType: 'Patient', searchParameters: [{name: '_id', type: 'token'}, {name: 'name', type: 'string'}]}
+    ]));
+    component.configureForContainedResourceImport();
+    flush();
+    component.onResourceTypeChange('Practitioner');
+    expect(component.searchField.field).toBe('_content');
+
+    component.onResourceTypeChange('Patient');
+
+    expect(component.searchFieldList.map((field) => field.field)).toEqual(['_id', 'name']);
+    expect(component.searchField).toBe(component.searchFieldList[0]);
+  }));
+
+  it('should keep the advertised search fields stable between change detection passes', fakeAsync(() => {
+    const capabilitiesSpy = spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([
+      {resourceType: 'Practitioner', searchParameters: [...contentAndIdParameters, {name: 'name', type: 'string'}]},
+      {resourceType: 'Patient', searchParameters: [...contentAndIdParameters, {name: 'gender', type: 'token'}]}
+    ]));
+    component.configureForContainedResourceImport();
+    flush();
+    component.onResourceTypeChange('Practitioner');
+
+    // The template binds each field as an option value. New field objects on every pass
+    // kept the view dirty, causing NG0103 in development mode.
+    const practitionerFields = component.searchFieldList;
+    expect(component.searchFieldList).toBe(practitionerFields);
+
+    component.onResourceTypeChange('Patient');
+    const patientFields = component.searchFieldList;
+    expect(patientFields).not.toBe(practitionerFields);
+    expect(patientFields.map((field) => field.field)).toEqual(['_content', '_id', 'gender']);
+    expect(component.searchFieldList).toBe(patientFields);
+
+    // Reloaded capabilities rebuild the list; the selected field follows the new objects.
+    component.searchField = patientFields[2];
+    capabilitiesSpy.and.returnValue(of([
+      {resourceType: 'Patient', searchParameters: [
+        {name: '_id', type: 'token'}, {name: 'birthdate', type: 'date'}, {name: 'gender', type: 'token'}
+      ]}
+    ]));
+    component.retryResourceCapabilities();
+    flush();
+    expect(component.searchFieldList.map((field) => field.field)).toEqual(['_id', 'gender']);
+    expect(component.searchField).toBe(component.searchFieldList[1]);
+  }));
+
+  /**
+   * Prepare a contained-resource search whose response is controlled by the test.
+   * @returns Subject that delivers the pending search response.
+   */
+  function startPendingPractitionerSearch(): Subject<any> {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([
+      {resourceType: 'Practitioner', searchParameters: contentAndIdParameters},
+      {resourceType: 'Patient', searchParameters: contentAndIdParameters}
+    ]));
+    const response = new Subject<any>();
+    spyOn(component.fhirService, 'searchResources').and.returnValue(response.asObservable());
+    component.configureForContainedResourceImport();
+    flush();
+    component.onResourceTypeChange('Practitioner');
+    component.inputTerm = 'Jane';
+    component.searchInput();
+    return response;
+  }
+
+  it('should cancel a pending search when the resource type changes', fakeAsync(() => {
+    const response = startPendingPractitionerSearch();
+    let loading: boolean;
+    component.loading$.subscribe((value) => loading = value);
+    expect(loading).toBeTrue();
+
+    component.onResourceTypeChange('Patient');
+    response.next({
+      resourceType: 'Bundle', type: 'searchset', total: 5,
+      entry: [{resource: {resourceType: 'Practitioner', id: 'p1'}}]
+    });
+    flush();
+
+    expect(response.observed).toBeFalse();
+    expect(loading).toBeFalse();
+    expect(component.total).toBeUndefined();
+    expect(component.resources).toBeNull();
+  }));
+
+  it('should cancel a pending search when the server changes', fakeAsync(() => {
+    const response = startPendingPractitionerSearch();
+
+    component.selectedFHIRServer = component.getServerList()[1];
+
+    expect(response.observed).toBeFalse();
+    expect(component.total).toBeUndefined();
+  }));
+
+  it('should keep searching after a failed search', fakeAsync(() => {
+    spyOn(component.fhirService, 'getResourceCapabilities').and.returnValue(of([
+      {resourceType: 'Practitioner', searchParameters: contentAndIdParameters}
+    ]));
+    spyOn(console, 'error');
+    const searchSpy = spyOn(component.fhirService, 'searchResources').and.returnValues(
+      throwError(() => new Error('Invalid FHIR resource type')),
+      of({resourceType: 'Bundle', type: 'searchset', total: 1,
+        entry: [{resource: {resourceType: 'Practitioner', id: 'p1'}}]} as any)
+    );
+    component.configureForContainedResourceImport();
+    flush();
+    component.onResourceTypeChange('Practitioner');
+
+    component.searchInput();
+    flush();
+    expect(component.searchError.message).toBe('Error searching Practitioner resources.');
+
+    component.searchInput();
+    flush();
+    expect(searchSpy).toHaveBeenCalledTimes(2);
+    expect(component.searchError).toBeNull();
+    expect(component.total).toBe(1);
+    expect(component.resources.length).toBe(1);
+  }));
+
   [
     {index: 0, field: '_content', term: 'weight', total: 64, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
     {index: 1, field: 'questionnaire-code', term: '11111-1', total: 1, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
@@ -55,7 +291,9 @@ describe('FhirSearchDlgComponent', () => {
     .forEach((strategy) => {
     it(`should search with ${strategy.field} option (${strategy.baseUrl.replace(/https?:\/\/.+\/baseD?/, '')})`, fakeAsync(() => {
       const dummyBundle = TestUtil.createDummySearchBundle({total: strategy.total, baseUrl: strategy.baseUrl});
-      const searchSpy = spyOn(component.fhirService, 'search').withArgs(strategy.term, strategy.field, {_count: 20})
+      // The code fields are token parameters; the others are string parameters.
+      const searchSpy = spyOn(component.fhirService, 'search')
+        .withArgs(strategy.term, strategy.field, {_count: 20}, strategy.field.endsWith('code') ? 'token' : 'string')
         .and.returnValue(of(dummyBundle));
       const searchFieldEl = fixture.debugElement.nativeElement.querySelector('#searchField1');
       TestUtil.selectText(fixture.debugElement.nativeElement.querySelector('#SelectFHIRServer1'), strategy.baseUrl);

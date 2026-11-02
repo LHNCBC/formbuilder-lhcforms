@@ -8,17 +8,20 @@ import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ValueSetResourceComponent } from '../value-set-resource/value-set-resource.component';
 import fhir from 'fhir/r4';
-import {MessageDlgComponent} from "../message-dlg/message-dlg.component";
+import {MessageDlgComponent, MessageDlgOptions, MessageType} from "../message-dlg/message-dlg.component";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
+import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
+import {SharedObjectService} from '../../../services/shared-object.service';
+import {Util} from '../../util';
 
 /**
  * Define the data structure for the dialog input.
  */
 export interface ResourceData {
   formProperty?: FormProperty | null,
-  resourceType?: 'ValueSet' | 'Binary' | null,
+  resourceType?: string | null,
   options?: any;
   indexInContained?: number;
 }
@@ -37,7 +40,7 @@ export interface ResourceData {
 export class ResourceDlgComponent {
   input: fhir.Resource;
   changedValue: fhir.Resource;
-  resourceType: 'ValueSet' | 'Binary' = 'ValueSet';
+  resourceType = 'ValueSet';
   schema: ISchema;
 
   @ViewChild('vsForm', {read: ValueSetResourceComponent}) vsForm: ValueSetResourceComponent;
@@ -47,19 +50,40 @@ export class ResourceDlgComponent {
   matDialogRef = inject(MatDialogRef<ResourceDlgComponent>);
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
+  private sharedObjectService = inject(SharedObjectService);
   private readonly originalResourceId: string | undefined;
 
+  /**
+   * Initialize the edited resource and its original id. The resource type comes from the
+   * resource itself, then the form property schema, then the dialog data, then 'ValueSet';
+   * it selects the editor schema.
+   */
   constructor() {
     this.input = this.data.formProperty?.value;
     this.changedValue = this.input;
     this.originalResourceId = this.input?.id;
-    this.resourceType = this.data.formProperty?.schema.properties.resourceType?.enum[0] || this.data.resourceType || this.resourceType;
+    this.resourceType = this.data.formProperty?.value?.resourceType ||
+      this.data.formProperty?.schema.properties.resourceType?.enum?.[0] ||
+      this.data.resourceType ||
+      this.resourceType;
     this.schema = this.formService.getResourceSchema(this.resourceType);
+  }
+
+  /**
+   * Serialize a clean copy of the resource for the read-only JSON viewer.
+   *
+   * @returns Pretty-printed JSON without Form Builder's internal __$ fields. Resources other
+   *   than ValueSets are otherwise unchanged.
+   */
+  get resourceJson(): string {
+    return JSON.stringify(Util.convertContainedResourceToJSON(this.input), null, 2);
   }
 
 
   /**
-   * Handle the dialog save and close event.
+   * Handle the dialog save and close event. For a ValueSet, block saving when the id is
+   * empty, the form has errors, or the id of a resource referenced by Usage Context or
+   * template-based extraction was changed.
    */
   save() {
     if(this.resourceType === 'ValueSet') {
@@ -72,8 +96,9 @@ export class ResourceDlgComponent {
         return;
       }
       else if(this.isReferencedResourceIdChanged()) {
+        const referenceType = this.isReferencedByUsageContext() ? 'Usage Context' : 'Template-based extraction';
         this.alertErrors(
-          `Id cannot be changed because Usage Context references #${this.originalResourceId}.`
+          `Id cannot be changed because ${referenceType} references #${this.originalResourceId}.`
         );
         return;
       }
@@ -83,7 +108,8 @@ export class ResourceDlgComponent {
   }
 
   /**
-   * Check whether an edited id would break a local Usage Context reference.
+   * Check whether an edited id would break a local Usage Context or template-based
+   * extraction reference.
    *
    * @returns True when the original id is referenced and the edited id differs.
    */
@@ -91,11 +117,34 @@ export class ResourceDlgComponent {
     if(!this.data.formProperty || this.changedValue?.id === this.originalResourceId) {
       return false;
     }
-    const usageContexts = this.data.formProperty
-      .findRoot()
+    return this.isReferencedByUsageContext() || this.isReferencedByTemplateExtraction();
+  }
+
+  /**
+   * Check whether Usage Context targets the original contained resource id.
+   *
+   * @returns True when a Usage Context valueReference targets the original id.
+   */
+  private isReferencedByUsageContext(): boolean {
+    const usageContexts = this.data.formProperty.findRoot()
       ?.getProperty('useContext')
       ?.value as UsageContextEditModel[] | undefined;
     return hasUsageContextLocalReference(usageContexts, this.originalResourceId);
+  }
+
+  /**
+   * Check whether template-based extraction targets the original contained resource id,
+   * at the Questionnaire root or on any item. Contained resources are edited from the
+   * form-level editor, whose model excludes items, so items are read from the current
+   * Questionnaire.
+   *
+   * @returns True when a templateExtract extension references the original id.
+   */
+  private isReferencedByTemplateExtraction(): boolean {
+    return hasTemplateExtractReference(
+      this.sharedObjectService.composeQuestionnaire(this.data.formProperty.findRoot()?.value),
+      this.originalResourceId
+    );
   }
 
   /**
@@ -125,10 +174,10 @@ export class ResourceDlgComponent {
       return;
     } else {
       const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
-      modalRef.componentInstance.options = {
+      const options: MessageDlgOptions = {
         title: 'Confirm',
         message: 'Are you sure you want to discard the changes you made?',
-        type: 'warning',
+        type: MessageType.INFO,
         buttons: [{
           label: 'Discard changes',
           value: 'yes'
@@ -136,6 +185,7 @@ export class ResourceDlgComponent {
           label:  'Do not discard changes',
           value: 'no'
         }]};
+      modalRef.componentInstance.options = options;
 
       modalRef.closed.subscribe((result) => {
         if (result === 'yes') {
@@ -151,15 +201,16 @@ export class ResourceDlgComponent {
    */
   alertErrors(message: string) {
     const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
-    modalRef.componentInstance.options = {
+    const options: MessageDlgOptions = {
       title: 'Fix errors',
       message,
-      type: 'error',
+      type: MessageType.DANGER,
       buttons: [{
         label: 'OK',
         value: 'ok'
       }]
     };
+    modalRef.componentInstance.options = options;
     return modalRef;
   }
 }

@@ -16,6 +16,7 @@ import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_TEMPLATE_EXTRACT,
   EXTENSION_URL_MAX_OCCURS,
   EXTENSION_URL_MAX_SIZE,
   EXTENSION_URL_MAX_VALUE,
@@ -68,6 +69,7 @@ export class ExtensionsService {
 
   /** URLs, labels, and locations for extensions managed outside the general editor. */
   private readonly dedicatedExtensionDefinitions: ReadonlyArray<DedicatedExtensionDefinition> = [
+    {url: EXTENSION_URL_TEMPLATE_EXTRACT, fieldName: 'Template-based extraction', fieldScope: 'both'},
     {url: EXTENSION_URL_ENTRY_FORMAT, fieldName: 'Entry format', fieldScope: 'item'},
     {
       url: EXTENSION_URL_VARIABLE,
@@ -394,6 +396,33 @@ export class ExtensionsService {
   }
 
   /**
+   * Replace every extension matching a URL while preserving the order of all
+   * unrelated extensions. The replacement block is inserted at the position
+   * of the first match, or appended when no match exists.
+   *
+   * This differs from replaceExtensions(), which supports the historical
+   * convention that matching variable extensions form one consecutive block.
+   *
+   * @param extUrl - URL identifying the extensions to replace.
+   * @param newExtensionsJSON - Complete replacement collection for the URL.
+   */
+  replaceAllExtensionsByUrl(extUrl: fhirPrimitives.url, newExtensionsJSON: fhir.Extension[] = []): void {
+    const originalExtensions = this.extensionsProp?.value || [];
+    const firstMatch = originalExtensions.findIndex(extension => extension.url === extUrl);
+    const insertionIndex = firstMatch >= 0
+      ? originalExtensions.slice(0, firstMatch).filter(extension => extension.url !== extUrl).length
+      : originalExtensions.length;
+    const unrelatedExtensions = originalExtensions.filter(extension => extension.url !== extUrl);
+    const replacements = newExtensionsJSON || [];
+
+    this.extensionsProp.reset([
+      ...unrelatedExtensions.slice(0, insertionIndex),
+      ...replacements,
+      ...unrelatedExtensions.slice(insertionIndex)
+    ], false);
+  }
+
+  /**
    * Replace extensions for the given url.
    * @param extUrl - Url to identify the extension.
    * @param newExtensionsJSON - New extensions to replace with.
@@ -481,18 +510,14 @@ export class ExtensionsService {
 
 
   /**
-   * Remove value[x] fields other than the selected value type from an extension value.
+   * Remove value[x] fields other than the selected value type from an extension value,
+   * along with their element fields, e.g. _valueString. See Util.removeValueChoices().
    *
    * @param value - Extension JSON value.
    * @param keepValueType - value[x] to keep.
    */
   private pruneUnusedValueFields(value: fhir.Extension, keepValueType: string): void {
-    const keys = Object.keys(value);
-    for (const key of keys) {
-      if(value.hasOwnProperty(key) && key.startsWith('value') && key !== keepValueType) {
-        delete value[key];
-      }
-    }
+    Util.removeValueChoices(value, keepValueType);
   }
 
 
@@ -508,15 +533,21 @@ export class ExtensionsService {
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
       this.updateExtension(value);
+      // Prune before resetting, so the child properties of the other value[x] fields and
+      // of their element fields, e.g. _valueString, are reset to empty.
+      if(valueType) {
+        this.pruneUnusedValueFields(value, valueType);
+      }
 
       // Extension ObjectProperties are intentionally sparse: ngx-schema-form creates only
-      // the value[x] property present in imported JSON. ObjectProperty.reset() cannot add a
-      // different schema-defined value[x], so replace the array item when the destination
-      // property is absent (for example valueInteger -> valuePositiveInt).
+      // the value[x] property present in imported JSON. reset() now adds a missing
+      // schema-defined property (see createMissingExtensionProperties()), but it keeps the
+      // child property of the previous value[x]. Replace the array item when the destination
+      // property is absent (for example valueInteger -> valuePositiveInt), so it is rebuilt
+      // with only the new value[x].
       const valueTypePropertyMissing = valueType &&
         !(extProp as PropertyGroup).getProperty(valueType);
       if(valueTypePropertyMissing) {
-        this.pruneUnusedValueFields(value, valueType);
         const extIndex = (this.extensionsProp.properties as FormProperty[]).indexOf(extProp);
         const extensions = [...this.extensionsProp.value];
         extensions[extIndex] = value;
@@ -608,9 +639,11 @@ export class ExtensionsService {
       // If the new value is an extension, we need to set the __$isValueX and __$valueType properties
       // so that the dialog can handle it correctly.
       Util.eliminateEmptyFields(newValue);
-      const valueX = Object.keys(newValue).find((key) => {
-        return key.startsWith('value');
-      });
+      // A value[x] may be absent while its element field is present, e.g. only _valueString
+      // with a data-absent-reason extension. Its value type is still valueString.
+      const keys = Object.keys(newValue);
+      const valueX = keys.find((key) => key.startsWith('value')) ||
+        keys.find((key) => key.startsWith('_value'))?.slice(1);
       newValue['__$isValueX'] = !!valueX;
       if(newValue['__$isValueX']) {
         newValue['__$valueType'] = valueX;

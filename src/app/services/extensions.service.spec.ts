@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import fhir from 'fhir/r4';
 import {
   ArrayProperty,
   DefaultLogService,
   FormPropertyFactory,
+  ISchema,
   JEXLExpressionCompilerFactory,
   PropertyBindingRegistry,
   PropertyGroup,
@@ -34,6 +36,7 @@ import {
   EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   EXTENSION_URL_REGEX,
+  EXTENSION_URL_TEMPLATE_EXTRACT,
   EXTENSION_URL_VARIABLE,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
@@ -63,6 +66,10 @@ const advancedItemLocation = ' under a questionnaire item’s Advanced fields';
  * adding a managed URL requires explicitly choosing and testing its exact UI label.
  */
 const dedicatedExtensionMessageExpectations: ReadonlyArray<DedicatedExtensionMessageExpectation> = [
+  {
+    urls: [EXTENSION_URL_TEMPLATE_EXTRACT],
+    fieldReference: 'the dedicated “Template-based extraction” field'
+  },
   {
     urls: [EXTENSION_URL_ENTRY_FORMAT],
     fieldReference: 'the dedicated “Entry format” field',
@@ -296,6 +303,88 @@ describe('ExtensionsService', () => {
     ).toBeDefined();
   });
 
+  describe('value type changes with element fields', () => {
+    const extensionUrl = 'http://example.org/value-type-change';
+    const metadata = {id: 'value-note'};
+
+    /**
+     * Set the service's extensions to a form property loaded with the given extensions.
+     *
+     * @param extensions - Extensions to load.
+     */
+    function loadExtensions(extensions: fhir.Extension[]): void {
+      const factory = new FormPropertyFactory(new ZSchemaValidatorFactory(), new ValidatorRegistry(),
+        new PropertyBindingRegistry(), new JEXLExpressionCompilerFactory(), new DefaultLogService(3));
+      const element: ISchema = {type: 'object', properties: {id: {type: 'string'}, extension: {type: 'array', items: {type: 'object'}}}};
+      const extensionsProperty = factory.createProperty({
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            url: {type: 'string'},
+            extension: {type: 'array', items: {type: 'object', properties: {}}},
+            valueAddress: {type: 'object', properties: {}},
+            valueAge: {type: 'object', properties: {}},
+            valueString: {type: 'string'},
+            _valueString: element,
+            valueInteger: {type: 'integer'},
+            _valueInteger: element,
+            '__$isValueX': {type: 'boolean'},
+            '__$valueType': {type: 'string'},
+            '__$valueTypeCategory': {type: 'string'},
+            '__$primitiveType': {type: 'string'},
+            '__$stringify': {type: 'string'}
+          }
+        }
+      }) as ArrayProperty;
+      extensionsProperty.setValue(extensions, false);
+      service.setExtensions(extensionsProperty);
+    }
+
+    it('should drop the element field of the previous value type', () => {
+      loadExtensions([{url: extensionUrl, valueString: 'a', _valueString: metadata} as fhir.Extension]);
+
+      service.resetExtension(extensionUrl,
+        {url: extensionUrl, valueInteger: 2, _valueString: metadata} as fhir.Extension, 'valueInteger', false);
+
+      const extension = service.getFirstExtensionByUrl(extensionUrl) as any;
+      expect(extension.valueInteger).toBe(2);
+      expect(extension.valueString).toBeUndefined();
+      expect(extension._valueString).toBeUndefined();
+    });
+
+    it('should drop a stale element field when the value type property exists', () => {
+      loadExtensions([{url: extensionUrl, valueInteger: 1} as fhir.Extension]);
+
+      service.resetExtension(extensionUrl,
+        {url: extensionUrl, valueInteger: 2, _valueString: metadata} as fhir.Extension, 'valueInteger', false);
+
+      const extension = service.getFirstExtensionByUrl(extensionUrl) as any;
+      expect(extension.valueInteger).toBe(2);
+      expect(extension._valueString).toBeUndefined();
+    });
+
+    it('should keep the element field of the kept value type', () => {
+      loadExtensions([{url: extensionUrl, valueInteger: 1, _valueInteger: metadata} as fhir.Extension]);
+
+      service.resetExtension(extensionUrl,
+        {url: extensionUrl, valueInteger: 2, _valueInteger: metadata} as fhir.Extension, 'valueInteger', false);
+
+      const extension = service.getFirstExtensionByUrl(extensionUrl) as any;
+      expect(extension.valueInteger).toBe(2);
+      expect(extension._valueInteger.id).toBe(metadata.id);
+    });
+
+    it('should detect the value type of a value with only its element field', () => {
+      const result = service.updateExtension({url: extensionUrl, _valueString: metadata} as fhir.Extension);
+
+      expect(result['__$isValueX']).toBeTrue();
+      expect(result['__$valueType']).toBe('valueString');
+      expect(result['__$valueTypeCategory']).toBe('__$primitiveType');
+    });
+  });
+
   describe('updateExtension', () => {
 
     it('should return null/undefined for null or undefined input', () => {
@@ -391,6 +480,35 @@ describe('ExtensionsService', () => {
       expect(result['__$valueTypeCategory']).toBe('__$primitiveType');
       expect(result['__$primitiveType']).toBe('valuePositiveInt');
       expect(result['__$stringify']).toBe(JSON.stringify(3, null, 2));
+    });
+  });
+
+  describe('replaceAllExtensionsByUrl', () => {
+    it('replaces non-consecutive matches without disturbing unrelated extensions', () => {
+      const reset = jasmine.createSpy('reset');
+      (service as any).extensionsProp = {
+        value: [
+          {url: 'before', valueString: 'before'},
+          {url: 'target', valueString: 'old-1'},
+          {url: 'middle', valueString: 'middle'},
+          {url: 'target', valueString: 'old-2'},
+          {url: 'after', valueString: 'after'}
+        ],
+        reset
+      };
+
+      service.replaceAllExtensionsByUrl('target', [
+        {url: 'target', valueString: 'new-1'},
+        {url: 'target', valueString: 'new-2'}
+      ]);
+
+      expect(reset).toHaveBeenCalledOnceWith([
+        {url: 'before', valueString: 'before'},
+        {url: 'target', valueString: 'new-1'},
+        {url: 'target', valueString: 'new-2'},
+        {url: 'middle', valueString: 'middle'},
+        {url: 'after', valueString: 'after'}
+      ], false);
     });
   });
 });

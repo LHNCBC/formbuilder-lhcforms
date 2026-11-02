@@ -86,6 +86,7 @@ import { IntegerDirective } from './lib/directives/integer.directive';
 import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
+import { TemplateExtractComponent } from './lib/widgets/template-extract/template-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
 import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 import { DateComponent } from './lib/widgets/date/date.component';
@@ -118,6 +119,12 @@ import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { ExtensionPrimitiveComponent } from './lib/widgets/extension-primitive/extension-primitive.component';
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
+import {registerPlaceholderArrayProperty} from './lib/placeholder-array-property';
+
+// Keep null placeholders of repeating primitive elements in the form models. This replaces
+// the global array and object property factories of ngx-schema-form for every form; Karma
+// specs that create forms without importing this module get the stock properties.
+registerPlaceholderArrayProperty();
 
 @NgModule({
   declarations: [
@@ -201,6 +208,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    TemplateExtractComponent,
     PositiveIntegerComponent,
     UnsignedIntegerComponent,
     PreviewDlgComponent,

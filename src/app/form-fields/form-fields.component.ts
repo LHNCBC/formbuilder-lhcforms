@@ -18,6 +18,7 @@ import {GuidingStep, Util} from '../lib/util';
 import {PropertyGroup, ArrayProperty, FormComponent} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import { TableService } from '../services/table.service';
+import {ContainedResourceService} from '../services/contained-resource.service';
 import {BehaviorSubject} from "rxjs";
 
 /**
@@ -108,6 +109,7 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   http = inject(HttpClient);
   dataSrv = inject(FetchService);
   modal = inject(NgbModal);
+  containedResourceService = inject(ContainedResourceService);
 
   constructor() {
     this.qlSchema = this.formService.getFormLevelSchema();
@@ -141,11 +143,16 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
     return ret;
   }
 
+  /**
+   * Record the loaded form-level model and emit it unless a root property adjustment
+   * will trigger another change event.
+   * @param event - ngx-schema-form modelReset event containing the form-level value.
+   */
   onFormFieldsLoaded(event) {
     this.loading = false;
     this.formValue = event.value;
     if(!this.adjustRootFormProperty()) {
-      this.questionnaireChange.emit(Util.convertToQuestionnaireJSON(event.value));
+      this.questionnaireChange.emit(this.toQuestionnaireJSON(event.value));
     }
     this.spinner$.next(false);
   }
@@ -159,11 +166,29 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
 
   /**
    * Emit the change event.
+   * @param event - ngx-schema-form onChange event containing the form-level value.
    */
   valueChanged(event) {
     if(!this.loading) {
-      this.questionnaireChange.emit(Util.convertToQuestionnaireJSON(event.value));
+      this.questionnaireChange.emit(this.toQuestionnaireJSON(event.value));
     }
+  }
+
+  /**
+   * Convert the form-level model to Questionnaire JSON while keeping contained-resource
+   * version provenance. The conversion strips all internal '__$' fields, but the emitted
+   * value replaces the live Questionnaire, which still needs provenance for preview,
+   * export warnings, and autosave.
+   * @param value - Form-level model emitted by ngx-schema-form.
+   * @returns Clean Questionnaire JSON with contained-resource provenance restored.
+   */
+  private toQuestionnaireJSON(value: fhir.Questionnaire): fhir.Questionnaire {
+    const questionnaire = Util.convertToQuestionnaireJSON(value) as fhir.Questionnaire;
+    this.containedResourceService.applyVersionRecords(
+      questionnaire,
+      this.containedResourceService.getVersionRecords(value)
+    );
+    return questionnaire;
   }
 
 

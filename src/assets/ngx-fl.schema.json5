@@ -1357,9 +1357,46 @@
     "contained": {
       "description": "These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.",
       "items": {
-        "$ref": "#/definitions/ValueSet"
+        "description": "Any FHIR resource stored inline with the Questionnaire.",
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "description": "FHIR resource type.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Logical id used for local references to the contained resource.",
+            "$ref": "#/definitions/id"
+          }
+        },
+        "required": ["resourceType"],
+        "additionalProperties": true
       },
       "type": "array"
+    },
+    "__$templateExtract": {
+      "description": "Create extracted FHIR resources from the Questionnaire's existing contained resource templates.",
+      "title": "Template-based extraction",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Extension"
+      },
+      "widget": {
+        "id": "template-extract",
+        "addEditAction": true,
+        "addDefaultItemIfEmpty": false,
+        "addButtonLabel": "Add new template extraction",
+        "addButtonDisabledReason": "A contained resource is required before adding a template extraction. Add one under Contained resources above.",
+        "labelPosition": "left",
+        "labelClasses": "col-sm-2 ps-0 pe-1",
+        "controlClasses": "col-sm-10",
+        "showFields": [
+          {"field": "template", "col": 3, "title": "Template"},
+          {"field": "fullUrl", "col": 3, "title": "fullUrl"},
+          {"field": "resourceId", "col": 2, "title": "resourceId"},
+          {"field": "conditionalRequest", "col": 3, "title": "Conditional request"}
+        ]
+      }
     },
     "__$variable": {
       "description": "Use to store values derived from calculations, references to other answers, or external data.",
@@ -1406,6 +1443,7 @@
         "description",
         "purpose",
         "__$terminologyServer",
+        "__$templateExtract",
         "__$variable",
         "__$extensionContainer"
       ]

@@ -158,7 +158,8 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
   }
 
   /**
-   * Handle the cancel button event.
+   * Handle the cancel button event. Close the dialog right away when nothing changed;
+   * otherwise ask for confirmation and close only if the user discards the changes.
    */
   cancel() {
     const isDirty = this.hasModelChanged();
@@ -180,9 +181,18 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
         value: 'no'
       }]};
 
+    // Close the Material dialog only after the ngb modal is hidden and has restored
+    // the aria-hidden values it saved, which include the app root hidden by the
+    // Material dialog. Otherwise, when animations are off (e.g. prefers-reduced-motion),
+    // ngb restores aria-hidden="true" on the app root after Material has removed it.
+    let discard = false;
     modalRef.closed.subscribe((result) => {
-      if (result === 'yes') {
-        this.matDialogRef.close(false);
+      discard = result === 'yes';
+    });
+    modalRef.hidden.subscribe(() => {
+      if (discard) {
+        // ngb reverts aria-hidden in a microtask after 'hidden'; close after it.
+        setTimeout(() => this.matDialogRef.close(false));
       }
     });
   }
@@ -208,6 +218,12 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
     const formPropertyNode = formProperty as FormPropertyNode;
 
     if (Array.isArray(formPropertyNode.properties)) {
+      if (this.hasElementArray(formPropertyNode)) {
+        // The null entries align the values with their element array, e.g. given with _given.
+        // The property keeps them and realigns the element array on edits; see
+        // PlaceholderArrayProperty. Dropping them here would shift the values against it.
+        return this.isEmptyValue(formProperty.value) ? undefined : copy(formProperty.value);
+      }
       const value = formPropertyNode.properties
         .map((child) => this.getCurrentFormPropertyValue(child))
         .filter((childValue) => !this.isEmptyValue(childValue));
@@ -237,6 +253,22 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
     }
 
     return formProperty.value;
+  }
+
+  /**
+   * Check whether an array property has a sibling element array, e.g. _given of given, that
+   * holds the ids and/or extensions of its values.
+   *
+   * @param property - Array property to check.
+   * @returns True if the parent object has an array value in the '_' prefixed sibling field.
+   */
+  private hasElementArray(property: FormPropertyNode): boolean {
+    const siblings = (property.parent as FormPropertyNode)?.properties;
+    if (!siblings || Array.isArray(siblings)) {
+      return false;
+    }
+    const key = Object.keys(siblings).find((name) => siblings[name] === property);
+    return !!key && !key.startsWith('_') && Array.isArray(siblings['_' + key]?.value);
   }
 
   /**

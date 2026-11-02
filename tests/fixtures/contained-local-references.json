@@ -1,0 +1,51 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"]
+  },
+  "status": "draft",
+  "title": "Contained resources referenced by local references",
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "bundle-template",
+      "type": "transaction"
+    },
+    {
+      "resourceType": "ValueSet",
+      "id": "colors",
+      "status": "active",
+      "compose": {
+        "include": [
+          {
+            "system": "http://example.org/colors",
+            "concept": [
+              {"code": "red", "display": "Red"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": "Patient",
+      "id": "unreferenced"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+      "valueReference": {
+        "reference": "#bundle-template"
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "color",
+      "text": "Color",
+      "type": "coding",
+      "answerValueSet": "#colors"
+    }
+  ]
+}
+

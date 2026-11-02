@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import type { ExpressionValueType } from '@lhncbc/expression-editor/ngx-expression-editor';
 
 @Component({
   standalone: false,
@@ -18,6 +19,8 @@ export class ExpressionEditorDlgComponent {
 
   linkId:string;
   expressionUri = "Output Expression";
+  expressionValueType: ExpressionValueType = 'valueExpression';
+  expressionParentIndex: number | null = null;
   userExpressionChoices: string;
   questionnaire:any;
   // Display the Expression Editor sections
@@ -40,4 +43,3 @@ export class ExpressionEditorDlgComponent {
     this.activeModal.close(fhirResult);
   }
 }
-

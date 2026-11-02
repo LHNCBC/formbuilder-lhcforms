@@ -14,17 +14,17 @@
         [indexInContained]="data?.indexInContained"
       ></lfb-value-set-resource>
     }
-    @case ('Binary') {
-
-    }
     @default {
-      No resource loaded.
+      <p>This resource type does not have a Form Builder editor. Its JSON is preserved unchanged.</p>
+      <pre class="border rounded bg-light p-3 overflow-auto">{{resourceJson}}</pre>
     }
   }
 </mat-dialog-content>
 <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
-  <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
-  <button class="btn btn-primary ms-2" (click)="save()">Save and close</button>
+  @if(resourceType === 'ValueSet') {
+    <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
+    <button class="btn btn-primary ms-2" (click)="save()">Save and close</button>
+  } @else {
+    <button class="btn btn-primary" (click)="matDialogRef.close(false)">Close</button>
+  }
 </mat-dialog-actions>
-
-

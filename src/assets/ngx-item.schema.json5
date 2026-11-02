@@ -2615,6 +2615,30 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+    "__$templateExtract": {
+      "description": "Create extracted FHIR resources from the Questionnaire's existing contained resource templates.",
+      "title": "Template-based extraction",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Extension"
+      },
+      "widget": {
+        "id": "template-extract",
+        "addEditAction": true,
+        "addDefaultItemIfEmpty": false,
+        "addButtonLabel": "Add new template extraction",
+        "addButtonDisabledReason": "A contained resource is required before adding a template extraction. Add one under Contained resources in the form-level fields.",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10",
+        "showFields": [
+          {"field": "template", "col": 3, "title": "Template"},
+          {"field": "fullUrl", "col": 3, "title": "fullUrl"},
+          {"field": "resourceId", "col": 2, "title": "resourceId"},
+          {"field": "conditionalRequest", "col": 3, "title": "Conditional request"}
+        ]
+      }
+    },
     "__$extensionContainer": {
       "description": "May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
       "title": "General Extensions",
@@ -3280,6 +3304,17 @@
         {
           "field": "__$observationExtract",
           "col": 10
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$templateExtract"
+      ],
+      "showFields": [
+        {
+          "field": "__$templateExtract",
+          "col": 12
         }
       ]
     },

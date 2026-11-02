@@ -1,0 +1,65 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#patient-template"
+          }
+        },
+        {
+          "url": "fullUrl",
+          "valueString": "%patientId"
+        }
+      ]
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "ValueSet",
+      "id": "patient-template",
+      "url": "http://example.org/ValueSet/patient-template",
+      "status": "draft"
+    },
+    {
+      "resourceType": "ValueSet",
+      "id": "observation-template",
+      "url": "http://example.org/ValueSet/observation-template",
+      "status": "draft"
+    }
+  ],
+  "title": "Template extract sample",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "measurement",
+      "text": "Measurement",
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+          "extension": [
+            {
+              "url": "template",
+              "valueReference": {
+                "reference": "#observation-template"
+              }
+            },
+            {
+              "url": "ifNoneExist",
+              "valueString": "'identifier=measurement'"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

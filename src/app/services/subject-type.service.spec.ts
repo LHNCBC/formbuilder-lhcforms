@@ -138,6 +138,53 @@ describe('SubjectTypeService', () => {
     expect(questionnaire.subjectType).toEqual(['Patient', 'ActorDefinition']);
   });
 
+  describe('null placeholders aligned with _subjectType', () => {
+    const note = (text: string) => ({extension: [{url: 'http://example.org/note', valueString: text}]});
+
+    it('should not report a null placeholder as an invalid subjectType', () => {
+      const questionnaire = {subjectType: ['Patient', null, 'ActorDefinition'], _subjectType: [null, note('x'), null]};
+
+      expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'R4')).toEqual(['ActorDefinition']);
+      expect(service.getSubjectTypeCompatibilityWarning(questionnaire, 'R4', 'preview'))
+        .toContain('<ul><li>ActorDefinition</li></ul>');
+      expect(service.getInvalidSubjectTypesForVersion({subjectType: ['Patient', null]}, 'R5')).toEqual([]);
+    });
+
+    it('should remove the extensions of removed values and keep the rest aligned', () => {
+      const questionnaire = {
+        subjectType: ['ActorDefinition', null, 'Patient'],
+        _subjectType: [note('actor'), note('placeholder'), note('patient')]
+      };
+
+      const exportQuestionnaire = service.removeInvalidSubjectTypesForVersion(questionnaire, 'R4');
+
+      expect(exportQuestionnaire.subjectType).toEqual([null, 'Patient']);
+      expect(exportQuestionnaire._subjectType).toEqual([note('placeholder'), note('patient')]);
+      expect(questionnaire._subjectType.length).toBe(3);
+    });
+
+    it('should remove _subjectType when no extension is left', () => {
+      const questionnaire = {subjectType: ['ActorDefinition', 'Patient'], _subjectType: [note('actor'), null]};
+
+      const exportQuestionnaire: any = service.removeInvalidSubjectTypesForVersion(questionnaire, 'R4');
+
+      expect(exportQuestionnaire.subjectType).toEqual(['Patient']);
+      expect(exportQuestionnaire._subjectType).toBeUndefined();
+    });
+
+    it('should keep a null placeholder aligned with an id-only element', () => {
+      const questionnaire = {
+        subjectType: ['ActorDefinition', null, 'Patient'],
+        _subjectType: [{id: 'actor'}, {id: 'placeholder'}, null]
+      };
+
+      const exportQuestionnaire = service.removeInvalidSubjectTypesForVersion(questionnaire, 'R4');
+
+      expect(exportQuestionnaire.subjectType).toEqual([null, 'Patient']);
+      expect(exportQuestionnaire._subjectType).toEqual([{id: 'placeholder'}, null]);
+    });
+  });
+
   it('should return versions from subjectType schema options', () => {
     expect(service.getSubjectTypeVersions('ActorDefinition')).toEqual(['R5', 'R6']);
   });

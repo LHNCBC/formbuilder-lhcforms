@@ -30,6 +30,13 @@ import { TableService, TableStatus } from 'src/app/services/table.service';
 import { DialogService } from 'src/app/services/dialog.service';
 import { MessageType } from '../message-dlg/message-dlg.component';
 
+export interface TableAddMenuItem {
+  id: string;
+  label: string;
+  disabled?: boolean;
+  title?: string;
+}
+
 @Component({
   standalone: false,
   selector: 'lfb-table',
@@ -61,6 +68,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
+  addMenuItems: TableAddMenuItem[] = [];
   noCollapseButton = false;
   noTableLabel = false;
   noHeader = false;
@@ -426,6 +434,48 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     }
   }
 
+  /**
+   * Handle a configured add-menu selection.
+   * Subclasses can override this to provide distinct creation or import actions.
+   *
+   * @param actionId - Identifier of the selected add-menu action.
+   * @param popoverRef - Popover used by the default add-row behavior.
+   */
+  onAddMenuItem(actionId: string, popoverRef): void {
+    this.addItemWithAlert(popoverRef);
+  }
+
+  /**
+   * Explain why the add button is disabled. Browsers do not show the title of a disabled
+   * button, so the table shows this text below the button and on its wrapper instead.
+   * Subclasses can override this when they disable the add button.
+   *
+   * @returns Reason text, or an empty string when there is nothing to explain.
+   */
+  getAddButtonDisabledReason(): string {
+    return '';
+  }
+
+  /**
+   * Get the tooltip and accessible label for a row's edit action.
+   *
+   * @param index - Row index.
+   * @returns Edit-action label.
+   */
+  getEditActionLabel(index: number): string {
+    return 'Edit this row';
+  }
+
+  /**
+   * Get the icon for a row's edit action.
+   *
+   * @param index - Row index.
+   * @returns Edit-action icon.
+   */
+  getEditActionIcon(index: number) {
+    return this.faEdit;
+  }
+
 
   /**
    * Get input element in the table.
@@ -433,12 +483,29 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    *
    * @param row - Row index of the cell
    * @param col - Column index of the cell.
+   * @returns The input or select element, or null when the cell has none, e.g. when it is
+   *   rendered as display text.
    */
-  getInputElementInTable(row, col) {
+  getInputElementInTable(row, col): HTMLElement | null {
     return this.elementRef.nativeElement.querySelector('tbody')
-      .querySelectorAll('tr')[row]
-      .querySelectorAll('td')[col]
-      .querySelector('input,select');
+      ?.querySelectorAll('tr')[row]
+      ?.querySelectorAll('td')[col]
+      ?.querySelector('input,select') || null;
+  }
+
+  /**
+   * Focus the input in the first cell of a row after the rows are reordered, and end the
+   * reordering state even if the row has no input.
+   *
+   * @param row - Row index after the move.
+   */
+  private focusRowAfterMove(row: number): void {
+    try {
+      this.getInputElementInTable(row, 0)?.focus();
+    }
+    finally {
+      this.isReordering = false;
+    }
   }
 
 
@@ -617,10 +684,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       const deletedProps = props.splice(index, 1);
       props.splice(index - 1, 0, deletedProps[0]);
       this.formProperty.updateValueAndValidity();
-      setTimeout(() => {
-        this.getInputElementInTable(index - 1, 0).focus();
-        this.isReordering = false;
-      });
+      setTimeout(() => this.focusRowAfterMove(index - 1));
     }
   }
 
@@ -636,10 +700,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       const deletedProps = props.splice(index, 1);
       props.splice(index + 1, 0, deletedProps[0]);
       this.formProperty.updateValueAndValidity();
-      setTimeout(() => {
-        this.getInputElementInTable(index + 1, 0).focus();
-        this.isReordering = false;
-      });
+      setTimeout(() => this.focusRowAfterMove(index + 1));
     }
   }
 

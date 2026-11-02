@@ -30,6 +30,10 @@ import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.com
 import {SharedObjectService} from '../services/shared-object.service';
 import {SUBJECT_TYPE_COMPATIBILITY_DIALOG, SubjectTypeService} from '../services/subject-type.service';
 import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
+import {
+  ContainedResourceService,
+  ContainedResourceVersionRecord
+} from '../services/contained-resource.service';
 
 type ExportType = 'CREATE' | 'UPDATE';
 type SubjectTypeExportChoice = 'cancel' | 'export' | 'drop';
@@ -81,7 +85,13 @@ export class BasePageComponent implements OnInit, OnDestroy {
   private matDlg = inject(MatDialog);
   private subjectTypeService = inject(SubjectTypeService);
   private extensionCardinalityService = inject(ExtensionCardinalityService);
+  private containedResourceService = inject(ContainedResourceService);
 
+  /**
+   * Restore start-page and terms-of-use state, set up debounced auto-save and
+   * guiding-step tracking, and notify the window opener once LForms loads.
+   * Auto-save stores the Questionnaire together with its contained-resource version records.
+   */
   constructor() {
     this.acResult = null;
     const isAutoSaved = this.formService.isAutoSaved();
@@ -109,7 +119,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     this.formSubject.asObservable().pipe(
       debounceTime(500),
       switchMap((fhirQ) => {
-        this.formService.autoSaveForm(Util.convertToQuestionnaireJSON(fhirQ));
+        this.formService.autoSaveForm(fhirQ);
         return of(fhirQ);
       }),
       takeUntil(this.unsubscribe)
@@ -378,7 +388,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Set questionnaire.
-   * Make
+   * Converts the input to internal R5. The conversion records the FHIR version each
+   * contained resource came from, so later exports can warn about version mismatches.
    * @param questionnaire - Input FHIR questionnaire
    * @param confirmSubjectTypeImport - Whether to ask how to handle imported subjectType values invalid in internal R5.
    * @param clearCardinalitySelections - Whether to clear choices associated with the previous Questionnaire.
@@ -402,6 +413,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
+    // formValue is updated in place from here on, so form-level editors can reach current items.
+    this.modelService.currentQuestionnaire = this.formValue;
     this.refreshFormFields();
     this.notifyChange(this.formValue);
     return true;
@@ -457,15 +470,37 @@ export class BasePageComponent implements OnInit, OnDestroy {
     return this.formService.isAutoSaved();
   }
   /**
-   * Handle continue button.
+   * Check whether the schemas and LForms are loaded, so that a questionnaire can be loaded.
+   * The Continue button of the home page is disabled until then.
+   *
+   * @returns True once LForms is loaded.
    */
-  onContinue() {
+  get lformsReady(): boolean {
+    return this.formService.lformsReady;
+  }
+
+  /**
+   * Handle continue button. Nothing is done until LForms is loaded. If the autosaved form
+   * cannot be restored, an error is shown and the home page stays.
+   */
+  async onContinue(): Promise<void> {
+    if(!this.lformsReady) {
+      console.warn('Continue is ignored until LForms is loaded.');
+      return;
+    }
     if(this.startOption === 'from_autosave') {
       let state = this.formService.autoLoad('state');
       state = Util.isGuidingStep(state) ? state : 'fl-editor';
       state = state === 'home' ? 'fl-editor' : state;
+      try {
+        await this.setQuestionnaire(this.formService.autoLoadForm());
+      }
+      catch(error) {
+        console.error(error);
+        this.showError(`The saved form could not be restored: ${error?.message || error}`);
+        return;
+      }
       this.formService.setGuidingStep(state);
-      this.setQuestionnaire(this.formService.autoLoadForm());
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
@@ -564,7 +599,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * View preview of lforms widget and questionnaire json
+   * View preview of lforms widget and questionnaire json.
+   * Passes contained-resource version records so the preview can show compatibility warnings.
    */
   showPreviewDlg() {
     // configure lforms template options
@@ -576,7 +612,11 @@ export class BasePageComponent implements OnInit, OnDestroy {
     };
 
     this.matDlg.open(PreviewDlgComponent,
-      {data: {questionnaire: Util.convertToQuestionnaireJSON(this.formValue), lfData: lformsTemplateOptions},
+      {data: {
+          questionnaire: Util.convertToQuestionnaireJSON(this.formValue),
+          containedResourceVersionRecords: this.containedResourceService.getVersionRecords(this.formValue),
+          lfData: lformsTemplateOptions
+        },
         width: '80vw', height: '80vh'
       }
     );
@@ -592,10 +632,15 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Save form to local file, mostly copied from current form builder.
-   * @exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'
-   * 'R4' is assumed if not specified.
+   * Returns without saving if the user cancels the contained-resource compatibility
+   * warning or the subjectType compatibility prompt.
+   * @param exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'.
+   *   'R5' is assumed if not specified.
    */
   async saveToFile(exportVersion = 'R5') {
+    if(!await this.confirmContainedResourceExport(exportVersion)) {
+      return;
+    }
     const currentQuestionnaire = Util.convertToQuestionnaireJSON(this.formValue);
     const exportQuestionnaire = await this.resolveSubjectTypeExportQuestionnaire(currentQuestionnaire, exportVersion);
     if(!exportQuestionnaire) {
@@ -766,7 +811,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
 
   /**
-   * Create or update a Questionnaire on the selected FHIR server after resolving subjectType compatibility.
+   * Create or update a Questionnaire on the selected FHIR server after confirming
+   * contained-resource compatibility and resolving subjectType compatibility.
    * @param type - Export operation type ('CREATE' | 'UPDATE')
    */
   exportToServer(type: ExportType) {
@@ -774,6 +820,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(type === 'CREATE') {
       this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then(async (result) => {
         if (result) { // Server picked, invoke search dialog.
+          if(!await this.confirmContainedResourceExport(this.fhirService.getFhirServer().version)) {
+            return;
+          }
           const exportQuestionnaire = await this.resolveSubjectTypeExportQuestionnaire(
             Util.convertToQuestionnaireJSON(this.formValue),
             this.fhirService.getFhirServer().version
@@ -789,10 +838,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
       });
     }
     else if(type === 'UPDATE') {
-      this.resolveSubjectTypeExportQuestionnaire(
-        Util.convertToQuestionnaireJSON(this.formValue),
-        this.fhirService.getFhirServer().version
-      ).then((exportQuestionnaire) => {
+      this.confirmContainedResourceExport(this.fhirService.getFhirServer().version).then((proceed) => {
+        return proceed
+          ? this.resolveSubjectTypeExportQuestionnaire(
+            Util.convertToQuestionnaireJSON(this.formValue),
+            this.fhirService.getFhirServer().version
+          )
+          : null;
+      }).then((exportQuestionnaire) => {
         if(!exportQuestionnaire) {
           return;
         }
@@ -800,6 +853,33 @@ export class BasePageComponent implements OnInit, OnDestroy {
         this.handleServerResponse(observer);
       });
     }
+  }
+
+  /**
+   * Ask whether export should continue when contained-resource versions may not match the target.
+   *
+   * @param version - Target FHIR export version.
+   * @returns Promise<boolean> - Resolves to true when no warning is needed or the user chooses to export anyway,
+   *   false when the user cancels the export.
+   */
+  async confirmContainedResourceExport(version: string): Promise<boolean> {
+    const records: ContainedResourceVersionRecord[] =
+      this.containedResourceService.getVersionRecords(this.formValue);
+    const warning = this.containedResourceService.getCompatibilityWarning(records, version);
+    if(!warning) {
+      return true;
+    }
+    const modalRef = this.modalService.open(MessageDlgComponent, {scrollable: true, size: 'lg'});
+    modalRef.componentInstance.options = {
+      title: 'Contained resource compatibility',
+      type: MessageType.WARNING,
+      message: warning + '<p>Do you want to export anyway?</p>',
+      buttons: [
+        {label: 'Cancel', value: 'cancel'},
+        {label: 'Export anyway', value: 'export'}
+      ]
+    };
+    return modalRef.result.then((result) => result === 'export').catch(() => false);
   }
 
   /**

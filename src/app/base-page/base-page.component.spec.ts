@@ -5,6 +5,7 @@ import {CommonTestingModule} from '../testing/common-testing.module';
 import {FormService} from '../services/form.service';
 import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ContainedResourceService} from '../services/contained-resource.service';
 
 describe('BasePageComponent', () => {
   let component: BasePageComponent;
@@ -34,6 +35,77 @@ describe('BasePageComponent', () => {
     });
   });
 
+  describe('Continue on the home page', () => {
+    let formService: FormService;
+
+    /**
+     * Get the Continue button of the home page.
+     *
+     * @returns The button element.
+     */
+    function continueButton(): HTMLButtonElement {
+      const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('button'));
+      return buttons.find((button) => button.textContent.trim() === 'Continue');
+    }
+
+    beforeEach(() => {
+      formService = TestBed.inject(FormService);
+    });
+
+    it('should be disabled, with a loading status, until LForms is loaded', () => {
+      const lformsVersion = formService.lformsVersion;
+      formService['_lformsVersion'] = '';
+      fixture.detectChanges();
+
+      expect(continueButton().disabled).toBeTrue();
+      expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain('Loading');
+
+      formService['_lformsVersion'] = lformsVersion;
+      fixture.detectChanges();
+
+      expect(continueButton().disabled).toBeFalse();
+      expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
+    });
+
+    it('should not load a questionnaire before LForms is loaded', async () => {
+      formService['_lformsVersion'] = '';
+      component.startOption = 'from_autosave';
+      const setQuestionnaire = spyOn(component, 'setQuestionnaire');
+
+      await component.onContinue();
+
+      expect(setQuestionnaire).not.toHaveBeenCalled();
+    });
+
+    it('should restore the autosaved form, then show the autosaved step', async () => {
+      component.startOption = 'from_autosave';
+      const savedForm = {resourceType: 'Questionnaire', status: 'draft', title: 'Saved'} as any;
+      spyOn(formService, 'autoLoad').and.returnValue('item-editor');
+      spyOn(formService, 'autoLoadForm').and.returnValue(savedForm);
+      const setQuestionnaire = spyOn(component, 'setQuestionnaire').and.resolveTo(true);
+      const setGuidingStep = spyOn(formService, 'setGuidingStep');
+
+      await component.onContinue();
+
+      expect(setQuestionnaire).toHaveBeenCalledOnceWith(savedForm);
+      expect(setGuidingStep).toHaveBeenCalledOnceWith('item-editor');
+    });
+
+    it('should show an error and stay on the home page if the autosaved form cannot be restored', async () => {
+      component.startOption = 'from_autosave';
+      spyOn(formService, 'autoLoadForm').and.returnValue({resourceType: 'Questionnaire', status: 'draft'} as any);
+      spyOn(component, 'setQuestionnaire').and.rejectWith(new Error('LForms is not defined'));
+      const setGuidingStep = spyOn(formService, 'setGuidingStep');
+      const showError = spyOn(component, 'showError');
+      spyOn(console, 'error');
+
+      await component.onContinue();
+
+      expect(showError).toHaveBeenCalledOnceWith('The saved form could not be restored: LForms is not defined');
+      expect(setGuidingStep).not.toHaveBeenCalled();
+    });
+  });
+
   it('should show a compatibility error instead of starting an invalid file export', async () => {
     const formService = TestBed.inject(FormService);
     const compatibilityError = new Error(FormService.R5_QUANTITY_COMPARATOR_ERROR);
@@ -49,6 +121,38 @@ describe('BasePageComponent', () => {
     await component.saveToFile('R4');
 
     expect(component.showError).toHaveBeenCalledOnceWith(compatibilityError);
+  });
+
+  it('should stop a file export when contained-resource compatibility is declined', async () => {
+    const formService = TestBed.inject(FormService);
+    component.formValue = {resourceType: 'Questionnaire', status: 'draft'};
+    spyOn(component, 'confirmContainedResourceExport').and.resolveTo(false);
+    const convertSpy = spyOn(formService, 'convertFromR5');
+
+    await component.saveToFile('R4');
+
+    expect(convertSpy).not.toHaveBeenCalled();
+  });
+
+  it('should describe contained-resource mismatches in the export confirmation', async () => {
+    const containedResourceService = TestBed.inject(ContainedResourceService);
+    const patient = {resourceType: 'Patient', id: 'patient-1'} as any;
+    containedResourceService.annotateContainedResources({
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    }, 'R4');
+    component.formValue = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [patient]
+    };
+    const modalRef = {componentInstance: {}, result: Promise.resolve('cancel')};
+    spyOn(component['modalService'], 'open').and.returnValue(modalRef as any);
+
+    expect(await component.confirmContainedResourceExport('R5')).toBeFalse();
+    expect(modalRef.componentInstance['options'].message)
+      .toContain('Patient #patient-1 was imported as FHIR R4');
   });
 
   it('should clear extension cardinality selections when loading a Questionnaire', async () => {

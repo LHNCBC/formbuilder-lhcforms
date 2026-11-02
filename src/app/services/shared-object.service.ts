@@ -28,6 +28,15 @@ export class SharedObjectService {
   private _modelProperty$ = new BehaviorSubject<fhir.QuestionnaireItem>(null);
 
   _questionnaire: fhir.Questionnaire;
+
+  /**
+   * The working Questionnaire maintained by BasePageComponent. Unlike `questionnaire`,
+   * which is published once per load, this object is updated in place as form-level
+   * fields change and its `item` is replaced as items change, so it always holds the
+   * current item tree. Form-level editors do not see items, so use this to reach them.
+   */
+  currentQuestionnaire: fhir.Questionnaire = null;
+
   constructor() {
     this.questionnaire$.subscribe(questionnaire => {
       this._questionnaire = questionnaire;
@@ -75,6 +84,29 @@ export class SharedObjectService {
    */
   get questionnaire(): fhir.Questionnaire {
     return this._questionnaire;
+  }
+
+  /**
+   * Build a Questionnaire that includes the current item tree.
+   *
+   * The form-level editor model deliberately excludes `item`. When given that model,
+   * combine its current values with the items of `currentQuestionnaire`. Otherwise,
+   * e.g. when given an item-level model, return `currentQuestionnaire`.
+   *
+   * @param formLevelValue - Optional value of the form-level editor model.
+   * @returns A Questionnaire with form-level values and the current items, or null when
+   *   no Questionnaire is loaded and no form-level value is given.
+   */
+  composeQuestionnaire(formLevelValue?: any): fhir.Questionnaire {
+    if(formLevelValue?.resourceType === 'Questionnaire') {
+      const composed: fhir.Questionnaire = {...formLevelValue};
+      const items = this.currentQuestionnaire?.item;
+      if(items) {
+        composed.item = items;
+      }
+      return composed;
+    }
+    return this.currentQuestionnaire;
   }
 
   set currentItem (item: fhir.QuestionnaireItem) {

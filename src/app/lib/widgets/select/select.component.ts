@@ -241,7 +241,7 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
         return;
       }
 
-      let updated = this.selectedArrayValues.slice();
+      let updated = this.arrayControlValues.slice();
       if (data?.removed) {
         updated = updated.filter((selected) => selected !== code);
       }
@@ -364,9 +364,20 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
 
   /**
    * Returns currently selected values for array-type select fields.
+   * Null placeholders, which align the values with their element array (e.g. _subjectType),
+   * are not selections and are skipped.
    * @returns Selected code values from the bound form control.
    */
   get selectedArrayValues(): string[] {
+    return this.arrayControlValues.filter((value) => value !== null && value !== undefined && value !== '');
+  }
+
+  /**
+   * Returns the value of the bound form control for array-type select fields, including
+   * null placeholders. Updates start from this value, so the placeholders stay in place.
+   * @returns Value of the bound form control, or an empty array.
+   */
+  private get arrayControlValues(): Array<string | null> {
     const value = this.control?.value;
     return Array.isArray(value) ? value : [];
   }
@@ -411,7 +422,7 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
   removeSelectedValue(value: string, event?: Event): void {
     event?.preventDefault();
     event?.stopPropagation();
-    const updated = this.selectedArrayValues.filter((selected) => selected !== value);
+    const updated = this.arrayControlValues.filter((selected) => selected !== value);
     this.control.setValue(updated);
     this.control.markAsDirty();
     this.control.markAsTouched();

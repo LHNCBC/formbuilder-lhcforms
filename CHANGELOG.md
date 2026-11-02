@@ -2,6 +2,120 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.11.0] 2026-10-23
+### Added
+- Contained resources of any FHIR resource type. The Add menu of the form-level
+  Contained resources table can create a ValueSet, as before, upload a resource
+  from a local JSON file, or import one from a FHIR server.
+  - Server import lists the resource types that the server advertises, and
+    searches them by the parameters the server advertises for the selected type:
+    any text field (_content), resource ID (_id), or another search parameter.
+    Parameters advertised for all resource types are included.
+  - An imported resource without an ID gets a generated one. An ID that is not a
+    non-empty JSON string, or not a valid FHIR id, is rejected. Resources with
+    nested contained resources are rejected. `meta.versionId`,
+    `meta.lastUpdated` and `meta.security` are removed after confirmation,
+    because FHIR does not allow them on contained resources.
+  - Importing a resource with the ID of an existing contained resource of the
+    same type replaces its contents after confirmation and keeps the ID, so
+    references to it stay valid.
+  - ValueSets remain editable. Other resource types are shown as read-only JSON.
+    Their JSON is exported unchanged, including `null` entries that keep values
+    such as `given` aligned with their extensions in `_given`.
+  - The FHIR version of each contained resource other than a ValueSet is
+    recorded, from the server, file type, profile or containing Questionnaire,
+    and kept across edits and autosaves. Preview and export warn when it differs
+    from the output version, or is unknown. ValueSets do not trigger these
+    warnings.
+- Support for repeatable SDC `templateExtract` extensions on Questionnaires and
+  Questionnaire items, using contained resources as templates, including
+  FHIRPath expressions for extracted resource IDs and Bundle entry request
+  fields. The expression editor is given the Questionnaire's items, also for
+  form-level template extractions.
+  - A contained resource cannot be deleted, or its ID changed, while a
+    `templateExtract` extension on the Questionnaire or on any item references
+    it. Deleting is also blocked while a `templateExtractBundle` extension
+    references it.
+  - A non-blocking warning is shown when `templateExtract` extensions at the
+    same scope use the same template with identical expressions.
+  - Discarding changes in the template extraction dialog asks for
+    confirmation, as in the other editing dialogs.
+  - Each optional expression of the template extraction dialog, such as
+    `fullUrl` or `resourceId`, has a Clear button to remove it. The expression
+    editor does not accept an empty expression.
+  - An expression without text, such as a `fullUrl` with only a
+    data-absent-reason extension in `_valueString`, is kept unchanged when the
+    extraction is saved.
+- A contained resource cannot be deleted while anything else in the
+  Questionnaire refers to it by its local reference, such as an item's
+  `answerValueSet`, an extension's `valueReference`, or another contained
+  resource. The message shows where it is referenced. Only reference and
+  canonical fields are checked, so ordinary text such as an item's `text` or
+  `prefix` of `#1` does not prevent deleting the contained resource `1`.
+### Changed
+- The ValueSet editor schema no longer carries its own unused copy of the FHIR
+  definitions. Like the item and form-level schemas, it uses the definitions
+  from `fhir-definitions.schema.json5`.
+### Fixed
+- `null` entries of repeating primitive elements, such as `derivedFrom`,
+  `subjectType`, or `given` in an extension value, are kept when they align the
+  values with the entries of the parallel `_` array, such as `_derivedFrom`,
+  that have an `id` and/or extensions. They were removed on import, edit,
+  export and autosave, which shifted the values against their extensions.
+  `null` entries without such an entry are still removed.
+- Importing or restoring a Questionnaire that has such `null` entries no longer
+  fails: with `subjectType` values, or without a `meta.profile` that gives its
+  FHIR version.
+- The `_` arrays of repeating primitive elements inside complex values, such as
+  `_given` in an extension's `valueHumanName`, `_line` in `valueAddress`,
+  `_profile` in `meta`, or `_valueSet` in a contained ValueSet, are kept when
+  the item or form is edited. They were removed before.
+- When a value of such an element is removed, cleared, or reordered in the
+  editor, e.g. a `subjectType` value, its `_` array entry moves with it. Before,
+  the `_` array was left unchanged, so the remaining values got the ids and
+  extensions of other values.
+  - Entries of the `_` array beyond the last value, which belong to implicit
+    trailing `null` values, are kept when values are added or removed.
+  - The kept `null` entries are not reported as validation errors, such as
+    "Expected type string but found type null" under Subject type in the
+    form-level advanced fields, and no longer block saving a contained
+    ValueSet.
+- The Continue button of the start page is disabled, with a "Loading..."
+  status, until the form builder has finished loading. Choosing to restore the
+  autosaved form before that showed an empty page. If the autosaved form
+  cannot be restored, an error is now shown and the start page stays. If
+  LHC-Forms fails to load, Continue stays disabled for all the options,
+  including "Start from scratch", because the form builder needs LHC-Forms to
+  work properly.
+- Fixed an NG0100 "expression changed after it was checked" error in
+  development mode, caused by the tooltip of long text fields, such as an
+  extension URL in the form-level advanced fields. Whether the tooltip is
+  needed is now checked on hover, focus and input.
+- Help items of a contained Questionnaire, such as a template for template-based
+  extraction, are kept. They were removed on import.
+- Attachment values of contained resources are kept unchanged on import and
+  export, as the contained resource compatibility warning states. Exporting to
+  R4 or STU3 removed their R5-only fields, such as `pages`, and sizes too large
+  for those versions; importing changed their `size` to the R5 string format.
+- The confirmation shown when discarding changes to a contained resource, and
+  the error alert of the contained resource dialog, showed a blank header:
+  their white title was shown without the colored background.
+- FHIR server search text with reserved characters, such as `&`, `#`, `+` or
+  `=`, is sent as text. Before, the search was split or cut off at them, so the
+  server searched for something else.
+- FHIR server search text with a `,`, `$`, `\`, or, for text parameters, `|`, is
+  searched as text. Before, the server read a `,` as OR, so `Smith, John`
+  searched for `Smith` or `John`. The `|` of a code search, such as
+  `http://loinc.org|8867-4`, keeps its meaning.
+- Importing a contained resource from a FHIR server no longer changes the
+  server that the form is saved to. The server chosen for the import is used
+  for that import only.
+- The id and extensions of an extension's primitive value, such as
+  `_valueString` of a `templateExtract` child, are kept when the extensions
+  are edited. They were removed before. This holds however an extension is
+  updated, including an update in place that adds a field the extension did not
+  have when it was loaded.
+
 ## [12.10.0] 2026-10-20
 ### Added
 - Support for choosing the LHC-Forms version to load from the NLM server, or

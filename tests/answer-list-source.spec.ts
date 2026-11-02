@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import {test, expect, Page, Locator} from '@playwright/test';
 import { MainPO, SNOMED_URL } from './po/main-po';
 import { PWUtils } from './pw-utils';
 
@@ -39,6 +39,22 @@ const checkReferencedOptionDialog = async (page: Page, expectedText: string, but
   expect(msgText.replace(/\s+/g, ' ').trim()).toEqual(expectedText);
 
   await PWUtils.clickDialogButton(page, { title: "Option referenced by other item's text and linkId." }, buttonName);
+};
+
+/**
+ * Click an answer option input until the referenced-option warning dialog opens.
+ * AnswerOptionComponent ignores focus for 300 ms after a warning closes (to skip the
+ * focus ngb restores to the input), so a click arriving sooner opens no warning.
+ *
+ * @param page - The Playwright page.
+ * @param input - The answer option input that references another item's enableWhen.
+ */
+const clickUntilReferencedWarning = async (page: Page, input: Locator) => {
+  await expect(async () => {
+    await input.blur();
+    await input.click();
+    await expect(page.locator('lfb-message-dlg')).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10000 });
 };
 
 const removeAndCheckReferencedOption = async (page: Page, type: string, index: number, msg: string, buttonLabel: string) => {
@@ -87,6 +103,19 @@ const getReferencedOptionMsgMultiple = (
   refs.map(ref => ` • '${ref.enableWhenItemName}' (linkId: '${ref.enableWhenItemLinkId}')`).join('') +
   `for conditional display. ${action} this option may affect their behavior.`;
 
+/**
+ * Edit a referenced answer option after accepting the warning, and check that the
+ * enableWhen item referencing it then shows a validation error.
+ *
+ * @param page - The Playwright page.
+ * @param type - Answer option data type, e.g. 'integer', 'time', or 'coding'.
+ * @param enableWhenNodeName - Tree node name of the item whose enableWhen references the option.
+ * @param answerOptionNodeName - Tree node name of the item that owns the answer options.
+ * @param answerOptionSelector - Selector of the referenced answer option input.
+ * @param referencedMsg - Expected warning dialog message.
+ * @param buttonText - Warning dialog button to click.
+ * @param editValue - New value for the answer option.
+ */
 const modifyReferencedData = async (
   page: Page,
   type: string,
@@ -103,7 +132,7 @@ const modifyReferencedData = async (
 
   await PWUtils.getTreeNode(page, answerOptionNodeName);
   const input = page.locator(answerOptionSelector);
-  await input.click();
+  await clickUntilReferencedWarning(page, input);
   await checkReferencedOptionDialog(page, referencedMsg, buttonText);
 
   if (type !== 'time') {
@@ -856,7 +885,7 @@ test.describe('Home page', () => {
 
       await PWUtils.clickTreeNode(page, 'coding answerOptions');
       await PWUtils.expectDataTypeValue(page, /coding/);
-      await page.locator('[id^="answerOption.1.valueCoding.system"]').click();
+      await clickUntilReferencedWarning(page, page.locator('[id^="answerOption.1.valueCoding.system"]'));
 
       enableWhenItems = [
         { enableWhenItemName: 'Reference coding option value d2 (c2)', enableWhenItemLinkId: '321543291333' },

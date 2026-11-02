@@ -22,6 +22,10 @@ import {ImportQuestionnaireService} from "./import.questionnaire.service";
 import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
 import {AttachmentUtil} from '../lib/attachment-util';
 import JSON5 from 'json5';
+import {
+  ContainedResourceService,
+  ContainedResourceVersionRecord
+} from './contained-resource.service';
 
 declare var LForms: any;
 
@@ -164,6 +168,7 @@ export class FormService {
     reference: this.operatorOptions2
   };
   private importService = inject(ImportQuestionnaireService);
+  private containedResourceService = inject(ContainedResourceService);
 
   constructor() {
   }
@@ -234,6 +239,7 @@ export class FormService {
         }
         obj.schema.definitions = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions));
         this.schemaService.addAttachmentPrimitiveMetadata(obj.schema);
+        this.schemaService.addPrimitiveElementArrays(obj.schema);
         obj.schema.formLayout = obj.layout.formLayout;
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
@@ -310,9 +316,10 @@ export class FormService {
   /**
    * Get resource schema based on the resource type.
    *
-   * @param resourceType
+   * @param resourceType - FHIR resource type whose specialized editor schema is requested.
+   * @returns Specialized schema, or null when Form Builder treats the resource as opaque JSON.
    */
-  getResourceSchema(resourceType: 'ValueSet' | 'Binary') {
+  getResourceSchema(resourceType: string) {
     let ret = null;
     if(resourceType === 'Binary') {
       ret = this.binarySchema;
@@ -332,13 +339,14 @@ export class FormService {
     if(!schema) {
       return;
     }
-    // Add visibleIf to the extension schema.
+    // Add visibleIf to the extension schema. The element field of a value[x], e.g.
+    // _valueString, is visible with its value[x], so it is dropped when the value type changes.
     for(const key in schema.properties) {
-      if(key.startsWith('value')) {
+      if(key.startsWith('value') || key.startsWith('_value')) {
         schema.properties[key].visibleIf = {
           "allOf": [
             {
-              "__$valueType": [key],
+              "__$valueType": [key.replace(/^_/, '')],
             },
             {
               "__$isValueX": [true],
@@ -803,6 +811,16 @@ export class FormService {
 
   get lformsVersion(): string {
     return this._lformsVersion;
+  }
+
+  /**
+   * Check whether initialize() has loaded the schemas and LForms. Loading a questionnaire
+   * needs both, e.g. to detect its FHIR version with LForms.
+   *
+   * @returns True once LForms is loaded; false while loading or after a failure.
+   */
+  get lformsReady(): boolean {
+    return !!this._lformsVersion && this._lformsVersion !== 'ERROR';
   }
 
   get lformsErrorMessage(): string | null {
@@ -1587,7 +1605,13 @@ export class FormService {
    * Convert a given questionnaire to R5 version. R5 is also internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.
    *
+   * Contained resources are not converted, so each one that is not yet annotated is
+   * annotated with its FHIR version, using the version of the input Questionnaire as the
+   * fallback. The version must be detected before conversion, because the converted
+   * Questionnaire carries an R5 profile.
+   *
    * @param fhirQ - A given questionnaire. Could be STU3, R4, R5 etc.
+   * @returns The R5 questionnaire with annotated contained resources.
    */
   convertToR5(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
     let ret = fhirQ;
@@ -1595,7 +1619,9 @@ export class FormService {
     if(fhirVersion !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
-    return AttachmentUtil.normalizeQuestionnaireAttachments(ret, 'R5');
+    ret = AttachmentUtil.normalizeQuestionnaireAttachments(ret, 'R5');
+    this.containedResourceService.annotateContainedResources(ret, fhirVersion);
+    return ret;
   }
 
   /**
@@ -1657,12 +1683,16 @@ export class FormService {
 
 
   /**
-   * Save questionnaire in local storage
-   * @param fhirQ - Questionnaire
+   * Save questionnaire in local storage, without Form Builder's internal fields, along with
+   * the version records of its contained resources. Also send the cleaned questionnaire
+   * to the window opener.
+   * @param fhirQ - Questionnaire, possibly including internal fields.
    */
   autoSaveForm(fhirQ: fhir.Questionnaire) {
-    this.autoSave('fhirQuestionnaire', fhirQ);
-    this.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire: fhirQ});
+    const cleanQuestionnaire = Util.convertToQuestionnaireJSON(fhirQ);
+    this.autoSave('fhirQuestionnaire', cleanQuestionnaire);
+    this.autoSave('containedResourceVersions', this.containedResourceService.getVersionRecords(fhirQ));
+    this.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire: cleanQuestionnaire});
   }
 
 
@@ -1716,10 +1746,18 @@ export class FormService {
 
 
   /**
-   * Retrieve questionnaire from the storage.
+   * Retrieve questionnaire from the storage and reapply the saved version records to
+   * its contained resources. Resources without a matching record, e.g. in forms autosaved
+   * before records were stored, are annotated from their own evidence only. The autosaved
+   * Questionnaire is always R5, so its version says nothing about the resources' source.
+   * @returns The stored questionnaire, or null if none is stored.
    */
   autoLoadForm(): fhir.Questionnaire {
-    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+    const questionnaire = this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+    const records = this.autoLoad('containedResourceVersions') as ContainedResourceVersionRecord[];
+    this.containedResourceService.applyVersionRecords(questionnaire, records);
+    this.containedResourceService.annotateContainedResources(questionnaire);
+    return questionnaire;
   }
 
 

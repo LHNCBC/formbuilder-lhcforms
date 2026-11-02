@@ -1,0 +1,51 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Patient",
+      "id": "pt",
+      "meta": {
+        "profile": [
+          "http://hl7.org/fhir/5.0/StructureDefinition/Patient"
+        ]
+      },
+      "extension": [
+        {
+          "url": "http://example.org/document",
+          "valueAttachment": {
+            "contentType": "application/pdf",
+            "url": "http://example.org/report.pdf",
+            "size": "3000000000",
+            "pages": 12
+          }
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#pt"
+          }
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "linkId": "q",
+      "text": "Question",
+      "type": "string"
+    }
+  ]
+}

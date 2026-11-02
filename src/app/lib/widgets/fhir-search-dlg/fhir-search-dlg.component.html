@@ -1,6 +1,8 @@
 <div role="dialog" aria-modal="true" aria-labelledby="searchDlgHeader">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title text-white" id="searchDlgHeader">Import a questionnaire</h4>
+    <h4 class="modal-title text-white" id="searchDlgHeader">
+      {{mode === 'questionnaire' ? 'Import a questionnaire' : 'Import a contained resource'}}
+    </h4>
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close(false)">
     </button>
   </div>
@@ -15,6 +17,49 @@
 <!-- Search template -->
 <ng-template #searchTmpl>
   <form class="container" role="search" aria-label="Search selected FHIR server">
+    @if (mode === 'contained-resource') {
+      <div class="row align-items-center mb-2">
+        <label for="fhirResourceType" class="col-auto col-form-label col-form-label-sm pe-2">
+          Resource type<span aria-hidden="true"> *</span>
+        </label>
+        <div class="col">
+          <input
+            type="search"
+            class="form-control form-control-sm"
+            id="fhirResourceType"
+            list="fhirResourceTypeOptions"
+            autocomplete="off"
+            [disabled]="capabilityLoading"
+            [ngModel]="resourceType"
+            (ngModelChange)="onResourceTypeChange($event)"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Search resource types"
+            aria-describedby="resourceTypeHelp">
+          <datalist id="fhirResourceTypeOptions">
+            @for (type of resourceTypes; track type) {
+              <option [value]="type"></option>
+            }
+          </datalist>
+        </div>
+        @if (capabilityLoading) {
+          <div class="col-auto text-muted" role="status">
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+            Loading resource types…
+          </div>
+        }
+      </div>
+      <div id="resourceTypeHelp" class="form-text mb-2">
+        Select a resource type advertised by this server before searching.
+      </div>
+      @if (capabilityError) {
+        <div class="alert alert-danger py-2" role="alert">
+          {{capabilityError}}
+          <button type="button" class="btn btn-sm btn-outline-danger ms-2" (click)="retryResourceCapabilities()">
+            Retry
+          </button>
+        </div>
+      }
+    }
     <div class="row align-items-center mb-2">
       <div class="col">
         <div class="align-items-center d-inline-flex">
@@ -22,7 +67,7 @@
             <input type="search" class="form-control"
               [(ngModel)]="inputTerm"
               [ngModelOptions]="{standalone: true}"
-              [placeholder]="searchField.searchFieldPlaceholder"
+              [placeholder]="searchField?.searchFieldPlaceholder || ''"
               aria-label="Search term"
               aria-describedby="filterHelp">
             <button
@@ -30,7 +75,7 @@
               type="submit"
               id="button-addon2"
               (click)="searchInput()"
-              [disabled]="loading$ | async">
+              [disabled]="(loading$ | async) || !canSearch()">
               @if (loading$ | async) {
                 <span class="spinner-border spinner-border-sm me-2" aria-hidden="true" role="status"></span>
               }
@@ -63,7 +108,9 @@
       </div>
     </div>
     <div class="m-0 mb-2 row align-items-center">
-      <label for="searchField1" class="p-0 me-2  col-auto col-form-label text-nowrap">Search by term occurring in: </label>
+      <label for="searchField1" class="p-0 me-2  col-auto col-form-label text-nowrap">
+        {{mode === 'questionnaire' ? 'Search by term occurring in:' : 'Search by:'}}
+      </label>
       <select class="form-select form-select-sm col-auto w-auto" id="searchField1" [(ngModel)]="searchField" [ngModelOptions]="{standalone: true}">
         @for (field of searchFieldList; track field.field) {
           <option [ngValue]="field">{{field.display}}</option>
@@ -117,32 +164,43 @@
 
 <!-- Results template -->
 <ng-template #results>
-  @if (questionnaires) {
+  @if (resources) {
     <div class="modal-body bg-light" aria-live="polite">
       <div class="list-group list-group-flush">
-        @for (q of questionnaires; track q.id; let i = $index) {
-          <a href="#" class="list-group-item list-group-item-action result-item" (click)="close(q.id)">
+        @for (q of resources; track q.resourceType + '/' + q.id; let i = $index) {
+          <button type="button" class="list-group-item list-group-item-action result-item text-start" (click)="selectResource(q)">
             <div class="row">
               <div class="col-1">{{resultsOffset + i + 1}}</div>
               <div class="col-11">
-                @if (q.title || q.name) {
-                  <div>{{q.title || q.name}}</div>
-                }
-                @if ((!q.title && !q.name)) {
-                  <div>(No title or name assigned)</div>
-                }
-                <div>ID: {{q.id}} @if (q.version) {
-                  <span>(version: {{q.version}})</span>
-                }</div>
-                @if (q.publisher) {
-                  <div>Publisher: {{q.publisher}}</div>
-                }
-                @if (q.date) {
-                  <div>Last changed: {{q.date}}</div>
+                @if (mode === 'questionnaire') {
+                  @if (q.title || q.name) {
+                    <div>{{q.title || q.name}}</div>
+                  }
+                  @if ((!q.title && !q.name)) {
+                    <div>(No title or name assigned)</div>
+                  }
+                  <div>ID: {{q.id}} @if (q.version) {
+                    <span>(version: {{q.version}})</span>
+                  }</div>
+                  @if (q.publisher) {
+                    <div>Publisher: {{q.publisher}}</div>
+                  }
+                  @if (q.date) {
+                    <div>Last changed: {{q.date}}</div>
+                  }
+                } @else {
+                  <div class="fw-semibold">{{getResourceDisplay(q)}}</div>
+                  <div>{{q.resourceType}} — ID: {{q.id}}</div>
+                  @if (q.status) {
+                    <div>Status: {{q.status}}</div>
+                  }
+                  @if (getLastUpdated(q)) {
+                    <div>Last updated: {{getLastUpdated(q)}}</div>
+                  }
                 }
               </div>
             </div>
-          </a>
+          </button>
         }
       </div>
     </div>

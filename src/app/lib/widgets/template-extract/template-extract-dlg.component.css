@@ -1,0 +1,48 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.template-extract-dlg-container {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dlg-content {
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 0;
+}
+
+.close-button {
+  float: right;
+}
+
+.bundle-fields-toggle {
+  align-items: center;
+  display: flex;
+  font-weight: 500;
+  gap: .25rem;
+}
+
+.bundle-fields-toggle mat-icon {
+  font-size: 1.25rem;
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.expression-field .input-group > .btn {
+  align-items: center;
+  display: inline-flex;
+  gap: .25rem;
+}
+
+.expression-field mat-icon {
+  font-size: 1rem;
+  height: 1rem;
+  width: 1rem;
+}
