@@ -35,6 +35,39 @@ import {firstValueFrom} from 'rxjs';
 import fhir from 'fhir/r4';
 import {getContainedResourceDisplay} from './contained-resource-display.util';
 
+/**
+ * Names of the fields whose string value can be a local reference '#id' to a contained
+ * resource: Reference.reference and the fields of type canonical in FHIR R4 and R5. Choice fields
+ * of type canonical, such as valueCanonical, are matched by isLocalReferenceField() instead.
+ * Some of these names are plain strings or uris in other types (e.g. definition, system and
+ * url), so a '#id' in those fields is treated as a reference too.
+ */
+const LOCAL_REFERENCE_FIELDS = new Set([
+  'reference',
+  'abnormalCodedValueSet', 'actor', 'answerValueSet', 'artifact', 'base', 'baseDefinition',
+  'capabilities', 'codeMap', 'compartment', 'criticalCodedValueSet', 'definition',
+  'derivedFrom', 'graph', 'implementationGuide', 'import', 'imports', 'inputProfile',
+  'instantiates', 'library', 'measure', 'message', 'normalCodedValueSet',
+  'observationRequirement', 'observationResultRequirement', 'otherMap', 'outputProfile', 'parent', 'partOf',
+  'profile', 'questionnaire', 'replaces', 'resource', 'source', 'specimenRequirement',
+  'subscriptionTopic', 'supplements', 'supportedProfile', 'system', 'target', 'targetProfile', 'testScript',
+  'topic', 'transform', 'uri', 'url', 'validCodedValueSet', 'valueAlternatives', 'valueSet',
+  'workflow'
+]);
+
+/**
+ * Check whether a field's string value can be a local reference '#id' to a contained
+ * resource. Other strings, such as an item's text or prefix, are not references even when
+ * they look like '#id'.
+ *
+ * @param field - Field name.
+ * @returns True for the fields in LOCAL_REFERENCE_FIELDS and the fields whose names end
+ *   with 'Canonical', such as valueCanonical and instantiatesCanonical.
+ */
+function isLocalReferenceField(field: string): boolean {
+  return LOCAL_REFERENCE_FIELDS.has(field) || field.endsWith('Canonical');
+}
+
 
 @Component({
   selector: 'lfb-contained',
@@ -221,7 +254,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
     if(referencePath) {
       this.showReferencedResourceWarning(
         `The contained resource #${resourceId} is referenced at ` +
-        `${this.containedResourceService.escapeHtml(referencePath)} and cannot be deleted.`
+        `${referencePath} and cannot be deleted.`
       );
       return;
     }
@@ -232,13 +265,13 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   /**
    * Explain why a referenced contained resource cannot be deleted.
    *
-   * @param message - HTML message; values from the Questionnaire must already be escaped.
+   * @param message - Plain-text message, escaped here because the dialog renders HTML.
    */
   private showReferencedResourceWarning(message: string): void {
     this.dialogService.showDialog(
       MessageType.WARNING,
       'Contained resource is in use',
-      message,
+      this.containedResourceService.escapeHtml(message),
       this.referencedResourceButtons
     );
   }
@@ -543,7 +576,8 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   /**
    * Find a local reference to a contained resource anywhere in the current Questionnaire,
    * including its items and the other contained resources. A local reference is a string
-   * value '#id', such as Reference.reference or a canonical such as answerValueSet.
+   * value '#id' in a reference or canonical field (see isLocalReferenceField()), such as
+   * Reference.reference or answerValueSet.
    * The resource itself and form builder fields, whose names start with '__$', are skipped.
    *
    * @param resourceId - Contained resource id.
@@ -591,11 +625,14 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
      *
      * @param node - JSON value to search.
      * @param path - Path of the node.
+     * @param field - Name of the field holding the node; array elements use the array's
+     *   field name. Only strings in reference fields (see isLocalReferenceField()) are
+     *   compared with the reference.
      * @returns Path of the first reference found, or ''.
      */
-    const search = (node: unknown, path: string): string => {
+    const search = (node: unknown, path: string, field: string): string => {
       if(typeof node === 'string') {
-        return node === reference ? path : '';
+        return node === reference && isLocalReferenceField(field) ? path : '';
       }
       if(Array.isArray(node)) {
         for(let index = 0; index < node.length; index++) {
@@ -603,7 +640,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
           if(path === 'Questionnaire.contained' && element?.id === resourceId) {
             continue;
           }
-          const found = search(element, getElementPath(path, element, index));
+          const found = search(element, getElementPath(path, element, index), field);
           if(found) {
             return found;
           }
@@ -612,7 +649,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
       }
       if(node && typeof node === 'object') {
         for(const [key, value] of Object.entries(node)) {
-          const found = key.startsWith('__$') ? '' : search(value, `${path}.${key}`);
+          const found = key.startsWith('__$') ? '' : search(value, `${path}.${key}`, key);
           if(found) {
             return found;
           }
@@ -621,6 +658,6 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
       return '';
     };
 
-    return search(this.getCurrentQuestionnaire(), 'Questionnaire');
+    return search(this.getCurrentQuestionnaire(), 'Questionnaire', '');
   }
 }
