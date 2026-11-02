@@ -339,13 +339,14 @@ export class FormService {
     if(!schema) {
       return;
     }
-    // Add visibleIf to the extension schema.
+    // Add visibleIf to the extension schema. The element field of a value[x], e.g.
+    // _valueString, is visible with its value[x], so it is dropped when the value type changes.
     for(const key in schema.properties) {
-      if(key.startsWith('value')) {
+      if(key.startsWith('value') || key.startsWith('_value')) {
         schema.properties[key].visibleIf = {
           "allOf": [
             {
-              "__$valueType": [key],
+              "__$valueType": [key.replace(/^_/, '')],
             },
             {
               "__$isValueX": [true],
