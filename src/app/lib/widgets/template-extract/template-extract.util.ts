@@ -1,6 +1,7 @@
 import copy from 'fast-copy';
 import fhir from 'fhir/r4';
 import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
+import {Util} from '../../util';
 
 export const TEMPLATE_EXTRACT_CHILD_URLS = [
   'template',
@@ -69,7 +70,8 @@ export function parseTemplateExtractExtension(extension: fhir.Extension): Templa
 /**
  * Convert the widget's edit model to a valid complex templateExtract extension.
  * Unknown child slices and metadata on known slices are retained when an imported
- * extension is edited. The template valueReference is retained only when its reference
+ * extension is edited, except the value[x] fields of other value types and their element
+ * fields, e.g. a _valueCode on an expression child. The template valueReference is retained only when its reference
  * is unchanged.
  *
  * @param model - Edit model. An empty expression field is omitted from the result, unless
@@ -89,19 +91,11 @@ export function buildTemplateExtractExtension(model: TemplateExtractEditModel): 
     }
   });
 
-  Object.keys(result).forEach(key => {
-    if(key.startsWith('value')) {
-      delete result[key];
-    }
-  });
+  Util.removeValueChoices(result);
   result.url = EXTENSION_URL_TEMPLATE_EXTRACT;
 
   const templateChild = copy(childByUrl.get('template') || {url: 'template'});
-  Object.keys(templateChild).forEach(key => {
-    if(key.startsWith('value') && key !== 'valueReference') {
-      delete templateChild[key];
-    }
-  });
+  Util.removeValueChoices(templateChild, 'valueReference');
   templateChild.url = 'template';
   delete templateChild.extension;
   // Details such as display, type or identifier describe the original template; drop them
@@ -123,11 +117,7 @@ export function buildTemplateExtractExtension(model: TemplateExtractEditModel): 
     }
     else {
       const child = copy(sourceChild || {url});
-      Object.keys(child).forEach(key => {
-        if(key.startsWith('value') && key !== 'valueString') {
-          delete child[key];
-        }
-      });
+      Util.removeValueChoices(child, 'valueString');
       child.url = url;
       delete child.extension;
       child.valueString = value;

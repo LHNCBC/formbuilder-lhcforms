@@ -11,6 +11,7 @@ import {RestrictionOperatorService} from '../../../services/restriction-operator
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
+import {Util} from '../../util';
 import {IsDisabledPipe} from '../../pipes/is-disabled.pipe';
 import {BooleanControlledComponent} from '../boolean-controlled/boolean-controlled.component';
 import {AppFormElementComponent} from '../form-element/form-element.component';
@@ -322,10 +323,11 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
       const value = this.getValue(restriction.value, fieldInfo.fieldType);
       if(index < extensionIndices.length) {
         const extension = extensions[extensionIndices[index]];
-        const valueFields = Object.keys(extension).filter((key) => /^value/.test(key));
-        if(valueFields.length !== 1 || valueFields[0] !== fieldInfo.fieldName ||
-          extension[fieldInfo.fieldName] !== value) {
-          valueFields.forEach((key) => delete extension[key]);
+        // Fields of another value type, including element fields such as _valueInteger.
+        const otherValueFields = Object.keys(extension).filter((key) =>
+          Util.isValueChoiceField(key) && key !== fieldInfo.fieldName && key !== '_' + fieldInfo.fieldName);
+        if(otherValueFields.length || extension[fieldInfo.fieldName] !== value) {
+          Util.removeValueChoices(extension, fieldInfo.fieldName);
           extension[fieldInfo.fieldName] = value;
           changed = true;
         }

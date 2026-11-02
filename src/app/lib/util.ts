@@ -963,6 +963,36 @@ export class Util {
   }
 
   /**
+   * Check whether a field is a value[x] field, e.g. valueString, or its element field,
+   * e.g. _valueString.
+   * @param key - Field name.
+   * @returns True if the field name starts with 'value' or '_value'.
+   */
+  static isValueChoiceField(key: string): boolean {
+    return typeof key === 'string' && /^_?value/.test(key);
+  }
+
+  /**
+   * Remove the value[x] fields of an object, e.g. of an Extension, other than the one to
+   * keep. Their element fields, e.g. _valueString, are removed too, so the metadata of a
+   * previous value type is not left behind. The element field of the kept value[x] is kept.
+   * @param obj - Object to update in place.
+   * @param keepValueX - value[x] field to keep, e.g. valueInteger. If not given, all
+   *   value[x] fields and their element fields are removed.
+   * @returns The same object.
+   */
+  static removeValueChoices<T>(obj: T, keepValueX?: string): T {
+    if(obj && typeof obj === 'object') {
+      Object.keys(obj).forEach((key) => {
+        if(Util.isValueChoiceField(key) && (!keepValueX || (key !== keepValueX && key !== '_' + keepValueX))) {
+          delete obj[key];
+        }
+      });
+    }
+    return obj;
+  }
+
+  /**
    * Map type to value[x] field.
    * @param type - question type
    */
