@@ -1,0 +1,50 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"]
+  },
+  "status": "draft",
+  "title": "Duplicate Bundle extraction test",
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "first",
+      "type": "transaction",
+      "entry": [{
+        "fullUrl": "urn:uuid:11111111-1111-4111-8111-111111111111",
+        "resource": {
+          "resourceType": "Patient",
+          "id": "first-patient",
+          "name": [{"text": "first"}]
+        },
+        "request": {"method": "POST", "url": "Patient"}
+      }]
+    },
+    {
+      "resourceType": "Bundle",
+      "id": "second",
+      "type": "transaction",
+      "entry": [{
+        "fullUrl": "urn:uuid:22222222-2222-4222-8222-222222222222",
+        "resource": {
+          "resourceType": "Patient",
+          "id": "second-patient",
+          "name": [{"text": "second"}]
+        },
+        "request": {"method": "POST", "url": "Patient"}
+      }]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+      "valueReference": {"reference": "#first"}
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+      "valueReference": {"reference": "#second"}
+    }
+  ],
+  "item": [{"linkId": "note", "text": "Note", "type": "string"}]
+}
+

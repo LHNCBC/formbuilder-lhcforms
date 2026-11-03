@@ -39,10 +39,6 @@
   border-radius: 4px;
 }
 
-lfb-preview-dlg .extraction-preview .CodeMirror {
-  max-height: 35vh;
-}
-
 lfb-preview-dlg .extraction-error {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

@@ -269,6 +269,90 @@ test.describe('Home page', () => {
         await expect(page.locator('[id^="radio_obs_relation_null_"]')).toBeChecked();
       });
 
+      test('should update the relationship warning when the item is moved', async ({ page }) => {
+        await PWUtils.uploadFile(page, 'observation-extract-relationship-move.json', true);
+        await expect(await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title'))
+          .toHaveValue('Move relationship warning test');
+        await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+        await expect(page.locator('.spinner-border')).not.toBeVisible();
+
+        const relationshipWarning = page.locator('lfb-observation-extract .relationship-without-parent-warning');
+        await PWUtils.clickTreeNode(page, 'Member item');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('Member item');
+        await expect(relationshipWarning).toContainText('no ancestor item has observation extraction set to Yes');
+
+        /**
+         * Move 'Member item' relative to 'Parent item' using the Move dialog.
+         * @param location - Index of the location option: 0 for after, 2 for as a child of the target.
+         */
+        const moveMemberItem = async (location: number) => {
+          const memberNode = await PWUtils.getTreeNode(page, 'Member item');
+          await memberNode.locator('button.dropdown-toggle').click();
+          await PWUtils.clickMoreOptionsDropdownItem(page, 'Move this item ...');
+          const targetInput = page.locator('lfb-node-dialog').locator('#moveTarget1');
+          await targetInput.click();
+          await targetInput.fill('Parent item');
+          await targetInput.press('ArrowDown');
+          await targetInput.press('Enter');
+          await page.locator('lfb-node-dialog').locator('ul li').nth(location).locator('input[type="radio"]').check();
+          await PWUtils.getButton(page, null, 'Move').click();
+        };
+
+        // The moved item stays selected; the warning is updated without selecting another item.
+        await moveMemberItem(2);
+        expect((await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).item[0].item[0].linkId).toBe('member');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('Member item');
+        await expect(relationshipWarning).toHaveCount(0);
+
+        // Moving it out of the extracted parent shows the warning again.
+        await moveMemberItem(0);
+        expect((await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).item[1].linkId).toBe('member');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('Member item');
+        await expect(relationshipWarning).toBeVisible();
+      });
+
+      test('should explain that a nearer ancestor setting of No overrides a more distant Yes', async ({ page }) => {
+        await PWUtils.uploadFile(page, 'observation-extract-relationship-override.json', true);
+        await expect(await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title'))
+          .toHaveValue('Overridden relationship warning test');
+        await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+        await expect(page.locator('.spinner-border')).not.toBeVisible();
+
+        await PWUtils.clickAndToggleTreeNode(page, 'Outer group');
+        await PWUtils.clickAndToggleTreeNode(page, 'Inner group');
+        await PWUtils.clickTreeNode(page, 'Member child');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('Member child');
+        await expect(page.locator('lfb-observation-extract .relationship-without-parent-warning')).toHaveText(
+          'A relationship links this item to the Observation of an ancestor item, but the nearest ancestor that ' +
+          'sets observation extraction to No, or to Yes with relationship None, sets it to No. A nearer setting ' +
+          'overrides more distant ones, so this item is not extracted. Select None to extract it on its own.'
+        );
+
+        await PWUtils.clickTreeNode(page, 'Inner group');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('Inner group');
+        await expect(page.locator('[id^="radio_No_observationExtract"]')).toBeChecked();
+        await PWUtils.clickTreeNode(page, 'Outer group');
+        await expect(await PWUtils.getItemTextField(page)).toHaveValue('Outer group');
+        await expect(page.locator('[id^="radio_Yes_observationExtract"]')).toBeChecked();
+        await expect(page.locator('[id^="radio_obs_relation_null_"]')).toBeChecked();
+        // Viewing the items keeps the explicit false.
+        expect((await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5')).item[0].item[0].extension).toEqual([{
+          url: observationExtractExtUrl,
+          valueBoolean: false
+        }]);
+
+        await PWUtils.clickMenuBarButton(page, 'Preview');
+        const dialog = page.locator('lfb-preview-dlg');
+        await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+        await expect(dialog.locator('.unextracted-relationship-items')).toHaveText(
+          'Items with an observation extraction relationship are extracted only when the nearest ancestor that ' +
+          'sets observation extraction to No, or to Yes with relationship None, sets it to Yes. A nearer setting ' +
+          'overrides more distant ones. Not extracted (linkId): member.'
+        );
+        await dialog.getByRole('button', {name: 'Close', exact: true}).click();
+        await expect(dialog).toHaveCount(0);
+      });
+
       test('should import item with observation-extract extension', async ({ page }) => {
         const sampleFile = 'observation-extract.json';
         const fixtureJson = await PWUtils.readJSONFile(sampleFile);

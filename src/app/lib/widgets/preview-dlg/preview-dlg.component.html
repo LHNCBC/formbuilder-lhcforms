@@ -136,15 +136,17 @@
         }
         @if(unextractedRelationshipLinkIds.length) {
           <ngb-alert type="warning" class="unextracted-relationship-items" [dismissible]="false">
-            Items with an observation extraction relationship are extracted only under an ancestor item with
-            observation extraction set to Yes and relationship None. Not extracted (linkId):
+            Items with an observation extraction relationship are extracted only when the nearest ancestor that
+            sets observation extraction to No, or to Yes with relationship None, sets it to Yes. A nearer setting
+            overrides more distant ones. Not extracted (linkId):
             {{unextractedRelationshipLinkIds.join(', ')}}.
           </ngb-alert>
         }
         @if(hasTemplateExtraction && multipleTemplateExtractLevels.length) {
           <ngb-alert type="warning" class="multiple-template-extract-levels" [dismissible]="false">
-            LHC-Forms extracts only the first template-based extraction setting at each level, so the other
-            settings are not included. Levels with more than one setting: {{multipleTemplateExtractLevels.join(', ')}}.
+            LHC-Forms extracts only the first templateExtract setting and the first templateExtractBundle setting
+            at each level, so the other settings are not included. Levels with more than one setting of a type:
+            {{multipleTemplateExtractLevels.join(', ')}}.
           </ngb-alert>
         }
         @if(extractionExpressionErrors.length) {
@@ -183,7 +185,7 @@
   @if(json) {
     <!-- Overlay the export buttons on the JSON, like the Questionnaire JSON buttons. -->
     <div class="overlay-container" role="region" [attr.aria-label]="label + ' JSON'">
-      <ngx-codemirror [ngModel]="json" (codeMirrorLoaded)="codeMirrorLoaded($event)"
+      <ngx-codemirror [ngModel]="json" (codeMirrorLoaded)="snapshotCodeMirrorLoaded($event)"
         [options]="{
           lineNumbers: true,
           theme: 'idea code-editor',

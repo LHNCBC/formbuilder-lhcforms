@@ -46,7 +46,7 @@ import {
 } from '../../../services/contained-resource.service';
 import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
 import {ObservationExtractComponent} from '../observation-extract/observation-extract.component';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
 declare var LForms: any;
 
 /**
@@ -129,14 +129,16 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   readonly snapshotTabsDisabledMsg = 'Open the Rendered Form tab first.';
   activeJsonTabIndex: number = FHIR_VERSIONS.R4;
   readonly extractionFHIRVersion = 'R5';
+  // Smallest height, in pixels, of the JSON editors on the snapshot tabs.
+  static readonly MIN_SNAPSHOT_EDITOR_HEIGHT = 200;
   formReady = false;
   extractionInProgress = false;
   hasTemplateExtraction = false;
   hasObservationExtraction = false;
   // linkIds of items whose observation extraction relationship has no extracted ancestor.
   unextractedRelationshipLinkIds: string[] = [];
-  // Levels with more than one templateExtract extension, e.g. "form level" or "linkId 'a'".
-  // LHC-Forms extracts only the first one at each level.
+  // Levels with more than one templateExtract or templateExtractBundle extension, e.g.
+  // "form level (templateExtract)". LHC-Forms extracts only the first one of each type at each level.
   multipleTemplateExtractLevels: string[] = [];
   // Expression errors that LHC-Forms logged instead of reporting during the last extraction.
   extractionExpressionErrors: string[] = [];
@@ -412,39 +414,45 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Find the levels that have more than one templateExtract extension. LHC-Forms extracts
-   * only the first templateExtract at each level, so the others are missing from the output.
+   * Find the levels that have more than one templateExtract extension, or more than one
+   * templateExtractBundle extension. LHC-Forms extracts only the first extension of each of these
+   * types at each level, so the others are missing from the output.
    * @param questionnaire - Questionnaire to inspect.
-   * @returns "form level" for the questionnaire, and "linkId '<linkId>'" for each item, in
-   *   questionnaire order.
+   * @returns "form level (<type>)" for the questionnaire, and "linkId '<linkId>' (<type>)" for each
+   *   item, in questionnaire order, where <type> is templateExtract or templateExtractBundle.
    */
   private findMultipleTemplateExtractLevels(questionnaire: fhir.Questionnaire): string[] {
     const levels: string[] = [];
+    const extractTypes = [
+      {url: EXTENSION_URL_TEMPLATE_EXTRACT, name: 'templateExtract'},
+      {url: EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE, name: 'templateExtractBundle'}
+    ];
 
     /**
-     * Check whether a list of extensions has more than one templateExtract extension.
+     * Add the level once for each extraction type with more than one extension at the level.
+     * @param level - Description of the level, e.g. "form level".
      * @param extensions - Extensions of the questionnaire or of an item.
-     * @returns Whether there is more than one templateExtract extension.
      */
-    const hasMultiple = (extensions: fhir.Extension[] = []): boolean =>
-      extensions.filter(extension => extension.url === EXTENSION_URL_TEMPLATE_EXTRACT).length > 1;
+    const addLevel = (level: string, extensions: fhir.Extension[] = []): void => {
+      for(const {url, name} of extractTypes) {
+        if(extensions.filter(extension => extension.url === url).length > 1) {
+          levels.push(`${level} (${name})`);
+        }
+      }
+    };
 
     /**
-     * Add the items with more than one templateExtract extension, including descendants.
+     * Add the levels of the items, including descendants.
      * @param items - Items to inspect.
      */
     const addItems = (items: fhir.QuestionnaireItem[] = []): void => {
       for(const item of items) {
-        if(hasMultiple(item.extension)) {
-          levels.push(`linkId '${item.linkId}'`);
-        }
+        addLevel(`linkId '${item.linkId}'`, item.extension);
         addItems(item.item);
       }
     };
 
-    if(hasMultiple(questionnaire?.extension)) {
-      levels.push('form level');
-    }
+    addLevel('form level', questionnaire?.extension);
     addItems(questionnaire?.item);
     return levels;
   }
@@ -816,6 +824,27 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     if(height > 0) {
       cm.codeMirror.setSize(null, height);
     }
+  }
+
+  /**
+   * Size a snapshot JSON editor to fill the dialog content below it. The notes and alerts
+   * above the editor vary, so the height is measured from where the editor starts. A snapshot
+   * is shown only with its final notes and alerts, so they are already rendered.
+   * @param cm - The loaded editor component.
+   */
+  snapshotCodeMirrorLoaded(cm: CodemirrorComponent): void {
+    const content: HTMLElement = this.dlgContent?.nativeElement;
+    const editor = cm.codeMirror.getWrapperElement();
+    // An editor that is not laid out has no position to measure from.
+    if(!content || !editor.getClientRects().length) {
+      return;
+    }
+    const contentRect = content.getBoundingClientRect();
+    const offsetFromContentTop = editor.getBoundingClientRect().top - contentRect.top + content.scrollTop;
+    const bottomPadding = parseFloat(getComputedStyle(content).paddingBottom) || 0;
+    const height = content.clientHeight - offsetFromContentTop - bottomPadding;
+    // With many alerts above it, keep the editor usable and let the dialog content scroll.
+    cm.codeMirror.setSize(null, Math.max(height, PreviewDlgComponent.MIN_SNAPSHOT_EDITOR_HEIGHT));
   }
 
   /**

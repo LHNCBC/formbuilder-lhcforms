@@ -16,6 +16,8 @@ This project follows [Semantic Versioning](http://semver.org/).
   "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
 - The preview opens on "Rendered Form" by default. After that, in the same browser
   session, it reopens on "Questionnaire JSON" if that was the last visited tab.
+- "Rendered Form" passes the questionnaire to LHC-Forms as FHIR R5, the version
+  used by the form builder and by the snapshot tabs.
 
 ### Fixed
 - Changing the observation extraction relationship back to None kept the previous

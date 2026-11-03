@@ -8,7 +8,7 @@ import {FormService} from '../../../services/form.service';
 import {FhirService} from '../../../services/fhir.service';
 import {SubjectTypeService} from '../../../services/subject-type.service';
 import {ContainedResourceService} from '../../../services/contained-resource.service';
-import {EXTENSION_URL_TEMPLATE_EXTRACT} from '../../constants/constants';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
 
 declare const LForms: any;
 
@@ -178,7 +178,58 @@ describe('PreviewDlgComponent', () => {
       ]}
     ];
     component.ngOnInit();
-    expect(component.multipleTemplateExtractLevels).toEqual(['form level', "linkId 'nested'"]);
+    expect(component.multipleTemplateExtractLevels).toEqual(
+      ['form level (templateExtract)', "linkId 'nested' (templateExtract)"]);
+  });
+
+  it('sizes a snapshot editor to fill the dialog content below it', () => {
+    const content = document.createElement('div');
+    content.style.paddingBottom = '20px';
+    document.body.appendChild(content);
+    Object.defineProperty(content, 'clientHeight', {value: 600});
+    spyOn(content, 'getBoundingClientRect').and.returnValue({top: 100} as DOMRect);
+    const editor = document.createElement('div');
+    const clientRects = spyOn(editor, 'getClientRects').and.returnValue([{}] as unknown as DOMRectList);
+    const editorRect = spyOn(editor, 'getBoundingClientRect').and.returnValue({top: 250} as DOMRect);
+    const setSize = jasmine.createSpy('setSize');
+    const cm = {codeMirror: {getWrapperElement: () => editor, setSize}} as any;
+    component.dlgContent = new ElementRef(content);
+
+    // 600 content height - 150 above the editor - 20 bottom padding.
+    component.snapshotCodeMirrorLoaded(cm);
+    expect(setSize).toHaveBeenCalledWith(null, 430);
+    // With many alerts above the editor, it keeps a usable height.
+    editorRect.and.returnValue({top: 650} as DOMRect);
+    component.snapshotCodeMirrorLoaded(cm);
+    expect(setSize).toHaveBeenCalledWith(null, PreviewDlgComponent.MIN_SNAPSHOT_EDITOR_HEIGHT);
+    // An editor that is not laid out is left alone.
+    setSize.calls.reset();
+    clientRects.and.returnValue([] as unknown as DOMRectList);
+    component.snapshotCodeMirrorLoaded(cm);
+    expect(setSize).not.toHaveBeenCalled();
+    content.remove();
+  });
+
+  it('finds levels with more than one templateExtractBundle, counted apart from templateExtract', () => {
+    const templateExtract = {url: EXTENSION_URL_TEMPLATE_EXTRACT, extension: [
+      {url: 'template', valueReference: {reference: '#obs-template'}}
+    ]};
+    const bundleExtract = (reference: string) =>
+      ({url: EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE, valueReference: {reference}});
+    data.questionnaire.extension = [bundleExtract('#first'), bundleExtract('#second')];
+    data.questionnaire.item = [
+      // One extension of each type is not a duplicate.
+      {linkId: 'mixed', type: 'decimal', extension: [templateExtract, bundleExtract('#first')]},
+      {linkId: 'both', type: 'group', extension: [
+        templateExtract, bundleExtract('#first'), templateExtract, bundleExtract('#second')
+      ]}
+    ];
+    component.ngOnInit();
+    expect(component.multipleTemplateExtractLevels).toEqual([
+      'form level (templateExtractBundle)',
+      "linkId 'both' (templateExtract)",
+      "linkId 'both' (templateExtractBundle)"
+    ]);
   });
 
   it('reports expression errors that LForms logs instead of throwing during extraction', fakeAsync(() => {

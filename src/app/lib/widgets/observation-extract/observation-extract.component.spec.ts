@@ -34,6 +34,16 @@ describe('ObservationExtractComponent extraction rules', () => {
     ])).toBeTrue();
   });
 
+  it('inherits the boolean of the nearest ancestor that has one', () => {
+    const inherited = (ancestors) => ObservationExtractComponent.getInheritedExtractBoolean(ancestors);
+    expect(inherited([])).toBeUndefined();
+    expect(inherited([[], [{url, valueCode: 'member'}]])).toBeUndefined();
+    // A nearer false overrides a more distant true, and the reverse.
+    expect(inherited([[{url, valueCode: 'member'}], [{url, valueBoolean: false}], [{url, valueBoolean: true}]]))
+      .toBeFalse();
+    expect(inherited([[{url, valueBoolean: true}], [{url, valueBoolean: false}]])).toBeTrue();
+  });
+
   it('extracts a relationship item only under the nearest true ancestor or with an extracted code', () => {
     const extracted = (ancestors, codes?) => ObservationExtractComponent.isRelationshipItemExtracted(ancestors, codes);
     expect(extracted([])).toBeFalse();

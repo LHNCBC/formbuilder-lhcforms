@@ -16,9 +16,15 @@
         <div class="d-flex alert alert-warning p-1 mt-2 ms-auto me-auto relationship-without-parent-warning">
           <fa-icon [icon]="faWarning" class="pe-2"/>
           <p class="m-0">
-            A relationship links this item to the Observation of an ancestor item, but no ancestor item has
-            observation extraction set to Yes with relationship None. This item is not extracted. Select None
-            to extract it on its own.
+            @if (ancestorDisablesExtraction) {
+              A relationship links this item to the Observation of an ancestor item, but the nearest ancestor that
+              sets observation extraction to No, or to Yes with relationship None, sets it to No. A nearer setting
+              overrides more distant ones, so this item is not extracted. Select None to extract it on its own.
+            } @else {
+              A relationship links this item to the Observation of an ancestor item, but no ancestor item has
+              observation extraction set to Yes with relationship None. This item is not extracted. Select None
+              to extract it on its own.
+            }
           </p>
         </div>
       }

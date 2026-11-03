@@ -289,6 +289,26 @@ test.describe('preview-dlg-component.spec.ts', () => {
         .toHaveAttribute('aria-selected', 'true');
     });
 
+    test('fills the dialog content height with the snapshot JSON', async ({page}) => {
+      const dialog = page.locator('lfb-preview-dlg');
+      const form = dialog.locator('wc-lhc-form');
+      await form.locator('input[id^="name/"]').fill('Preview Person');
+      await form.locator('input[id^="measurement/"]').fill('12.5');
+      await form.locator('input[id^="measurement/"]').press('Tab');
+      const content = dialog.locator('mat-dialog-content');
+      for(const name of ['Questionnaire Response JSON', 'Extracted Resources JSON']) {
+        await dialog.getByRole('tab', {name, exact: true}).click();
+        const editor = dialog.getByRole('tabpanel', {name, exact: true}).locator('.CodeMirror');
+        await expect(editor).toBeVisible();
+        const contentBox = await content.boundingBox();
+        const editorBox = await editor.boundingBox();
+        // The editor ends at the bottom of the dialog content, apart from its padding.
+        const gap = contentBox.y + contentBox.height - (editorBox.y + editorBox.height);
+        expect(gap, name).toBeGreaterThanOrEqual(0);
+        expect(gap, name).toBeLessThan(40);
+      }
+    });
+
     test('extracts live answers, preserves repeated groups across tabs, and exports matching snapshots', async ({page}) => {
       const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       const dialog = page.locator('lfb-preview-dlg');
@@ -666,8 +686,9 @@ test.describe('preview-dlg-component.spec.ts', () => {
         });
       });
       await expect(dialog.locator('.multiple-template-extract-levels')).toHaveText(
-        'LHC-Forms extracts only the first template-based extraction setting at each level, so the other ' +
-        'settings are not included. Levels with more than one setting: form level.'
+        'LHC-Forms extracts only the first templateExtract setting and the first templateExtractBundle setting ' +
+        'at each level, so the other settings are not included. Levels with more than one setting of a type: ' +
+        'form level (templateExtract).'
       );
       // The output of the extracted settings is still available.
       await expect(dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true})).toBeEnabled();
@@ -675,6 +696,36 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await dialog.getByRole('tab', {name: 'Questionnaire Response JSON', exact: true}).click();
       const responsePanel = dialog.getByRole('tabpanel', {name: 'Questionnaire Response JSON', exact: true});
       await expect(responsePanel.locator('.multiple-template-extract-levels')).toHaveCount(0);
+    });
+
+    test('warns that only the first templateExtractBundle setting at a level is extracted', async ({page}) => {
+      const mainPO = new MainPO(page);
+      await mainPO.mockSnomedEditions();
+      await page.goto('/');
+      await mainPO.loadHomePage();
+      await page.locator('input[type="radio"][value="existing"]').click();
+      await page.locator('input[type="radio"][value="local"]').click();
+      await PWUtils.importLocalFile(page, 'template-extract-duplicate-bundles.json');
+      await expect(page.locator('lfb-form-fields').getByLabel('Title', {exact: true}))
+        .toHaveValue('Duplicate Bundle extraction test');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      const dialog = page.locator('lfb-preview-dlg');
+      const note = dialog.locator('wc-lhc-form input[id^="note/"]');
+      await note.fill('Any text');
+      await note.press('Tab');
+      await dialog.getByRole('tab', {name: 'Extracted Resources JSON', exact: true}).click();
+      await expect(dialog.locator('.multiple-template-extract-levels')).toHaveText(
+        'LHC-Forms extracts only the first templateExtract setting and the first templateExtractBundle setting ' +
+        'at each level, so the other settings are not included. Levels with more than one setting of a type: ' +
+        'form level (templateExtractBundle).'
+      );
+      // The warning explains why the resources of the second Bundle template are missing.
+      const copy = dialog.getByRole('button', {name: 'Copy extracted resources JSON', exact: true});
+      await expect(copy).toBeEnabled();
+      await copy.click();
+      const extracted = await PWUtils.getClipboardContent(page);
+      expect(extracted).toContain('first-patient');
+      expect(extracted).not.toContain('second-patient');
     });
 
     test('reports template expression errors that LHC-Forms only logs to the console', async ({page}) => {
