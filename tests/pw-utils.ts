@@ -110,7 +110,7 @@ export class PWUtils {
    */
   static async getQuestionnaireJSON (page: Page, version = 'R4'): Promise<fhir.Questionnaire> {
     await page.getByRole('button', {name: 'Preview'}).click();
-    await page.getByText('View/Validate Questionnaire JSON', {exact: true}).first().click();
+    await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).first().click();
     await page.getByText(version + ' Version').click();
     await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
     const ret = JSON.parse(await PWUtils.getClipboardContent(page)) as fhir.Questionnaire;
@@ -874,13 +874,13 @@ export class PWUtils {
    */
   static async getByLabel(page: Page, parentSelector: string, label: string): Promise<Locator> {
     return page.locator(parentSelector).getByLabel(label, { exact: true });
-/*    
+/*
     const exactLabel = new RegExp(`^\\s*${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
     const labelElement = page.locator(parentSelector).locator('label').filter({ hasText: exactLabel });
     const forAttr = await labelElement.getAttribute('for');
     if (!forAttr) throw new Error(`Label "${label}" has no 'for' attribute`);
     return page.locator(PWUtils.escapeIdForPlaywright(forAttr));
-*/    
+*/
   }
 
   /**

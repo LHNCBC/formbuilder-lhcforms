@@ -1,0 +1,75 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"]
+  },
+  "status": "draft",
+  "title": "Extraction preview sample",
+  "extension": [{
+    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+    "extension": [{"url": "template", "valueReference": {"reference": "#patient-template"}}]
+  }],
+  "contained": [
+    {
+      "resourceType": "Patient",
+      "id": "patient-template",
+      "meta": {"profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Patient"]},
+      "name": [{
+        "_text": {
+          "extension": [{
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+            "valueString": "%resource.item.where(linkId = 'name').answer.value.first()"
+          }]
+        }
+      }]
+    },
+    {
+      "resourceType": "Observation",
+      "id": "observation-template",
+      "meta": {"profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Observation"]},
+      "status": "preliminary",
+      "code": {"text": "Preview measurement"},
+      "extension": [{
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+        "valueString": "answer.value"
+      }],
+      "valueQuantity": {
+        "_value": {
+          "extension": [{
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+            "valueString": "first()"
+          }]
+        },
+        "unit": "kg",
+        "system": "http://unitsofmeasure.org",
+        "code": "kg"
+      },
+      "derivedFrom": [{
+        "_reference": {
+          "extension": [{
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+            "valueString": "'QuestionnaireResponse/' + %resource.id"
+          }]
+        }
+      }]
+    }
+  ],
+  "item": [
+    {"linkId": "name", "text": "Name", "type": "string"},
+    {
+      "linkId": "measurements",
+      "text": "Measurements",
+      "type": "group",
+      "repeats": true,
+      "item": [{
+        "linkId": "measurement",
+        "text": "Measurement",
+        "type": "decimal",
+        "extension": [{
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+          "extension": [{"url": "template", "valueReference": {"reference": "#observation-template"}}]
+        }]
+      }]
+    }
+  ]
+}

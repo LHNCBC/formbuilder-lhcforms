@@ -38,3 +38,27 @@
   border: 1px solid black;
   border-radius: 4px;
 }
+
+lfb-preview-dlg .extraction-error {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+lfb-preview-dlg .extraction-note {
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Disabled tabs ignore the pointer, which would also suppress the tooltip that explains
+ * why they are disabled. Re-enable pointer events for hover; Material still ignores clicks
+ * on disabled tabs. The selectors must be at least as specific as Material's
+ * ".mat-mdc-tab.mat-mdc-tab-disabled" rules to override them.
+ */
+lfb-preview-dlg .mat-mdc-tab.mat-mdc-tab-disabled,
+lfb-preview-dlg .mat-mdc-tab.mat-mdc-tab-disabled .mdc-tab__content {
+  pointer-events: auto;
+}
+
+lfb-preview-dlg .mat-mdc-tab.mat-mdc-tab-disabled {
+  cursor: not-allowed;
+}

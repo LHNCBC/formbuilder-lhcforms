@@ -2,6 +2,29 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.12.0] 2026-10-27
+### Added
+- Added "Questionnaire Response JSON" and "Extracted Resources JSON" preview tabs for
+  FHIR R5 output from the current form answers, including template- and
+  observation-based extraction.
+- Added a download button next to the copy button on the "Questionnaire JSON" tab.
+- The item editor warns about items whose observation extraction relationship has
+  no extracted ancestor item.
+
+### Changed
+- Shortened preview tab titles. The order is now "Questionnaire JSON",
+  "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
+- The preview opens on "Rendered Form" by default. After that, in the same browser
+  session, it reopens on "Questionnaire JSON" if that was the last visited tab.
+- "Rendered Form" passes the questionnaire to LHC-Forms as FHIR R5, the version
+  used by the form builder and by the snapshot tabs.
+
+### Fixed
+- Changing the observation extraction relationship back to None kept the previous
+  relationship in the questionnaire.
+- A newly selected item showed the observation extraction setting of the previously
+  selected item.
+
 ## [12.11.0] 2026-10-23
 ### Added
 - Contained resources of any FHIR resource type. The Add menu of the form-level

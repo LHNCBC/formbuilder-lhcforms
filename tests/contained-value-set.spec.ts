@@ -242,6 +242,9 @@ test.describe('Contained resource local-file import', () => {
     await PWUtils.clickButton(page, null, 'Advanced fields');
   });
 
+  /**
+   * Verify local resource import preserves JSON and warns only in mismatched preview versions.
+   */
   test('imports arbitrary resource JSON and warns only for mismatched preview versions', async ({page}) => {
     const containedTable = PWUtils.getTableByFieldLabel(
       page.locator('lfb-form-fields'),
@@ -279,9 +282,14 @@ test.describe('Contained resource local-file import', () => {
     await page.getByRole('button', {name: 'Preview'}).click();
     await expect(page.locator('.contained-resource-version-warning'))
       .toContainText('Patient #patient-template was imported as FHIR R4');
-    await page.getByRole('tab', {name: 'View/Validate Questionnaire JSON'}).click();
+    await page.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
     await page.getByRole('tab', {name: 'R4 Version'}).click();
-    await expect(page.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toHaveCount(0);
+
+    // Inactive tabs retain their warnings, so inspect only the selected version panel.
+    const r4Panel = page.getByRole('tabpanel', {name: 'R4 Version', exact: true});
+    await expect(r4Panel).toBeVisible();
+    await expect(r4Panel.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toHaveCount(0);
+
     await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
     const r4Questionnaire = JSON.parse(await PWUtils.getClipboardContent(page));
     expect(r4Questionnaire.contained[0]).toEqual({
@@ -291,8 +299,11 @@ test.describe('Contained resource local-file import', () => {
       active: true,
       name: [{use: 'official', family: 'Contained', given: ['Patient']}]
     });
+
     await page.getByRole('tab', {name: 'R5 Version'}).click();
-    await expect(page.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toBeVisible();
+    const r5Panel = page.getByRole('tabpanel', {name: 'R5 Version', exact: true});
+    await expect(r5Panel).toBeVisible();
+    await expect(r5Panel.locator('ngb-alert').filter({hasText: 'Patient #patient-template'})).toBeVisible();
   });
 
   test('rejects a resource whose id is not a JSON string', async ({page}) => {
@@ -431,10 +442,10 @@ test.describe('Contained ValueSet version compatibility', () => {
   async function expectNoContainedResourceWarnings(page: Page): Promise<void> {
     await page.getByRole('button', {name: 'Preview'}).click();
     const preview = page.locator('lfb-preview-dlg');
-    await expect(preview.getByRole('tab', {name: 'View Rendered Form'})).toHaveAttribute('aria-selected', 'true');
+    await expect(preview.getByRole('tab', {name: 'Rendered Form'})).toHaveAttribute('aria-selected', 'true');
     await expect(preview.locator('wc-lhc-form')).toBeVisible();
     await expect(preview.locator('.contained-resource-version-warning')).toHaveCount(0);
-    await preview.getByRole('tab', {name: 'View/Validate Questionnaire JSON'}).click();
+    await preview.getByRole('tab', {name: 'Questionnaire JSON', exact: true}).click();
     for(const format of ['R4', 'STU3', 'R5']) {
       const tab = preview.getByRole('tab', {name: `${format} Version`});
       await tab.click();

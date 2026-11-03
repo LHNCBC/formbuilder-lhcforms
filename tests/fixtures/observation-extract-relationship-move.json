@@ -1,0 +1,31 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"]
+  },
+  "status": "draft",
+  "title": "Move relationship warning test",
+  "item": [
+    {
+      "linkId": "parent",
+      "text": "Parent item",
+      "type": "group",
+      "code": [{"code": "parent-code"}],
+      "extension": [{
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+        "valueBoolean": true
+      }]
+    },
+    {
+      "linkId": "member",
+      "text": "Member item",
+      "type": "decimal",
+      "code": [{"code": "member-code"}],
+      "extension": [{
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+        "valueCode": "member"
+      }]
+    }
+  ]
+}
+

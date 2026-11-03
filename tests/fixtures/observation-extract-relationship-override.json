@@ -1,0 +1,45 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": ["http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"]
+  },
+  "status": "draft",
+  "title": "Overridden relationship warning test",
+  "item": [
+    {
+      "linkId": "outer",
+      "text": "Outer group",
+      "type": "group",
+      "code": [{"code": "outer-code"}],
+      "extension": [{
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+        "valueBoolean": true
+      }],
+      "item": [
+        {
+          "linkId": "inner",
+          "text": "Inner group",
+          "type": "group",
+          "code": [{"code": "inner-code"}],
+          "extension": [{
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+            "valueBoolean": false
+          }],
+          "item": [
+            {
+              "linkId": "member",
+              "text": "Member child",
+              "type": "decimal",
+              "code": [{"code": "member-code"}],
+              "extension": [{
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+                "valueCode": "member"
+              }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
