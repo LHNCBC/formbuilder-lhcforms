@@ -129,9 +129,36 @@ test.describe('r5-features.spec.ts', () => {
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 2');
     await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Show as protected');
 
+    await PWUtils.clickTreeNode(page, 'Target 3');
+    await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 3');
+    await expect(PWUtils.getRadioButton(page, 'Conditional method', 'enableWhen expression')).toBeChecked();
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Show as protected');
+
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[1].disabledDisplay).toBe('hidden');
     expect(q.item[2].disabledDisplay).toBe('protected');
+    expect(q.item[3].disabledDisplay).toBe('protected');
+  });
+
+  test('should test disabledDisplay with enableWhen expression', async ({page}) => {
+    await PWUtils.uploadFile(page, 'disabled-display-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+
+    await PWUtils.clickTreeNode(page, 'Target 3');
+    await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 3');
+    await expect(PWUtils.getRadioButton(page, 'Conditional method', 'enableWhen expression')).toBeChecked();
+
+    for(const opt of Object.keys(disabledDisplayLabels)) {
+      await PWUtils.clickRadioButton(page, 'Hide or show this item when', disabledDisplayLabels[opt]);
+      const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      expect(q.item[3].disabledDisplay).toBe(opt);
+    }
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'None');
+    await expect(PWUtils.getRadioGroup(page, 'Hide or show this item when')).not.toBeVisible();
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(q.item[3].disabledDisplay).toBeUndefined();
   });
 
   test('should import items with answer list layout', async ({page}) => {

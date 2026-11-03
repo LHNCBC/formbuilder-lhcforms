@@ -43,6 +43,21 @@
         }
       ],
       "disabledDisplay": "protected"
+    },
+    {
+      "linkId": "104",
+      "text": "Target 3",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='101').answer.value = 't3'"
+          }
+        }
+      ],
+      "disabledDisplay": "protected"
     }
   ]
 }

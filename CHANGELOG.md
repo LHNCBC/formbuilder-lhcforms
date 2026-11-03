@@ -2,6 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.11.1] 2026-11-03
+### Fixed
+- The `disabledDisplay` field ("Hide or show this item when conditional display
+  evaluates to 'false'?") is now also shown for items that use an
+  enableWhen expression as the conditional method. Before, it was shown only
+  for enableWhen conditions.
+
 ## [12.11.0] 2026-10-23
 ### Added
 - Contained resources of any FHIR resource type. The Add menu of the form-level
