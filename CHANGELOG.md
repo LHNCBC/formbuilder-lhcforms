@@ -2,30 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.12.0] 2026-10-27
-### Added
-- Added "Questionnaire Response JSON" and "Extracted Resources JSON" preview tabs for
-  FHIR R5 output from the current form answers, including template- and
-  observation-based extraction.
-- Added a download button next to the copy button on the "Questionnaire JSON" tab.
-- The item editor warns about items whose observation extraction relationship has
-  no extracted ancestor item.
-
-### Changed
-- Shortened preview tab titles. The order is now "Questionnaire JSON",
-  "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
-- The preview opens on "Rendered Form" by default. After that, in the same browser
-  session, it reopens on "Questionnaire JSON" if that was the last visited tab.
-- "Rendered Form" passes the questionnaire to LHC-Forms as FHIR R5, the version
-  used by the form builder and by the snapshot tabs.
-
-### Fixed
-- Changing the observation extraction relationship back to None kept the previous
-  relationship in the questionnaire.
-- A newly selected item showed the observation extraction setting of the previously
-  selected item.
-
-## [12.11.0] 2026-10-23
+## [12.11.0] 2026-10-27
 ### Added
 - Contained resources of any FHIR resource type. The Add menu of the form-level
   Contained resources table can create a ValueSet, as before, upload a resource
@@ -75,10 +52,24 @@ This project follows [Semantic Versioning](http://semver.org/).
   resource. The message shows where it is referenced. Only reference and
   canonical fields are checked, so ordinary text such as an item's `text` or
   `prefix` of `#1` does not prevent deleting the contained resource `1`.
+- Added "Questionnaire Response JSON" and "Extracted Resources JSON" preview tabs for
+  FHIR R5 output from the current form answers, including template- and
+  observation-based extraction.
+- Added a download button next to the copy button on the "Questionnaire JSON" tab.
+- The item editor warns about items whose observation extraction relationship has
+  no extracted ancestor item.
+
 ### Changed
 - The ValueSet editor schema no longer carries its own unused copy of the FHIR
   definitions. Like the item and form-level schemas, it uses the definitions
   from `fhir-definitions.schema.json5`.
+- Shortened preview tab titles. The order is now "Questionnaire JSON",
+  "Rendered Form", "Questionnaire Response JSON" and "Extracted Resources JSON".
+- The preview opens on "Rendered Form" by default. After that, in the same browser
+  session, it reopens on "Questionnaire JSON" if that was the last visited tab.
+- "Rendered Form" passes the questionnaire to LHC-Forms as FHIR R5, the version
+  used by the form builder and by the snapshot tabs.
+
 ### Fixed
 - `null` entries of repeating primitive elements, such as `derivedFrom`,
   `subjectType`, or `given` in an extension value, are kept when they align the
@@ -138,6 +129,10 @@ This project follows [Semantic Versioning](http://semver.org/).
   are edited. They were removed before. This holds however an extension is
   updated, including an update in place that adds a field the extension did not
   have when it was loaded.
+- Changing the observation extraction relationship back to None kept the previous
+  relationship in the questionnaire.
+- A newly selected item showed the observation extraction setting of the previously
+  selected item.
 
 ## [12.10.0] 2026-10-20
 ### Added
