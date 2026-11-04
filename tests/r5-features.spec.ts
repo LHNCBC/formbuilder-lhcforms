@@ -161,6 +161,46 @@ test.describe('r5-features.spec.ts', () => {
     expect(q.item[3].disabledDisplay).toBeUndefined();
   });
 
+  test('should show disabledDisplay for both conditional methods on a new item', async ({page}) => {
+    await PWUtils.clickButton(page, 'Toolbar with item action buttons', 'Add new item');
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+    const disabledDisplayGroup = PWUtils.getRadioGroup(page, 'Hide or show this item when');
+    await expect(disabledDisplayGroup).not.toBeVisible();
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen expression');
+    await expect(disabledDisplayGroup).toBeVisible();
+    await PWUtils.clickRadioButton(page, 'Hide or show this item when', 'Hide');
+
+    // The selection is kept when switching between the two conditional methods.
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen condition and behavior');
+    await expect(disabledDisplayGroup).toBeVisible();
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Hide');
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen expression');
+    await expect(disabledDisplayGroup).toBeVisible();
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Hide');
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'None');
+    await expect(disabledDisplayGroup).not.toBeVisible();
+  });
+
+  test('should not export disabledDisplay or an empty enableWhen expression without a condition', async ({page}) => {
+    await PWUtils.clickButton(page, 'Toolbar with item action buttons', 'Add new item');
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen expression');
+    await PWUtils.clickRadioButton(page, 'Hide or show this item when', 'Hide');
+    let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(q.item[1].extension).toBeUndefined();
+    expect(q.item[1].disabledDisplay).toBeUndefined();
+
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen condition and behavior');
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Hide');
+    q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(q.item[1].enableWhen).toBeUndefined();
+    expect(q.item[1].disabledDisplay).toBeUndefined();
+  });
+
   test('should import items with answer list layout', async ({page}) => {
     await PWUtils.uploadFile(page, 'answer-list-layout-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');

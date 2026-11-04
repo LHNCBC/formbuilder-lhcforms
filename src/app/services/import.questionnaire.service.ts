@@ -15,7 +15,8 @@ import {
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from "../lib/constants/constants";
 // import {TerminologyServerComponent} from "../lib/widgets/terminology-server/terminology-server.component";
-import {AnswerValueSetComponent} from "../lib/widgets/answer-value-set/answer-value-set.component";
+// Use the constant, not AnswerValueSetComponent.snomedBaseUri: importing the component creates a circular import.
+import {SNOMED_SYSTEM_URL} from "../lib/widgets/coding-system/coding-system-lookup";
 
 @Injectable({
   providedIn: 'root',
@@ -76,7 +77,7 @@ export class ImportQuestionnaireService {
       if(x?.answerValueSet) {
         x.__$isAnswerList = true;
         const snomedUser = formService?.isSnomedUser();
-        if(snomedUser && x.answerValueSet.startsWith(AnswerValueSetComponent.snomedBaseUri)) {
+        if(snomedUser && x.answerValueSet.startsWith(SNOMED_SYSTEM_URL)) {
           x.__$answerOptionMethods = ANSWER_OPTION_METHOD_SNOMED_VALUE_SET;
         }
         else {

@@ -8,6 +8,14 @@ This project follows [Semantic Versioning](http://semver.org/).
   evaluates to 'false'?") is now also shown for items that use an
   enableWhen expression as the conditional method. Before, it was shown only
   for enableWhen conditions.
+  - Before, `disabledDisplay` was silently removed from an imported item with
+    an enableWhen expression once the item was opened in the editor, so it was
+    missing from the exported form.
+  - `disabledDisplay` is no longer exported for an item without a condition,
+    i.e. without an enableWhen condition or an enableWhen expression. It has
+    no effect there, and the editor dropped it when the form was imported again.
+- Selecting "enableWhen expression" as the conditional method without entering
+  an expression no longer exports an incomplete extension without a URL.
 
 ## [12.11.0] 2026-10-27
 ### Added
