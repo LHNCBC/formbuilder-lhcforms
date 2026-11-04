@@ -468,6 +468,14 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         });
         break;
 
+      case 'moveNode':
+        // Notify after moveItem() has also restored the focused node. A moved item can stay
+        // selected, so its editor is not reloaded, yet settings inherited from ancestors change.
+        setTimeout(() => {
+          this.formService.notifyTreeNodeMoved();
+        });
+        break;
+
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
         this.treeNodeFocusAnnounce(event.node);

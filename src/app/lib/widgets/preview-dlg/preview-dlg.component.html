@@ -4,43 +4,11 @@
   </button>
 </h2>
 <mat-dialog-content #dlgContent class="lfb-mat-tab-content">
-  <mat-tab-group [mat-stretch-tabs]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="activeTopLevelTabIndex=$event">
-    <mat-tab label="View Rendered Form">
-      <ng-template matTabContent>
-        <div>
-          <div class="pt-1">This preview is being handled by
-            <a href="https://lhncbc.github.io/lforms/" class="link-primary" target="_blank">LHC-Forms</a>,
-            which you can also use via the
-            <a href="https://lhncbc.github.io/questionnaire-viewer/" class="link-primary" target="_blank">Questionnaire Viewer</a>,
-            or in your own applications.
-          </div>
-          <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
-          <div>&nbsp;</div> <!-- Needed to float the above div -->
-        </div>
-        @if (missingTerminologyServerLinkIds.length) {
-          <ngb-alert type="warning" class="mb-2 preferred-terminology-server-warning" [dismissible]="false">
-            {{preferredTerminologyServerMsg}}
-          </ngb-alert>
-        }
-        @if (renderedFormCompatibilityWarning) {
-          <ngb-alert type="warning" class="mb-2 contained-resource-version-warning" [dismissible]="false">
-            <span [innerHTML]="renderedFormCompatibilityWarning"></span>
-          </ngb-alert>
-        }
-        @if (lformsErrors) {
-          <div class="card bg-danger-subtle text-center">
-            <div class="lforms-validation">{{lformsErrors}}</div>
-            <div class="fhir-validation-msg">{{fhirValidationMsg}}</div>
-          </div>
-          <ng-container *ngTemplateOutlet="validations"></ng-container>
-        }
-        <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options" (onError)="handleLFormsError($event)"></wc-lhc-form>
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template matTabLabel>
-        View/Validate Questionnaire JSON
-      </ng-template>
+  <mat-tab-group [mat-stretch-tabs]="true" [preserveContent]="true" [selectedIndex]="activeTopLevelTabIndex"
+    (selectedIndexChange)="onPreviewTabSelected($event)" (focusChange)="onPreviewTabFocused($event.index)"
+    (focusout)="onPreviewTabsFocusOut($event)">
+    <!-- Keep the tab order in sync with PreviewTab in the component. -->
+    <mat-tab label="Questionnaire JSON">
       <ng-template matTabContent>
         <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false"
           [(selectedIndex)]="activeJsonTabIndex" (selectedIndexChange)="onJsonVersionSelected($event)">
@@ -74,6 +42,61 @@
         </mat-tab-group>
       </ng-template>
     </mat-tab>
+    <mat-tab label="Rendered Form">
+      <ng-template matTabContent>
+        <div>
+          <div class="pt-1">This preview is being handled by
+            <a href="https://lhncbc.github.io/lforms/" class="link-primary" target="_blank">LHC-Forms</a>,
+            which you can also use via the
+            <a href="https://lhncbc.github.io/questionnaire-viewer/" class="link-primary" target="_blank">Questionnaire Viewer</a>,
+            or in your own applications.
+          </div>
+          <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
+          <div>&nbsp;</div> <!-- Needed to float the above div -->
+        </div>
+        <div #extractionFormContainer>
+          @if (missingTerminologyServerLinkIds.length) {
+            <ngb-alert type="warning" class="mb-2 preferred-terminology-server-warning" [dismissible]="false">
+              {{preferredTerminologyServerMsg}}
+            </ngb-alert>
+          }
+          @if (renderedFormCompatibilityWarning) {
+            <ngb-alert type="warning" class="mb-2 contained-resource-version-warning" [dismissible]="false">
+              <span [innerHTML]="renderedFormCompatibilityWarning"></span>
+            </ngb-alert>
+          }
+          @if (lformsErrors) {
+            <div class="card bg-danger-subtle text-center">
+              <div class="lforms-validation">{{lformsErrors}}</div>
+              <div class="fhir-validation-msg">{{fhirValidationMsg}}</div>
+            </div>
+            <ng-container *ngTemplateOutlet="validations"></ng-container>
+          }
+          <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData?.options"
+            [fhirVersion]="extractionFHIRVersion" (onError)="handleLFormsError($event)"
+            (onFormReady)="handleFormReady()"></wc-lhc-form>
+        </div>
+      </ng-template>
+    </mat-tab>
+    <!-- The snapshot tabs need the rendered form, which is created when its tab is first shown. -->
+    <mat-tab [disabled]="!renderedFormVisited">
+      <ng-template matTabLabel>
+        <span class="snapshot-tab-label" #snapshotTabTooltip [matTooltip]="snapshotTabsDisabledMsg"
+          [matTooltipDisabled]="renderedFormVisited">Questionnaire Response JSON</span>
+      </ng-template>
+      <ng-template matTabContent>
+        <ng-container *ngTemplateOutlet="extractionPreview; context: {$implicit: questionnaireResponseJSON, view: 'qr', label: 'QuestionnaireResponse', emptyMessage: 'No QuestionnaireResponse available.'}"></ng-container>
+      </ng-template>
+    </mat-tab>
+    <mat-tab [disabled]="!renderedFormVisited">
+      <ng-template matTabLabel>
+        <span class="snapshot-tab-label" #snapshotTabTooltip [matTooltip]="snapshotTabsDisabledMsg"
+          [matTooltipDisabled]="renderedFormVisited">Extracted Resources JSON</span>
+      </ng-template>
+      <ng-template matTabContent>
+        <ng-container *ngTemplateOutlet="extractionPreview; context: {$implicit: extractedResourcesJSON, view: 'er', label: 'extracted resources', emptyMessage: 'No extracted resources available.', note: 'Resources are not submitted to a FHIR server.'}"></ng-container>
+      </ng-template>
+    </mat-tab>
   </mat-tab-group>
   <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
 </mat-dialog-content>
@@ -81,6 +104,117 @@
   <button class="btn btn-primary" (click)="close()">Close</button>
 </mat-dialog-actions>
 
+<ng-template #extractionPreview let-json let-view="view" let-label="label" let-emptyMessage="emptyMessage" let-note="note">
+  <section class="extraction-preview" [attr.aria-label]="label + ' preview'" [attr.aria-busy]="!snapshotsSettled">
+    @if(note) {
+      <div class="extraction-note mt-2 mb-2">{{note}}</div>
+    }
+    <!-- Show only final results, after the export completes or fails. -->
+    @if(snapshotsSettled) {
+      @if(formLoadWarning) {
+        <ngb-alert type="warning" class="form-load-warning" [dismissible]="false">{{formLoadWarning}}</ngb-alert>
+      }
+      @if(view === 'er') {
+        @if(!hasTemplateExtraction) {
+          <ngb-alert type="info" [dismissible]="false">
+            @if(hasObservationExtraction) {
+              No template extraction with a contained template is configured. Only observation-based extraction is included.
+            }
+            @else {
+              No extraction is configured. Add a template or observation extraction setting at questionnaire or item level
+              to preview extracted resources.
+            }
+          </ngb-alert>
+        }
+        @if(noResourcesExtracted) {
+          <ngb-alert type="info" class="no-resources-extracted" [dismissible]="false">
+            No resources were extracted from the current answers.
+            @if(hasObservationExtraction) {
+              Observations are extracted only from answered items.
+            }
+          </ngb-alert>
+        }
+        @if(unextractedRelationshipLinkIds.length) {
+          <ngb-alert type="warning" class="unextracted-relationship-items" [dismissible]="false">
+            Items with an observation extraction relationship are extracted only when the nearest ancestor that
+            sets observation extraction to No, or to Yes with relationship None, sets it to Yes. A nearer setting
+            overrides more distant ones. Not extracted (linkId):
+            {{unextractedRelationshipLinkIds.join(', ')}}.
+          </ngb-alert>
+        }
+        @if(hasTemplateExtraction && multipleTemplateExtractLevels.length) {
+          <ngb-alert type="warning" class="multiple-template-extract-levels" [dismissible]="false">
+            LHC-Forms extracts only the first templateExtract setting and the first templateExtractBundle setting
+            at each level, so the other settings are not included. Levels with more than one setting of a type:
+            {{multipleTemplateExtractLevels.join(', ')}}.
+          </ngb-alert>
+        }
+        @if(extractionExpressionErrors.length) {
+          <ngb-alert type="warning" class="extraction-expression-errors" [dismissible]="false">
+            LHC-Forms could not evaluate some extraction expressions, so the extracted resources may be incomplete
+            or incorrect. Errors:
+            <ul class="mb-0">
+              @for(error of extractionExpressionErrors; track error) {
+                <li>{{error}}</li>
+              }
+            </ul>
+          </ngb-alert>
+        }
+        @if(renderedFormCompatibilityWarning) {
+          <ngb-alert type="warning" [dismissible]="false">
+            <span [innerHTML]="renderedFormCompatibilityWarning"></span>
+          </ngb-alert>
+        }
+        @if(extractionUnavailable) {
+          <ngb-alert type="warning" [dismissible]="false">{{extractionUnavailable}}</ngb-alert>
+        }
+        @if(extractionError) {
+          <ngb-alert type="danger" [dismissible]="false"><span class="extraction-error">{{extractionError}}</span></ngb-alert>
+        }
+      }
+      @else if(responseError) {
+        <ngb-alert type="danger" [dismissible]="false"><span class="response-error">{{responseError}}</span></ngb-alert>
+      }
+      <!-- Omit the generic empty message when an alert above already explains the missing JSON. -->
+      <ng-container *ngTemplateOutlet="extractionSnapshot; context: {$implicit: json, label: label, emptyMessage: hasEmptySnapshotCause(view) ? '' : emptyMessage}"></ng-container>
+    }
+  </section>
+</ng-template>
+
+<ng-template #extractionSnapshot let-json let-label="label" let-emptyMessage="emptyMessage">
+  @if(json) {
+    <!-- Overlay the export buttons on the JSON, like the Questionnaire JSON buttons. -->
+    <div class="overlay-container" role="region" [attr.aria-label]="label + ' JSON'">
+      <ngx-codemirror [ngModel]="json" (codeMirrorLoaded)="snapshotCodeMirrorLoaded($event)"
+        [options]="{
+          lineNumbers: true,
+          theme: 'idea code-editor',
+          mode: {name: 'application/ld+json'},
+          readOnly: true,
+          lineWrapping: true,
+          foldGutter: true,
+          gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+        }"></ngx-codemirror>
+      <div class="overlay-top-right me-3 d-flex">
+        <button type="button" class="btn" [disabled]="extractionInProgress"
+          [cdkCopyToClipboard]="json" (cdkCopyToClipboardCopied)="onExtractionCopied($event)"
+          [attr.title]="'Copy ' + label + ' JSON to clipboard'"
+          [attr.aria-label]="'Copy ' + label + ' JSON'">
+          <fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon>
+        </button>
+        <button type="button" class="btn" (click)="downloadExtractionJSON()"
+          [disabled]="extractionInProgress"
+          [attr.title]="'Download ' + label + ' JSON'"
+          [attr.aria-label]="'Download ' + label + ' JSON'">
+          <fa-icon size="2x" [icon]="faDownload" aria-hidden="true"></fa-icon>
+        </button>
+      </div>
+    </div>
+  }
+  @else if(emptyMessage) {
+    <p class="m-2">{{emptyMessage}}</p>
+  }
+</ng-template>
 <ng-template #validations let-fhirVersion>
   @if(validationErrors[fhirVersion]?.length > 0) {
     <div ngbAccordion>
@@ -154,10 +288,16 @@
         gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
       }"
       ></ngx-codemirror>
-      <button tabindex="0" class="btn overlay-top-right me-3"
-        title="Copy questionnaire to clipboard"
-        [attr.aria-label]="'Button to copy questionnaire to clipboard'"
-        [cdkCopyToClipboard]="codeMirrorModel"
-        ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
+      <div class="overlay-top-right me-3 d-flex">
+        <button tabindex="0" class="btn"
+          title="Copy questionnaire to clipboard"
+          [attr.aria-label]="'Button to copy questionnaire to clipboard'"
+          [cdkCopyToClipboard]="codeMirrorModel"
+          ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
+        <button type="button" class="btn" (click)="downloadQuestionnaireJSON()"
+          title="Download questionnaire JSON"
+          aria-label="Download questionnaire JSON"
+          ><fa-icon size="2x" [icon]="faDownload" aria-hidden="true"></fa-icon></button>
+      </div>
       </div>
     </ng-template>

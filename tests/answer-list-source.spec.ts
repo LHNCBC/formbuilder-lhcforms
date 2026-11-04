@@ -1106,7 +1106,7 @@ test.describe('Home page', () => {
       });
 
       await PWUtils.clickMenuBarButton(page, 'Preview');
-      await page.getByRole('tab', { name: 'View Rendered Form' }).click();
+      await page.getByRole('tab', { name: 'Rendered Form' }).click();
 
       const inputBox1 = page.locator('[id="1/1"]');
       await inputBox1.click();

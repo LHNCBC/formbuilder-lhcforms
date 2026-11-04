@@ -1215,7 +1215,7 @@ test.describe('attachment data type', () => {
 
     // Open the preview dialog and switch to the rendered LForms widget.
     await PWUtils.clickMenuBarButton(page, 'Preview');
-    await page.getByRole('tab', { name: 'View Rendered Form' }).click();
+    await page.getByRole('tab', { name: 'Rendered Form' }).click();
 
     const form = page.locator('wc-lhc-form');
     await expect(form).toBeVisible({ timeout: 15000 });

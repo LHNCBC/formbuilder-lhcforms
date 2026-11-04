@@ -3,12 +3,15 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
+  QueryList,
   ViewChild,
+  ViewChildren,
   ViewEncapsulation,
   inject,
   CUSTOM_ELEMENTS_SCHEMA
 } from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import fhir from 'fhir/r4';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import {FormService} from '../../../services/form.service';
@@ -26,8 +29,11 @@ import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
 import {NgbAccordionItem, NgbAccordionModule, NgbAlertModule, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {faCopy} from '@fortawesome/free-regular-svg-icons';
+import {faDownload} from '@fortawesome/free-solid-svg-icons';
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
+import {MatTooltip, MatTooltipModule} from "@angular/material/tooltip";
+import {LiveAnnouncer} from "@angular/cdk/a11y";
 import {AsyncPipe, CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {ClipboardModule} from "@angular/cdk/clipboard";
@@ -38,6 +44,9 @@ import {
   ContainedResourceService,
   ContainedResourceVersionRecord
 } from '../../../services/contained-resource.service';
+import {hasTemplateExtractReference} from '../template-extract/template-extract.util';
+import {ObservationExtractComponent} from '../observation-extract/observation-extract.component';
+import {EXTENSION_URL_TEMPLATE_EXTRACT, EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE} from '../../constants/constants';
 declare var LForms: any;
 
 /**
@@ -47,11 +56,30 @@ export interface PreviewData {
   questionnaire: fhir.Questionnaire;
   lfData?: any;
   containedResourceVersionRecords?: ContainedResourceVersionRecord[];
+  /**
+   * Save the questionnaire as the Export menu does, including its compatibility prompts.
+   * Takes the FHIR version to save, and resolves when the file is saved or the user cancels.
+   */
+  exportQuestionnaire: (version: FHIR_VERSION_TYPE) => Promise<void>;
 }
 
 type NoErrorsMap = {
   [key in FHIR_VERSION_TYPE]: boolean;
 };
+
+/** How long copy/download feedback stays visible, in milliseconds. */
+const ACTION_MESSAGE_DURATION = 3000;
+
+/** Session storage key of the last visited top-level preview tab. */
+const PREVIEW_TAB_STORAGE_KEY = 'previewTab';
+
+/** Top-level preview tabs; the values are the tab indices in display order. */
+export enum PreviewTab {
+  QuestionnaireJSON,
+  RenderedForm,
+  QuestionnaireResponse,
+  ExtractedResources
+}
 
 @Component({
   selector: 'lfb-preview-dlg',
@@ -67,6 +95,7 @@ type NoErrorsMap = {
     MatDialogModule,
     MatIconModule,
     MatTabsModule,
+    MatTooltipModule,
     AsyncPipe,
     FormsModule,
     ClipboardModule,
@@ -81,15 +110,51 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   private fhirService = inject(FhirService);
   private subjectTypeService = inject(SubjectTypeService);
   private containedResourceService = inject(ContainedResourceService);
+  private snackBar = inject(MatSnackBar);
+  private liveAnnouncer = inject(LiveAnnouncer);
   dialogRef = inject<MatDialogRef<PreviewDlgComponent>>(MatDialogRef);
   data = inject<PreviewData>(MAT_DIALOG_DATA);
 
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
+  @ViewChild('extractionFormContainer', {read: ElementRef}) extractionFormContainer: ElementRef<HTMLElement>;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
+  // Tooltips of the Questionnaire Response and Extracted Resources tab labels, in tab order.
+  @ViewChildren('snapshotTabTooltip', {read: MatTooltip}) snapshotTabTooltips: QueryList<MatTooltip>;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
-  activeTopLevelTabIndex = 0;
+  activeTopLevelTabIndex: PreviewTab = PreviewTab.RenderedForm;
+  // The snapshot tabs read answers from the rendered form, which is created only when its
+  // lazy tab is first shown. They stay disabled until then.
+  renderedFormVisited = false;
+  readonly snapshotTabsDisabledMsg = 'Open the Rendered Form tab first.';
   activeJsonTabIndex: number = FHIR_VERSIONS.R4;
+  readonly extractionFHIRVersion = 'R5';
+  // Smallest height, in pixels, of the JSON editors on the snapshot tabs.
+  static readonly MIN_SNAPSHOT_EDITOR_HEIGHT = 200;
+  formReady = false;
+  extractionInProgress = false;
+  hasTemplateExtraction = false;
+  hasObservationExtraction = false;
+  // linkIds of items whose observation extraction relationship has no extracted ancestor.
+  unextractedRelationshipLinkIds: string[] = [];
+  // Levels with more than one templateExtract or templateExtractBundle extension, e.g.
+  // "form level (templateExtract)". LHC-Forms extracts only the first one of each type at each level.
+  multipleTemplateExtractLevels: string[] = [];
+  // Expression errors that LHC-Forms logged instead of reporting during the last extraction.
+  extractionExpressionErrors: string[] = [];
+  // Whether extraction ran without error but produced no resources.
+  noResourcesExtracted = false;
+  // Extraction messages belong to the Extracted Resources tab only.
+  extractionError = '';
+  extractionUnavailable = '';
+  // Response export failures belong to the Questionnaire Response tab only.
+  responseError = '';
+  // Shown on both snapshot tabs when LHC-Forms reported an error but still rendered the form.
+  formLoadWarning = '';
+  extractedResourcesJSON = '';
+  questionnaireResponseJSON = '';
+  private extractionTimer: ReturnType<typeof setTimeout>;
+  private downloadObjectUrl: string;
   lformsErrors: string;
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
@@ -108,7 +173,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   codeMirrorModel: string = '';
 
   fhirValidationMsg =
-    "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your " +
+    "Select the 'Questionnaire JSON' tab to access a feature that validates your " +
     "Questionnaire against a supplied FHIR server, offering more detailed error insights.";
 
   // linkIds of items that use an external answerValueSet but have no preferred terminology
@@ -168,8 +233,13 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * compatible with R5. Then select the default JSON version tab.
    */
   ngOnInit() {
-    this.activeTopLevelTabIndex = 0;
+    this.selectInitialTab();
     this.activeJsonTabIndex = FHIR_VERSIONS.R4;
+    this.hasTemplateExtraction = this.hasContainedTemplate(this.data.questionnaire);
+    this.hasObservationExtraction = this.hasObservationExtract(this.data.questionnaire);
+    this.unextractedRelationshipLinkIds = [];
+    this.findUnextractedRelationshipItems(this.data.questionnaire?.item, [this.data.questionnaire?.extension || []]);
+    this.multipleTemplateExtractLevels = this.findMultipleTemplateExtractLevels(this.data.questionnaire);
     this.missingTerminologyServerLinkIds = Util.getItemsMissingPreferredTerminologyServer(this.data.questionnaire);
     this.preferredTerminologyServerMsg = this.buildPreferredTerminologyServerMsg(this.missingTerminologyServerLinkIds);
     this.renderedFormCompatibilityWarning = this.containedResourceService.getCompatibilityWarning(
@@ -177,6 +247,22 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       'R5'
     );
     this.onJsonVersionSelected(this.activeJsonTabIndex);
+  }
+
+  /**
+   * Select the tab visited last in this browser session, or Rendered Form by default.
+   * Only Questionnaire JSON and Rendered Form are restored; the snapshot tabs need answers
+   * entered in a new form, so a remembered snapshot tab opens Rendered Form instead.
+   */
+  private selectInitialTab(): void {
+    const storedName = this.formService.getStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY) ?? '';
+    const stored: unknown = PreviewTab[storedName as keyof typeof PreviewTab];
+    // Tabs are stored by name; ignore missing, unknown, and snapshot tab values.
+    this.activeTopLevelTabIndex = stored === PreviewTab.QuestionnaireJSON ?
+      PreviewTab.QuestionnaireJSON : PreviewTab.RenderedForm;
+    if(this.activeTopLevelTabIndex === PreviewTab.RenderedForm) {
+      this.renderedFormVisited = true;
+    }
   }
 
   /**
@@ -243,11 +329,456 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle errors from <wc-lhc-form>
-   * @param event - event object emitted by wc-lhc-form.
+   * Handle errors from <wc-lhc-form>. LHC-Forms also reports errors after it has rendered the
+   * form, for example when an answer list cannot be loaded, and then never reports the form as
+   * ready. An open snapshot tab is therefore regenerated; the export checks whether a form was
+   * rendered.
+   * @param event - Event object emitted by wc-lhc-form.
    */
   handleLFormsError(event) {
     this.lformsErrors = event.detail;
+    this.formReady = false;
+    clearTimeout(this.extractionTimer);
+    this.extractionInProgress = false;
+    if(this.isExtractionTabSelected) {
+      this.refreshExtraction();
+    }
+  }
+
+  /**
+   * Return the JSON snapshot selected in the extraction preview.
+   * @returns The JSON text of the selected snapshot.
+   */
+  get extractionJSON(): string {
+    return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ?
+      this.extractedResourcesJSON : this.questionnaireResponseJSON;
+  }
+
+  /**
+   * Return the accessible name of the selected extraction snapshot.
+   * @returns The accessible name.
+   */
+  get extractionViewLabel(): string {
+    return this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ? 'extracted resources' : 'QuestionnaireResponse';
+  }
+
+  /** Return whether either of the paired extraction snapshot tabs is selected. */
+  get isExtractionTabSelected(): boolean {
+    return this.activeTopLevelTabIndex === PreviewTab.QuestionnaireResponse ||
+      this.activeTopLevelTabIndex === PreviewTab.ExtractedResources;
+  }
+
+  /**
+   * Return whether snapshot tabs can show their results. Content is hidden while the
+   * export runs or while waiting for the rendered form, so tabs show only final results.
+   */
+  get snapshotsSettled(): boolean {
+    return !this.extractionInProgress && this.formSettled;
+  }
+
+  /** Return whether the rendered form has finished loading, successfully or with an error. */
+  private get formSettled(): boolean {
+    return this.formReady || !!this.lformsErrors;
+  }
+
+  /**
+   * Return whether a snapshot tab already shows why it has no JSON, which makes the
+   * generic empty message redundant.
+   * @param view - 'qr' for Questionnaire Response JSON, 'er' for Extracted Resources JSON.
+   * @returns Whether an error or an explanation of the missing output is shown on the tab.
+   */
+  hasEmptySnapshotCause(view: 'qr' | 'er'): boolean {
+    if(view === 'qr') {
+      return !!this.responseError;
+    }
+    const noExtractionConfigured = !this.hasTemplateExtraction && !this.hasObservationExtraction;
+    return noExtractionConfigured || this.noResourcesExtracted || !!this.extractionUnavailable || !!this.extractionError;
+  }
+
+  /**
+   * Collect linkIds of items whose observation extraction relationship (valueCode) has no
+   * extracted ancestor. Such items are not extracted.
+   * @param items - Items to inspect, including their descendants.
+   * @param ancestorExtensions - Extension lists of the ancestors, from the nearest ancestor up
+   *   to the questionnaire.
+   */
+  private findUnextractedRelationshipItems(items: fhir.QuestionnaireItem[] = [], ancestorExtensions: fhir.Extension[][]): void {
+    for(const item of items) {
+      const extension = item.extension?.find(ext => ext.url === ObservationExtractComponent.extUrl);
+      if(extension?.valueCode &&
+        !ObservationExtractComponent.isRelationshipItemExtracted(ancestorExtensions, item.code)) {
+        this.unextractedRelationshipLinkIds.push(item.linkId);
+      }
+      this.findUnextractedRelationshipItems(item.item, [item.extension || [], ...ancestorExtensions]);
+    }
+  }
+
+  /**
+   * Find the levels that have more than one templateExtract extension, or more than one
+   * templateExtractBundle extension. LHC-Forms extracts only the first extension of each of these
+   * types at each level, so the others are missing from the output.
+   * @param questionnaire - Questionnaire to inspect.
+   * @returns "form level (<type>)" for the questionnaire, and "linkId '<linkId>' (<type>)" for each
+   *   item, in questionnaire order, where <type> is templateExtract or templateExtractBundle.
+   */
+  private findMultipleTemplateExtractLevels(questionnaire: fhir.Questionnaire): string[] {
+    const levels: string[] = [];
+    const extractTypes = [
+      {url: EXTENSION_URL_TEMPLATE_EXTRACT, name: 'templateExtract'},
+      {url: EXTENSION_URL_TEMPLATE_EXTRACT_BUNDLE, name: 'templateExtractBundle'}
+    ];
+
+    /**
+     * Add the level once for each extraction type with more than one extension at the level.
+     * @param level - Description of the level, e.g. "form level".
+     * @param extensions - Extensions of the questionnaire or of an item.
+     */
+    const addLevel = (level: string, extensions: fhir.Extension[] = []): void => {
+      for(const {url, name} of extractTypes) {
+        if(extensions.filter(extension => extension.url === url).length > 1) {
+          levels.push(`${level} (${name})`);
+        }
+      }
+    };
+
+    /**
+     * Add the levels of the items, including descendants.
+     * @param items - Items to inspect.
+     */
+    const addItems = (items: fhir.QuestionnaireItem[] = []): void => {
+      for(const item of items) {
+        addLevel(`linkId '${item.linkId}'`, item.extension);
+        addItems(item.item);
+      }
+    };
+
+    addLevel('form level', questionnaire?.extension);
+    addItems(questionnaire?.item);
+    return levels;
+  }
+
+  /**
+   * Check whether template extraction is usable: a templateExtract or templateExtractBundle
+   * extension references a resource that exists in Questionnaire.contained.
+   * @param questionnaire - Questionnaire to inspect.
+   * @returns Whether a referenced contained template exists.
+   */
+  private hasContainedTemplate(questionnaire: fhir.Questionnaire): boolean {
+    return !!questionnaire?.contained?.some(resource => hasTemplateExtractReference(questionnaire, resource.id));
+  }
+
+  /**
+   * Look for an enabled observationExtract extension on the questionnaire, items, or item codes.
+   * @param scope - Questionnaire or item whose extensions and children should be inspected.
+   * @returns Whether observation-based extraction is configured in this scope or its descendants.
+   */
+  private hasObservationExtract(scope: fhir.Questionnaire | fhir.QuestionnaireItem): boolean {
+    /**
+     * Check a list of extensions for an observationExtract that is not disabled.
+     * @param extensions - Extensions to inspect.
+     * @returns Whether an enabled observationExtract extension is present.
+     */
+    const isEnabled = (extensions: fhir.Extension[] = []): boolean => extensions.some(extension =>
+      extension.url === ObservationExtractComponent.extUrl && extension.valueBoolean !== false);
+    return !!scope && (isEnabled(scope.extension) ||
+      !!(scope as fhir.QuestionnaireItem).code?.some(coding => isEnabled(coding.extension)) ||
+      !!scope.item?.some(item => this.hasObservationExtract(item)));
+  }
+
+  /**
+   * Refresh both snapshots when entering from a non-extraction tab. Switching between
+   * the response and resources keeps the pair intact, including generated references.
+   * Copy/download pop-up messages are closed so they are not shown on another tab.
+   * Questionnaire JSON and Rendered Form are remembered for the next time the preview
+   * opens in this browser session; a snapshot tab is remembered as Rendered Form.
+   * @param index - Selected top-level tab index.
+   */
+  onPreviewTabSelected(index: PreviewTab): void {
+    const wasExtractionTabSelected = this.isExtractionTabSelected;
+    this.activeTopLevelTabIndex = index;
+    if(index === PreviewTab.RenderedForm) {
+      this.renderedFormVisited = true;
+    }
+    const tabToRemember = index === PreviewTab.QuestionnaireJSON ? index : PreviewTab.RenderedForm;
+    this.formService.setStorageItem('sessionStorage', PREVIEW_TAB_STORAGE_KEY, PreviewTab[tabToRemember]);
+    this.snackBar.dismiss();
+    if(this.isExtractionTabSelected && !wasExtractionTabSelected) {
+      this.refreshExtraction();
+    }
+  }
+
+  /**
+   * Explain a disabled snapshot tab when keyboard focus moves to it. Its tooltip otherwise
+   * appears only on mouse hover, so it is shown here and its text is announced to screen readers.
+   * @param index - Index of the top-level tab that received keyboard focus.
+   */
+  onPreviewTabFocused(index: number): void {
+    this.hideSnapshotTabTooltips();
+    const isSnapshotTab = index === PreviewTab.QuestionnaireResponse || index === PreviewTab.ExtractedResources;
+    if(this.renderedFormVisited || !isSnapshotTab) {
+      return;
+    }
+    this.snapshotTabTooltips?.get(index - PreviewTab.QuestionnaireResponse)?.show(0);
+    this.liveAnnouncer.announce(this.snapshotTabsDisabledMsg);
+  }
+
+  /**
+   * Hide the tooltips shown for keyboard focus when focus leaves the top-level tab labels.
+   * Moving between the labels is handled by onPreviewTabFocused().
+   * @param event - focusout event from the top-level tab group.
+   */
+  onPreviewTabsFocusOut(event: FocusEvent): void {
+    const tabHeader = (event.currentTarget as HTMLElement).querySelector('mat-tab-header');
+    const next = event.relatedTarget as HTMLElement | null;
+    if(!tabHeader || next?.closest('mat-tab-header') !== tabHeader) {
+      this.hideSnapshotTabTooltips();
+    }
+  }
+
+  /** Hide the tooltips of the snapshot tab labels. */
+  private hideSnapshotTabTooltips(): void {
+    this.snapshotTabTooltips?.forEach(tooltip => tooltip.hide(0));
+  }
+
+  /** Allow extraction only after the widget has finished its initial processing and rendering. */
+  handleFormReady(): void {
+    this.formReady = true;
+    this.lformsErrors = '';
+    if(this.isExtractionTabSelected) {
+      this.refreshExtraction();
+    }
+  }
+
+  /** Schedule extraction after allowing pending input changes to settle. */
+  refreshExtraction(): void {
+    if(!this.formSettled || this.extractionInProgress) {
+      return;
+    }
+    this.extractionInProgress = true;
+    this.extractionError = '';
+    this.extractionUnavailable = '';
+    this.noResourcesExtracted = false;
+    this.extractionExpressionErrors = [];
+    this.responseError = '';
+    this.formLoadWarning = '';
+    this.extractedResourcesJSON = '';
+    this.questionnaireResponseJSON = '';
+    this.extractionTimer = setTimeout(() => this.generateExtraction(), 0);
+  }
+
+  /**
+   * Export one response and its extracted resources from the preserved widget.
+   * Older runtimes can still export a response, but must not silently omit templates.
+   * Expression errors that LForms only logs during extraction are kept for a warning.
+   */
+  private generateExtraction(): void {
+    const container = this.extractionFormContainer?.nativeElement;
+    try {
+      this.assertFormExportable(container);
+      if(this.lformsErrors) {
+        this.formLoadWarning = `The form was rendered with an error: ${this.lformsErrors}. ` +
+          'The JSON reflects the form as shown on the Rendered Form tab.';
+      }
+      const version = this.formService.lformsVersion || '';
+      const match = /^(\d+)\.(\d+)\./.exec(version);
+      const supportsTemplates = match && (+match[1] > 38 || (+match[1] === 38 && +match[2] >= 7));
+      if(this.hasTemplateExtraction && !supportsTemplates) {
+        this.extractionUnavailable = `Template extraction requires LForms 38.7.0 or later. Loaded version: ${version || 'unknown'}.`;
+      }
+
+      // Request extraction only when something is configured to extract; otherwise LForms
+      // returns just the QuestionnaireResponse.
+      const extract = this.hasObservationExtraction || (this.hasTemplateExtraction && !!supportsTemplates);
+      const expressionErrors: string[] = [];
+      const result = extract ?
+        this.collectLoggedErrors(
+          () => LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container, {extract: true}),
+          expressionErrors
+        ) :
+        LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container);
+      const resources = Array.isArray(result) ? result : [result];
+      const response = resources[0];
+      if(response?.resourceType !== 'QuestionnaireResponse') {
+        throw new Error('LForms did not return a QuestionnaireResponse.');
+      }
+      this.questionnaireResponseJSON = JSON.stringify(response, null, 2);
+      const extracted = resources.slice(1);
+      if(extracted.some(resource => !resource?.resourceType)) {
+        throw new Error('LForms returned an unexpected extraction result.');
+      }
+      // Older versions can return standalone Observations alongside the template Bundle.
+      // With no resources, the tab explains why when extraction was requested.
+      if(extracted.length) {
+        this.extractedResourcesJSON = JSON.stringify(extracted.length === 1 ? extracted[0] : extracted, null, 2);
+      }
+      this.noResourcesExtracted = extract && !extracted.length;
+      this.extractionExpressionErrors = expressionErrors;
+    }
+    catch(error) {
+      this.extractedResourcesJSON = '';
+      this.extractionError = this.errorMessage(error);
+      if(!this.questionnaireResponseJSON) {
+        this.exportResponseOnly(container);
+      }
+    }
+    finally {
+      this.extractionInProgress = false;
+    }
+  }
+
+  /**
+   * Run an LForms call and collect the messages of the errors that it writes to the console.
+   * LForms catches FHIRPath errors in extraction expressions and only logs them, so
+   * extraction otherwise looks successful. The messages are still written to the console.
+   * @param run - Synchronous LForms call.
+   * @param errors - Receives each distinct error message, in the order logged.
+   * @returns The value returned by run.
+   */
+  private collectLoggedErrors<T>(run: () => T, errors: string[]): T {
+    const methods = ['log', 'warn', 'error'] as const;
+    const originals = methods.map(method => console[method]);
+    methods.forEach((method, index) => {
+      console[method] = (...args: unknown[]) => {
+        args.filter(arg => arg instanceof Error).forEach((error: Error) => {
+          if(!errors.includes(error.message)) {
+            errors.push(error.message);
+          }
+        });
+        originals[index].apply(console, args);
+      };
+    });
+    try {
+      return run();
+    }
+    finally {
+      methods.forEach((method, index) => console[method] = originals[index]);
+    }
+  }
+
+  /**
+   * Export the QuestionnaireResponse alone after extraction failed before returning it,
+   * so the Questionnaire Response tab still shows the answers or its own export error.
+   * @param container - Element containing the preview widget, if available.
+   */
+  private exportResponseOnly(container: HTMLElement | undefined): void {
+    try {
+      this.assertFormExportable(container);
+      const response = LForms.Util.getFormFHIRData('QuestionnaireResponse', this.extractionFHIRVersion, container);
+      if(response?.resourceType !== 'QuestionnaireResponse') {
+        throw new Error('LForms did not return a QuestionnaireResponse.');
+      }
+      this.questionnaireResponseJSON = JSON.stringify(response, null, 2);
+    }
+    catch(error) {
+      this.responseError = this.errorMessage(error);
+    }
+  }
+
+  /**
+   * Check that the preview widget can be exported. After an LHC-Forms error, export only
+   * when the form was still rendered.
+   * @param container - Element containing the preview widget, if available.
+   * @throws Error when the export API, the widget, or the rendered form is unavailable.
+   */
+  private assertFormExportable(container: HTMLElement | undefined): void {
+    if(!container || typeof LForms.Util.getFormFHIRData !== 'function') {
+      throw new Error('The LForms response export API is unavailable.');
+    }
+    if(this.lformsErrors && !this.hasRenderedForm(container)) {
+      throw new Error(`The rendered form is unavailable: ${this.lformsErrors}`);
+    }
+  }
+
+  /**
+   * Check whether LHC-Forms rendered a form in the container. A failure to read the form data
+   * means that no usable form exists; the reported LHC-Forms error is shown instead.
+   * @param container - Element containing the preview widget.
+   * @returns Whether the form data of a rendered form is available.
+   */
+  private hasRenderedForm(container: HTMLElement): boolean {
+    try {
+      return !!LForms.Util.getFormData?.(container);
+    }
+    catch {
+      return false;
+    }
+  }
+
+  /**
+   * Convert a thrown value to displayable text.
+   * @param error - Thrown value.
+   * @returns The error message, or the value as a string.
+   */
+  private errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+  }
+
+  /** Download the selected snapshot without submitting it to a FHIR server. */
+  downloadExtractionJSON(): void {
+    if(!this.extractionJSON || this.extractionInProgress) {
+      return;
+    }
+    const name = this.activeTopLevelTabIndex === PreviewTab.ExtractedResources ?
+      'extracted-resources' : 'questionnaire-response';
+    this.downloadJSON(this.extractionJSON, `${name}.${this.extractionFHIRVersion}.json`);
+  }
+
+  /**
+   * Save the questionnaire in the selected version tab's FHIR version through the Export
+   * menu's save, so the same compatibility questions are asked before the file is saved.
+   * Failures not reported by the export itself are shown in a pop-up message. While the
+   * export runs, the preview does not close on Escape, so Escape reaches its prompts.
+   */
+  downloadQuestionnaireJSON(): void {
+    if(!this.codeMirrorModel) {
+      return;
+    }
+    const disableClose = this.dialogRef.disableClose;
+    this.dialogRef.disableClose = true;
+    this.data.exportQuestionnaire(this.format).catch((error) => {
+      this.showActionMessage(`Download failed: ${this.errorMessage(error)}`);
+    }).finally(() => {
+      this.dialogRef.disableClose = disableClose;
+    });
+  }
+
+  /**
+   * Save JSON text as a file, releasing the previous download URL. Failures are shown
+   * in a pop-up message.
+   * @param json - JSON text to save.
+   * @param fileName - Suggested file name.
+   */
+  private downloadJSON(json: string, fileName: string): void {
+    try {
+      if(this.downloadObjectUrl) {
+        URL.revokeObjectURL(this.downloadObjectUrl);
+      }
+      this.downloadObjectUrl = URL.createObjectURL(new Blob([json], {type: 'application/json;charset=utf-8'}));
+      const anchor = document.createElement('a');
+      anchor.href = this.downloadObjectUrl;
+      anchor.download = fileName;
+      anchor.dispatchEvent(new MouseEvent('click'));
+    }
+    catch(error) {
+      this.showActionMessage(`Download failed: ${this.errorMessage(error)}`);
+    }
+  }
+
+  /**
+   * Announce clipboard results in a pop-up message, including failures.
+   * @param copied - Whether the browser accepted the clipboard write.
+   */
+  onExtractionCopied(copied: boolean): void {
+    this.showActionMessage(copied ?
+      `Copied ${this.extractionViewLabel} JSON.` : 'Copy failed. Try Download JSON instead.');
+  }
+
+  /**
+   * Show copy/download feedback in a short-lived pop-up, also announced to screen readers.
+   * @param message - Text to show.
+   */
+  private showActionMessage(message: string): void {
+    this.snackBar.open(message, undefined, {duration: ACTION_MESSAGE_DURATION});
   }
 
   /**
@@ -296,6 +827,27 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Size a snapshot JSON editor to fill the dialog content below it. The notes and alerts
+   * above the editor vary, so the height is measured from where the editor starts. A snapshot
+   * is shown only with its final notes and alerts, so they are already rendered.
+   * @param cm - The loaded editor component.
+   */
+  snapshotCodeMirrorLoaded(cm: CodemirrorComponent): void {
+    const content: HTMLElement = this.dlgContent?.nativeElement;
+    const editor = cm.codeMirror.getWrapperElement();
+    // An editor that is not laid out has no position to measure from.
+    if(!content || !editor.getClientRects().length) {
+      return;
+    }
+    const contentRect = content.getBoundingClientRect();
+    const offsetFromContentTop = editor.getBoundingClientRect().top - contentRect.top + content.scrollTop;
+    const bottomPadding = parseFloat(getComputedStyle(content).paddingBottom) || 0;
+    const height = content.clientHeight - offsetFromContentTop - bottomPadding;
+    // With many alerts above it, keep the editor usable and let the dialog content scroll.
+    cm.codeMirror.setSize(null, Math.max(height, PreviewDlgComponent.MIN_SNAPSHOT_EDITOR_HEIGHT));
+  }
+
+  /**
    * JSON is the last item in the dialog content box is exclusive of header and footer.
    * Subtract heights of all the boxes above and padding below.
 
@@ -308,13 +860,19 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clean up subscriptions.
+   * Clean up subscriptions, scheduled extraction, download URLs, and pop-up messages.
    */
   ngOnDestroy() {
+    clearTimeout(this.extractionTimer);
+    this.snackBar.dismiss();
+    if(this.downloadObjectUrl) {
+      URL.revokeObjectURL(this.downloadObjectUrl);
+    }
     this.subscriptions.forEach((subscription: Subscription) => {
       subscription?.unsubscribe();
     })
   }
 
   protected readonly faCopy = faCopy;
+  protected readonly faDownload = faDownload;
 }

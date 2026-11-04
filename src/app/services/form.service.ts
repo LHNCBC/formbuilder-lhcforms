@@ -93,6 +93,7 @@ export class FormService {
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
+  _treeNodeMoved$: Subject<void> = new Subject<void>();
   _advPanelState = {
     formLevel: true,
     itemLevel: true,
@@ -896,6 +897,15 @@ export class FormService {
   }
 
   /**
+   * Getter for the tree node moved Observable. It emits after an item is moved in the tree,
+   * which changes the ancestors of the moved item and its descendants.
+   * @return - Observable that emits after each move.
+   */
+  get treeNodeMoved$(): Observable<void> {
+    return this._treeNodeMoved$.asObservable();
+  }
+
+  /**
    * Setter for form level advanced panel state
    */
   set formLevel(collapse: boolean) {
@@ -966,6 +976,14 @@ export class FormService {
   resetForm(): void {
     this._formReset$.next(null);
   }
+
+  /**
+   * Notify the listeners that an item was moved in the tree.
+   */
+  notifyTreeNodeMoved(): void {
+    this._treeNodeMoved$.next();
+  }
+
   /**
    * Inform the listeners of change in step.
    * @param step

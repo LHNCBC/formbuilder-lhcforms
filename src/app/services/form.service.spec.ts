@@ -29,6 +29,16 @@ describe('FormService', () => {
     expect(service.lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
   });
 
+  it('notifies subscribers when a tree node is moved', () => {
+    let count = 0;
+    const subscription = service.treeNodeMoved$.subscribe(() => count++);
+    service.notifyTreeNodeMoved();
+    service.notifyTreeNodeMoved();
+    subscription.unsubscribe();
+    service.notifyTreeNodeMoved();
+    expect(count).toBe(2);
+  });
+
   it('autosaves clean Questionnaire JSON and contained-resource version provenance separately', () => {
     const containedResourceService = TestBed.inject(ContainedResourceService);
     const patient = {resourceType: 'Patient', id: 'patient-1'} as fhir.Resource;

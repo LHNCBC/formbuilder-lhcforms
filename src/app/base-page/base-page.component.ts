@@ -615,7 +615,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
       {data: {
           questionnaire: Util.convertToQuestionnaireJSON(this.formValue),
           containedResourceVersionRecords: this.containedResourceService.getVersionRecords(this.formValue),
-          lfData: lformsTemplateOptions
+          lfData: lformsTemplateOptions,
+          exportQuestionnaire: (version: string) => this.saveToFile(version)
         },
         width: '80vw', height: '80vh'
       }
