@@ -13,7 +13,8 @@ This project follows [Semantic Versioning](http://semver.org/).
     missing from the exported form.
   - `disabledDisplay` is no longer exported for an item without a condition,
     i.e. without an enableWhen condition or an enableWhen expression. It has
-    no effect there, and the editor dropped it when the form was imported again.
+    no effect there, and after the form was imported again, the editor dropped
+    it once the item was opened.
 - Selecting "enableWhen expression" as the conditional method without entering
   an expression no longer exports an incomplete extension without a URL.
 
