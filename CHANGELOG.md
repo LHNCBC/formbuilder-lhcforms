@@ -3,18 +3,15 @@
 This project follows [Semantic Versioning](http://semver.org/).
 
 ## [12.11.1] 2026-11-03
-### Fixed
+### Added
 - The `disabledDisplay` field ("Hide or show this item when conditional display
-  evaluates to 'false'?") is now also shown for items that use an
+  evaluates to 'false'?") has a "Use renderer default" option, which
+  removes the value.
+ 
+### Fixed
+- The `disabledDisplay` field is now also shown for items that use an
   enableWhen expression as the conditional method. Before, it was shown only
   for enableWhen conditions.
-  - Before, `disabledDisplay` was silently removed from an imported item with
-    an enableWhen expression once the item was opened in the editor, so it was
-    missing from the exported form.
-  - `disabledDisplay` is no longer exported for an item without a condition,
-    i.e. without an enableWhen condition or an enableWhen expression. It has
-    no effect there, and after the form was imported again, the editor dropped
-    it once the item was opened.
 - Selecting "enableWhen expression" as the conditional method without entering
   an expression no longer exports an incomplete extension without a URL.
 

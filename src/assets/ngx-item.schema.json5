@@ -2868,9 +2868,10 @@
       },
       "widget": {
         "id": "enable-behavior",
+        "emptyOptionLabel": "Use renderer default",
         "layout": "row",
         "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-7"
+        "controlWidthClass": "col-sm-9"
       }
     },
     "__$end": {

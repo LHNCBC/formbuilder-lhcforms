@@ -161,6 +161,42 @@ test.describe('r5-features.spec.ts', () => {
     expect(q.item[3].disabledDisplay).toBeUndefined();
   });
 
+  for (const target of ['Target 1', 'Target 3']) {
+    test(`should reset disabledDisplay to renderer default for ${target}`, async ({page}) => {
+      await PWUtils.uploadFile(page, 'disabled-display-sample.json', true);
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+      await PWUtils.clickButton(page, null, 'Advanced fields');
+      await PWUtils.clickTreeNode(page, target);
+
+      const original = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      const originalItem = original.item.find(item => item.text === target);
+      const expectedItem = {...originalItem};
+      delete expectedItem.disabledDisplay;
+
+      if (target === 'Target 1') {
+        const behavior = page.getByRole('radiogroup', {name: /^Show this item when/});
+        await expect(behavior.getByRole('radio')).toHaveCount(2);
+        await expect(behavior.getByRole('radio', {name: 'Use renderer default'})).toHaveCount(0);
+      }
+
+      for (const label of Object.values(disabledDisplayLabels)) {
+        await PWUtils.clickRadioButton(page, 'Hide or show this item when', label);
+        await PWUtils.expectRadioChecked(page, 'Hide or show this item when', label);
+        await PWUtils.clickRadioButton(page, 'Hide or show this item when', 'Use renderer default');
+        await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Use renderer default');
+
+        let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(q.item.find(item => item.linkId === originalItem.linkId)).toEqual(expectedItem);
+
+        await PWUtils.clickTreeNode(page, 'Source');
+        await PWUtils.clickTreeNode(page, target);
+        await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Use renderer default');
+        q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(q.item.find(item => item.linkId === originalItem.linkId)).toEqual(expectedItem);
+      }
+    });
+  }
+
   test('should show disabledDisplay for both conditional methods on a new item', async ({page}) => {
     await PWUtils.clickButton(page, 'Toolbar with item action buttons', 'Add new item');
     await PWUtils.clickButton(page, null, 'Advanced fields');
@@ -169,6 +205,7 @@ test.describe('r5-features.spec.ts', () => {
 
     await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen expression');
     await expect(disabledDisplayGroup).toBeVisible();
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Use renderer default');
     await PWUtils.clickRadioButton(page, 'Hide or show this item when', 'Hide');
 
     // The selection is kept when switching between the two conditional methods.
