@@ -18,7 +18,7 @@ import {
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
   EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   EXTENSION_URL_CHOICE_ORIENTATION, EXTENSION_URL_COLUMN_COUNT, EXTENSION_URL_COLUMN_COUNT_LEGACY,
-  PREFERRED_TERMINOLOGY_SERVER_URI
+  EXTENSION_URL_ENABLEWHEN_EXPRESSION, PREFERRED_TERMINOLOGY_SERVER_URI
 } from './constants/constants';
 import { HttpClient } from '@angular/common/http';
 import JSON5 from 'json5';
@@ -633,6 +633,31 @@ export class Util {
   }
 
   /**
+   * Check whether an extension holds an enableWhen expression with non-blank expression text.
+   *
+   * @param ext - Extension to check.
+   * @returns True if the extension has the enableWhenExpression URL and a non-blank expression.
+   */
+  static isEnableWhenExpressionExtension(ext): boolean {
+    const expression = ext?.valueExpression?.expression;
+    return ext?.url === EXTENSION_URL_ENABLEWHEN_EXPRESSION &&
+      typeof expression === 'string' && expression.trim().length > 0;
+  }
+
+  /**
+   * Check whether an item has a condition that can disable it, i.e. at least one enableWhen
+   * entry or an enableWhenExpression extension with a non-blank expression.
+   *
+   * @param item - Questionnaire item. Its enableWhen entries should already be filtered
+   *   to valid ones.
+   * @returns True if the item has an enableWhen entry or an enableWhen expression.
+   */
+  static hasEnableCondition(item): boolean {
+    return (Array.isArray(item?.enableWhen) && item.enableWhen.length > 0) ||
+      (Array.isArray(item?.extension) && item.extension.some((ext) => Util.isEnableWhenExpressionExtension(ext)));
+  }
+
+  /**
    * Prunes the questionnaire model using the following conditions:
    * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
    *   The following are considered empty: undefined, null, {}, [], and  ''.
@@ -757,6 +782,11 @@ export class Util {
               keys.some(k => k.startsWith('answer'))
             );
           });
+        }
+
+        // disabledDisplay has no effect without a condition. The editor would also drop it on re-import.
+        if (node && typeof node === 'object' && 'disabledDisplay' in node && !Util.hasEnableCondition(node)) {
+          delete node.disabledDisplay;
         }
       });
 

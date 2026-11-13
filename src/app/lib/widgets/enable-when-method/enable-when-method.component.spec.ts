@@ -2,6 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnableWhenMethodComponent } from './enable-when-method.component';
 import { of, Subject } from 'rxjs';
+import {
+  CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION, CONDITIONAL_METHOD_NONE, EXTENSION_URL_ENABLEWHEN_EXPRESSION
+} from '../../constants/constants';
 
 describe('EnableWhenMethodComponent', () => {
   let component: EnableWhenMethodComponent;
@@ -56,6 +59,46 @@ describe('EnableWhenMethodComponent', () => {
     expect(component).toBeTruthy();
     // Now trigger lifecycle hooks with mocked dependencies in place
     fixture.detectChanges();
+  });
+
+  describe('switching to enableWhen expression', () => {
+    let expressionValue: any;
+    let extensionsService: jasmine.SpyObj<any>;
+
+    beforeEach(() => {
+      expressionValue = null;
+      (component.formProperty as any).findRoot = () => ({
+        getProperty: () => ({value: expressionValue})
+      });
+      extensionsService = jasmine.createSpyObj('ExtensionsService',
+        ['updateOrAppendExtensionByUrl', 'removeExtensionsByUrl']);
+      component.extensionsService = extensionsService;
+      component.modelService = {modelInitialized$: new Subject()} as any;
+      component.ngAfterViewInit();
+    });
+
+    it('should not add an extension without expression text', () => {
+      expressionValue = {valueExpression: {language: 'text/fhirpath'}};
+      (component.formProperty.valueChanges as Subject<any>).next(CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION);
+      expect(extensionsService.updateOrAppendExtensionByUrl).not.toHaveBeenCalled();
+
+      (component.formProperty.valueChanges as Subject<any>).next(CONDITIONAL_METHOD_NONE);
+      expressionValue = {valueExpression: {language: 'text/fhirpath', expression: '  '}};
+      (component.formProperty.valueChanges as Subject<any>).next(CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION);
+      expect(extensionsService.updateOrAppendExtensionByUrl).not.toHaveBeenCalled();
+    });
+
+    it('should add the extension with its url when the expression is present', () => {
+      expressionValue = {valueExpression: {language: 'text/fhirpath', expression: '%a > 1'}};
+      (component.formProperty.valueChanges as Subject<any>).next(CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION);
+      expect(extensionsService.updateOrAppendExtensionByUrl).toHaveBeenCalledOnceWith(
+        EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+        {
+          url: EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+          valueExpression: {language: 'text/fhirpath', expression: '%a > 1'}
+        }
+      );
+    });
   });
 
 });

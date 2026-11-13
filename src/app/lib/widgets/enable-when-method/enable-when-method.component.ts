@@ -42,6 +42,11 @@ export class EnableWhenMethodComponent extends LabelRadioComponent implements On
     this.updateUI();
   }
 
+  /**
+   * Subscribe to item initialization and conditional method changes. A method change adds or
+   * removes the enableWhenExpression extension. The extension is added only if it has a
+   * non-blank expression.
+   */
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
@@ -65,8 +70,10 @@ export class EnableWhenMethodComponent extends LabelRadioComponent implements On
 
         } else if (this.currentEnableWhenMethod === CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION) {
           const enableWhenExpression = this.formProperty.findRoot().getProperty('__$enableWhenExpression').value;
-          if (enableWhenExpression) {
-            this.extensionsService.updateOrAppendExtensionByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION, enableWhenExpression);
+          // A new item has a stub value without url or expression text. Do not add it as an extension.
+          if (enableWhenExpression?.valueExpression?.expression?.trim()) {
+            this.extensionsService.updateOrAppendExtensionByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+              {...enableWhenExpression, url: EXTENSION_URL_ENABLEWHEN_EXPRESSION});
           }
         } else {
           this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION);

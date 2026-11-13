@@ -2,6 +2,19 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.11.1] 2026-11-03
+### Added
+- The `disabledDisplay` field ("Hide or show this item when conditional display
+  evaluates to 'false'?") has a "Use renderer default" option, which
+  removes the value.
+ 
+### Fixed
+- The `disabledDisplay` field is now also shown for items that use an
+  enableWhen expression as the conditional method. Before, it was shown only
+  for enableWhen conditions.
+- Selecting "enableWhen expression" as the conditional method without entering
+  an expression no longer exports an incomplete extension without a URL.
+
 ## [12.11.0] 2026-10-27
 ### Added
 - Contained resources of any FHIR resource type. The Add menu of the form-level

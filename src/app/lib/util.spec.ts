@@ -438,6 +438,43 @@ describe('Util', () => {
     });
   });
 
+  describe('disabledDisplay in questionnaire JSON', () => {
+    const ewExpressionUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
+    const exportItem = (item) => Util.convertToQuestionnaireJSON(
+      {resourceType: 'Questionnaire', status: 'draft', item: [{linkId: '1', text: 'Item', type: 'string', ...item}]}
+    ).item[0];
+
+    it('should keep disabledDisplay with a valid enableWhen', () => {
+      const result = exportItem({
+        enableWhen: [{question: '0', operator: 'exists', answerBoolean: true}],
+        disabledDisplay: 'hidden'
+      });
+      expect(result.disabledDisplay).toBe('hidden');
+    });
+
+    it('should keep disabledDisplay with an enableWhen expression', () => {
+      const result = exportItem({
+        extension: [{url: ewExpressionUrl, valueExpression: {language: 'text/fhirpath', expression: '%a > 1'}}],
+        disabledDisplay: 'protected'
+      });
+      expect(result.disabledDisplay).toBe('protected');
+    });
+
+    it('should remove disabledDisplay without a condition', () => {
+      expect(exportItem({disabledDisplay: 'hidden'}).disabledDisplay).toBeUndefined();
+      // Incomplete enableWhen entries are removed, which leaves no condition.
+      expect(exportItem({
+        enableWhen: [{question: '0', operator: '='}],
+        disabledDisplay: 'hidden'
+      }).disabledDisplay).toBeUndefined();
+      // An enableWhen expression without expression text is not a condition.
+      expect(exportItem({
+        extension: [{url: ewExpressionUrl, valueExpression: {language: 'text/fhirpath', expression: ' '}}],
+        disabledDisplay: 'hidden'
+      }).disabledDisplay).toBeUndefined();
+    });
+  });
+
   describe('Null placeholders in repeating primitive fields', () => {
     const note = (text: string) => ({extension: [{url: 'http://example.org/note', valueString: text}]});
 

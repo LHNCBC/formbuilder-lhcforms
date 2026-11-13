@@ -2856,7 +2856,7 @@
     disabledDisplay is R5 feature
     */
     "disabledDisplay": {
-      "description": "Indicates if and how items that are disabled (because enableWhen evaluates to 'false') should be displayed.",
+      "description": "Indicates if and how items that are disabled (because enableWhen or enableWhenExpression evaluates to 'false') should be displayed.",
       "enum": [
         "hidden",
         "protected"
@@ -2864,13 +2864,14 @@
       "type": "string",
       "title": "Hide or show this item when conditional display evaluates to 'false'?",
       "visibleIf": {
-        "__$enableWhenMethod": ["enablewhen-cond"]
+        "__$enableWhenMethod": ["enablewhen-cond", "enablewhen-expression"]
       },
       "widget": {
         "id": "enable-behavior",
+        "emptyOptionLabel": "Use renderer default",
         "layout": "row",
         "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-7"
+        "controlWidthClass": "col-sm-9"
       }
     },
     "__$end": {

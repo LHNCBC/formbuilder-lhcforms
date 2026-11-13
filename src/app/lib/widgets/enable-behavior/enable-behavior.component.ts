@@ -19,6 +19,16 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
             [labelId]="'label_'+id"></lfb-label>
           <div [ngClass]="{row: schema.widget.layout === 'row'}"
             role="radiogroup" [attr.aria-labelledby]="'label_'+id" [attr.id]="id">
+            @if (schema.widget.emptyOptionLabel) {
+              <div [ngClass]="{col: schema.widget.layout === 'row'}">
+                <input [attr.id]="id + '.empty'" name="{{id}}" type="radio"
+                  [checked]="isEmptySelection()"
+                  [disabled]="schema.readOnly || control.disabled"
+                  (change)="clearSelection()" (blur)="control.markAsTouched()">
+                <lfb-label [for]="id + '.empty'" class="horizontal control-label ms-sm-2"
+                  [title]="schema.widget.emptyOptionLabel"></lfb-label>
+              </div>
+            }
             @for (option of schema.oneOf; track option[0]) {
               <div>
                 <label class="horizontal control-label">
@@ -49,5 +59,23 @@ export class EnableBehaviorComponent extends LfbControlWidgetComponent {
     any: 'Any condition is true',
     hidden: 'Hide',
     protected: 'Show as protected'
+  }
+
+  /**
+   * Check whether no option is selected, i.e. the value is null, undefined or empty.
+   *
+   * @returns True if the empty option should be checked.
+   */
+  isEmptySelection(): boolean {
+    const value = this.control.value;
+    return value === null || value === undefined || value === '';
+  }
+
+  /**
+   * Clear the optional value so serialization omits it, and mark the user's edit as dirty.
+   */
+  clearSelection(): void {
+    this.control.setValue(null);
+    this.control.markAsDirty();
   }
 }
